@@ -1,0 +1,13 @@
+{"time":"2026-04-21T08:11:48.680572575Z","level":"INFO","msg":"stream: starting","core version":"0.23.1"}
+{"time":"2026-04-21T08:11:48.707713416Z","level":"ERROR","msg":"monitor: failed to initialize GPU resource: monitor: could not create portfile"}
+{"time":"2026-04-21T08:11:48.829194021Z","level":"INFO","msg":"stream: created new stream","id":"gku79qru"}
+{"time":"2026-04-21T08:11:48.82927082Z","level":"INFO","msg":"handler: started","stream_id":"gku79qru"}
+{"time":"2026-04-21T08:11:48.831674103Z","level":"INFO","msg":"stream: started","id":"gku79qru"}
+{"time":"2026-04-21T08:11:48.831687317Z","level":"INFO","msg":"writer: started","stream_id":"gku79qru"}
+{"time":"2026-04-21T08:11:48.831695547Z","level":"INFO","msg":"sender: started","stream_id":"gku79qru"}
+{"time":"2026-04-21T08:12:00.840563007Z","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2026-04-21T08:12:01.1272499Z","level":"INFO","msg":"handler: operation stats","stats":{}}
+{"time":"2026-04-21T08:12:01.131849847Z","level":"INFO","msg":"stream: closing","id":"gku79qru"}
+{"time":"2026-04-21T08:12:01.131864145Z","level":"INFO","msg":"handler: closed","stream_id":"gku79qru"}
+{"time":"2026-04-21T08:12:01.134599067Z","level":"INFO","msg":"sender: closed","stream_id":"gku79qru"}
+{"time":"2026-04-21T08:12:01.134607858Z","level":"INFO","msg":"stream: closed","id":"gku79qru"}

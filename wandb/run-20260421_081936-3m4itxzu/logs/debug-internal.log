@@ -1,0 +1,14 @@
+{"time":"2026-04-21T08:19:37.734710853Z","level":"INFO","msg":"stream: starting","core version":"0.23.1"}
+{"time":"2026-04-21T08:19:37.767881992Z","level":"ERROR","msg":"monitor: failed to initialize GPU resource: monitor: could not create portfile"}
+{"time":"2026-04-21T08:19:37.837950603Z","level":"INFO","msg":"stream: created new stream","id":"3m4itxzu"}
+{"time":"2026-04-21T08:19:37.838023009Z","level":"INFO","msg":"handler: started","stream_id":"3m4itxzu"}
+{"time":"2026-04-21T08:19:37.839707333Z","level":"INFO","msg":"stream: started","id":"3m4itxzu"}
+{"time":"2026-04-21T08:19:37.839715563Z","level":"INFO","msg":"writer: started","stream_id":"3m4itxzu"}
+{"time":"2026-04-21T08:19:37.839723941Z","level":"INFO","msg":"sender: started","stream_id":"3m4itxzu"}
+{"time":"2026-04-21T09:05:47.702750391Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-21T09:05:50.639714698Z","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2026-04-21T09:05:51.019875008Z","level":"INFO","msg":"handler: operation stats","stats":{}}
+{"time":"2026-04-21T09:05:51.029994555Z","level":"INFO","msg":"stream: closing","id":"3m4itxzu"}
+{"time":"2026-04-21T09:05:51.030009005Z","level":"INFO","msg":"handler: closed","stream_id":"3m4itxzu"}
+{"time":"2026-04-21T09:05:51.038580359Z","level":"INFO","msg":"sender: closed","stream_id":"3m4itxzu"}
+{"time":"2026-04-21T09:05:51.038598224Z","level":"INFO","msg":"stream: closed","id":"3m4itxzu"}

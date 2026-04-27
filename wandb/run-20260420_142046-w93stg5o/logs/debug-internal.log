@@ -1,0 +1,7 @@
+{"time":"2026-04-20T14:20:47.802564372Z","level":"INFO","msg":"stream: starting","core version":"0.23.1"}
+{"time":"2026-04-20T14:20:47.813004978Z","level":"ERROR","msg":"monitor: failed to initialize GPU resource: monitor: could not create portfile"}
+{"time":"2026-04-20T14:20:47.886981961Z","level":"INFO","msg":"stream: created new stream","id":"w93stg5o"}
+{"time":"2026-04-20T14:20:47.887050343Z","level":"INFO","msg":"handler: started","stream_id":"w93stg5o"}
+{"time":"2026-04-20T14:20:47.890263214Z","level":"INFO","msg":"stream: started","id":"w93stg5o"}
+{"time":"2026-04-20T14:20:47.890277432Z","level":"INFO","msg":"writer: started","stream_id":"w93stg5o"}
+{"time":"2026-04-20T14:20:47.890278915Z","level":"INFO","msg":"sender: started","stream_id":"w93stg5o"}

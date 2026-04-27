@@ -1,0 +1,7 @@
+{"time":"2026-04-20T14:27:43.46776024Z","level":"INFO","msg":"stream: starting","core version":"0.23.1"}
+{"time":"2026-04-20T14:27:43.479213215Z","level":"ERROR","msg":"monitor: failed to initialize GPU resource: monitor: could not create portfile"}
+{"time":"2026-04-20T14:27:43.56763698Z","level":"INFO","msg":"stream: created new stream","id":"pnaggms2"}
+{"time":"2026-04-20T14:27:43.567713798Z","level":"INFO","msg":"handler: started","stream_id":"pnaggms2"}
+{"time":"2026-04-20T14:27:43.571050034Z","level":"INFO","msg":"stream: started","id":"pnaggms2"}
+{"time":"2026-04-20T14:27:43.571070275Z","level":"INFO","msg":"writer: started","stream_id":"pnaggms2"}
+{"time":"2026-04-20T14:27:43.571078414Z","level":"INFO","msg":"sender: started","stream_id":"pnaggms2"}

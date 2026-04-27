@@ -1,0 +1,195 @@
+_wandb:
+    value:
+        cli_version: 0.23.1
+        e:
+            kbmddljasrwisd7wy1tinxpjvh2xohra:
+                args:
+                    - --exp
+                    - "3"
+                codePath: speechLM_utils/train.py
+                codePathLocal: speechLM_utils/train.py
+                cpu_count: 48
+                cpu_count_logical: 96
+                disk:
+                    /:
+                        total: "7459416539136"
+                        used: "756647108608"
+                email: chrissiargas@gmail.com
+                executable: /home/jovyan/miniconda/envs/nemo2/bin/python
+                host: greekasr6-0
+                memory:
+                    total: "1204529893376"
+                os: Linux-5.10.234-225.895.amzn2.x86_64-x86_64-with-glibc2.39
+                program: /home/jovyan/home/jovyan/greek-asr-master/speechLM_utils/train.py
+                python: CPython 3.10.19
+                root: /home/jovyan/home/jovyan/greek-asr-master
+                startedAt: "2026-04-21T08:11:47.894332Z"
+                writerId: kbmddljasrwisd7wy1tinxpjvh2xohra
+        m: []
+        python_version: 3.10.19
+        t:
+            "1":
+                - 1
+                - 5
+                - 11
+                - 41
+                - 49
+                - 51
+                - 53
+                - 71
+                - 98
+                - 100
+            "2":
+                - 1
+                - 5
+                - 11
+                - 41
+                - 49
+                - 51
+                - 53
+                - 71
+                - 98
+                - 100
+            "3":
+                - 2
+                - 13
+                - 15
+                - 16
+            "4": 3.10.19
+            "5": 0.23.1
+            "6": 4.53.3
+            "10":
+                - 20
+            "12": 0.23.1
+            "13": linux-x86_64
+acoustic_lora:
+    value: false
+add_to_vocab:
+    value: false
+audio_forecasting:
+    value: false
+audio_weight:
+    value: 0.5
+blank_training:
+    value: false
+causal_fusion:
+    value: false
+checkpoint_path:
+    value: cache/checkpoints
+ctc:
+    value: false
+ctc_weight:
+    value: 0.1
+downsample_K:
+    value: 5
+downsample_L:
+    value: 5
+downsamplers:
+    value: injection_common
+dropout:
+    value: 0.2
+duration_resolution:
+    value: 0.1
+early_stopping_patience:
+    value: 15
+first_stage_epochs:
+    value: 10
+gated_cross_attention:
+    value: false
+has_decoder:
+    value: false
+hidden_dim:
+    value: 2048
+injection_downsample:
+    value: conv1d
+injection_layers:
+    value:
+        - 10
+        - 20
+        - 30
+input_downsample:
+    value: reshape
+interleave_temperature:
+    value: 1.2
+linguistic_lora:
+    value: true
+lora_lr:
+    value: 0.0001
+lora_params:
+    value:
+        - q_proj
+        - k_proj
+        - v_proj
+        - o_proj
+max_duration:
+    value: 30
+micro_data:
+    value: false
+micro_size:
+    value: 800
+norm_mono:
+    value: false
+predict_duration:
+    value: false
+proj_lr:
+    value: 0.0001
+project:
+    value: false
+prompt_instruction:
+    value: " \nΆκουσε προσεκτικά τον παραπάνω ήχο και μετέτρεψε τον σε κείμενο. Επέστρεψε μόνο την απομαγνητοφώνηση."
+prompt_persona:
+    value: Είσαι ένα κορυφαίο σύστημα αναγνώρισης ομιλίας (ASR) ειδικευμένο στην ελληνική γλώσσα. Ο ρόλος σου είναι να μετατρέπεις τον ήχο σε κείμενο με απόλυτη πιστότητα στις λέξεις που ειπώθηκαν (μην προσθέτεις ή αφαιρείς λέξεις όταν δεν ακούς κάτι καλά). Επιστρέφεις μόνο την απομαγνητοφώνηση
+pyramid_layers:
+    value: false
+randomize:
+    value: true
+second_stage_epochs:
+    value: 40
+seed:
+    value: 0
+spec_augment:
+    value: true
+static_projector:
+    value: true
+text_dropout:
+    value: false
+training_args:
+    value:
+        dataloader_num_workers: 4
+        dataloader_pin_memory: true
+        ddp_find_unused_parameters: true
+        do_train: true
+        eval_accumulation_steps: 2
+        eval_steps: 500
+        eval_strategy: steps
+        fp16: true
+        generation_config: |
+            GenerationConfig {
+              "max_new_tokens": 510
+            }
+        generation_max_length: 510
+        gradient_accumulation_steps: 4
+        gradient_checkpointing: true
+        gradient_checkpointing_kwargs:
+            use_reentrant: false
+        greater_is_better: false
+        group_by_length: false
+        load_best_model_at_end: true
+        logging_dir: /home/jovyan/cache/checkpoints/dual_fusion_checkpoints/greekasr6-0/whisper-large-v3_Llama-Krikri-8B-Instruct/LoRA_1_['common_voice', 'fleurs', 'hparl', 'tedx', 'logotypographia']@Apr21_08-11
+        logging_steps: 10
+        lr_scheduler_type: linear
+        metric_for_best_model: eval_wer
+        num_train_epochs: 60
+        optim: adamw_torch
+        output_dir: /home/jovyan/cache/checkpoints/dual_fusion_checkpoints/greekasr6-0/whisper-large-v3_Llama-Krikri-8B-Instruct/LoRA_1_['common_voice', 'fleurs', 'hparl', 'tedx', 'logotypographia']@Apr21_08-11
+        per_device_eval_batch_size: 4
+        per_device_train_batch_size: 2
+        predict_with_generate: true
+        remove_unused_columns: false
+        report_to:
+            - wandb
+        save_steps: 500
+        save_strategy: steps
+        warmup_steps: 400
+two_stage:
+    value: false

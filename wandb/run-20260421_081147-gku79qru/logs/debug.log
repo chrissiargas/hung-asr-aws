@@ -1,0 +1,29 @@
+2026-04-21 08:11:47,932 INFO    MainThread:57016 [wandb_setup.py:_flush():80] Current SDK version is 0.23.1
+2026-04-21 08:11:47,932 INFO    MainThread:57016 [wandb_setup.py:_flush():80] Configure stats pid to 57016
+2026-04-21 08:11:47,932 INFO    MainThread:57016 [wandb_setup.py:_flush():80] Loading settings from /home/jovyan/.config/wandb/settings
+2026-04-21 08:11:47,932 INFO    MainThread:57016 [wandb_setup.py:_flush():80] Loading settings from /home/jovyan/home/jovyan/greek-asr-master/wandb/settings
+2026-04-21 08:11:47,932 INFO    MainThread:57016 [wandb_setup.py:_flush():80] Loading settings from environment variables
+2026-04-21 08:11:47,934 INFO    MainThread:57016 [wandb_init.py:setup_run_log_directory():714] Logging user logs to /home/jovyan/home/jovyan/greek-asr-master/wandb/run-20260421_081147-gku79qru/logs/debug.log
+2026-04-21 08:11:47,934 INFO    MainThread:57016 [wandb_init.py:setup_run_log_directory():715] Logging internal logs to /home/jovyan/home/jovyan/greek-asr-master/wandb/run-20260421_081147-gku79qru/logs/debug-internal.log
+2026-04-21 08:11:47,934 INFO    MainThread:57016 [wandb_init.py:init():841] calling init triggers
+2026-04-21 08:11:47,934 INFO    MainThread:57016 [wandb_init.py:init():846] wandb.init called with sweep_config: {}
+config: {'checkpoint_path': 'cache/checkpoints', 'seed': 0, 'randomize': True, 'micro_data': False, 'micro_size': 800, 'norm_mono': False, 'blank_training': False, 'downsample_K': 5, 'input_downsample': 'reshape', 'hidden_dim': 2048, 'static_projector': True, 'injection_layers': [10, 20, 30], 'pyramid_layers': False, 'downsample_L': 5, 'injection_downsample': 'conv1d', 'linguistic_lora': True, 'acoustic_lora': False, 'has_decoder': False, 'causal_fusion': False, 'dropout': 0.2, 'spec_augment': True, 'lora_params': ['q_proj', 'k_proj', 'v_proj', 'o_proj'], 'two_stage': False, 'lora_lr': 0.0001, 'proj_lr': 0.0001, 'first_stage_epochs': 10, 'second_stage_epochs': 40, 'predict_duration': False, 'duration_resolution': 0.1, 'max_duration': 30.0, 'add_to_vocab': False, 'ctc': False, 'audio_forecasting': False, 'ctc_weight': 0.1, 'audio_weight': 0.5, 'training_args': {'fp16': True, 'dataloader_num_workers': 4, 'dataloader_pin_memory': True, 'per_device_train_batch_size': 2, 'gradient_accumulation_steps': 4, 'gradient_checkpointing': True, 'gradient_checkpointing_kwargs': {'use_reentrant': False}, 'ddp_find_unused_parameters': True, 'warmup_steps': 400, 'lr_scheduler_type': 'linear', 'optim': 'adamw_torch', 'report_to': ['wandb'], 'logging_steps': 10, 'save_strategy': 'steps', 'save_steps': 500, 'eval_strategy': 'steps', 'eval_steps': 500, 'eval_accumulation_steps': 2, 'per_device_eval_batch_size': 4, 'num_train_epochs': 60, 'remove_unused_columns': False, 'group_by_length': False, 'predict_with_generate': True, 'do_train': True, 'load_best_model_at_end': True, 'metric_for_best_model': 'eval_wer', 'greater_is_better': False, 'generation_max_length': 510, 'generation_config': GenerationConfig {
+  "max_new_tokens": 510
+}
+, 'output_dir': "/home/jovyan/cache/checkpoints/dual_fusion_checkpoints/greekasr6-0/whisper-large-v3_Llama-Krikri-8B-Instruct/LoRA_1_['common_voice', 'fleurs', 'hparl', 'tedx', 'logotypographia']@Apr21_08-11", 'logging_dir': "/home/jovyan/cache/checkpoints/dual_fusion_checkpoints/greekasr6-0/whisper-large-v3_Llama-Krikri-8B-Instruct/LoRA_1_['common_voice', 'fleurs', 'hparl', 'tedx', 'logotypographia']@Apr21_08-11"}, 'early_stopping_patience': 15, 'project': False, 'gated_cross_attention': False, 'interleave_temperature': 1.2, 'downsamplers': 'injection_common', 'text_dropout': False, 'prompt_persona': 'Είσαι ένα κορυφαίο σύστημα αναγνώρισης ομιλίας (ASR) ειδικευμένο στην ελληνική γλώσσα. Ο ρόλος σου είναι να μετατρέπεις τον ήχο σε κείμενο με απόλυτη πιστότητα στις λέξεις που ειπώθηκαν (μην προσθέτεις ή αφαιρείς λέξεις όταν δεν ακούς κάτι καλά). Επιστρέφεις μόνο την απομαγνητοφώνηση', 'prompt_instruction': ' \nΆκουσε προσεκτικά τον παραπάνω ήχο και μετέτρεψε τον σε κείμενο. Επέστρεψε μόνο την απομαγνητοφώνηση.', '_wandb': {}}
+2026-04-21 08:11:47,934 INFO    MainThread:57016 [wandb_init.py:init():889] starting backend
+2026-04-21 08:11:48,662 INFO    MainThread:57016 [wandb_init.py:init():892] sending inform_init request
+2026-04-21 08:11:48,677 INFO    MainThread:57016 [wandb_init.py:init():900] backend started and connected
+2026-04-21 08:11:48,683 INFO    MainThread:57016 [wandb_init.py:init():970] updated telemetry
+2026-04-21 08:11:48,684 INFO    MainThread:57016 [wandb_init.py:init():994] communicating run to backend with 90.0 second timeout
+2026-04-21 08:11:49,373 INFO    MainThread:57016 [wandb_init.py:init():1041] starting run threads in backend
+2026-04-21 08:11:51,824 INFO    MainThread:57016 [wandb_run.py:_console_start():2521] atexit reg
+2026-04-21 08:11:51,824 INFO    MainThread:57016 [wandb_run.py:_redirect():2369] redirect: wrap_raw
+2026-04-21 08:11:51,824 INFO    MainThread:57016 [wandb_run.py:_redirect():2438] Wrapping output streams.
+2026-04-21 08:11:51,825 INFO    MainThread:57016 [wandb_run.py:_redirect():2461] Redirects installed.
+2026-04-21 08:11:51,841 INFO    MainThread:57016 [wandb_init.py:init():1081] run started, returning control to user process
+2026-04-21 08:12:00,235 INFO    MainThread:57016 [wandb_run.py:_finish():2287] finishing run chrissiargas-innoetics/Greek-ASR/gku79qru
+2026-04-21 08:12:00,237 INFO    MainThread:57016 [wandb_run.py:_atexit_cleanup():2486] got exitcode: 0
+2026-04-21 08:12:00,238 INFO    MainThread:57016 [wandb_run.py:_restore():2468] restore
+2026-04-21 08:12:00,238 INFO    MainThread:57016 [wandb_run.py:_restore():2474] restore done
+2026-04-21 08:12:01,129 INFO    MainThread:57016 [wandb_run.py:_footer_sync_info():3862] logging synced files

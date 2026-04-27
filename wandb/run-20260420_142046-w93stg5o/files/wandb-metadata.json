@@ -1,0 +1,28 @@
+{
+  "os":  "Linux-5.10.234-225.895.amzn2.x86_64-x86_64-with-glibc2.39",
+  "python":  "CPython 3.10.19",
+  "startedAt":  "2026-04-20T14:20:46.879995Z",
+  "args":  [
+    "--exp",
+    "1"
+  ],
+  "program":  "/home/jovyan/home/jovyan/greek-asr-master/speechLM_utils/train.py",
+  "codePath":  "speechLM_utils/train.py",
+  "codePathLocal":  "speechLM_utils/train.py",
+  "email":  "chrissiargas@gmail.com",
+  "root":  "/home/jovyan/home/jovyan/greek-asr-master",
+  "host":  "greekasr4-0",
+  "executable":  "/home/jovyan/miniconda/envs/nemo2/bin/python",
+  "cpu_count":  48,
+  "cpu_count_logical":  96,
+  "disk":  {
+    "/":  {
+      "total":  "7459416539136",
+      "used":  "836420919296"
+    }
+  },
+  "memory":  {
+    "total":  "1204529889280"
+  },
+  "writerId":  "jy52d96gdoj34xpdn1yhsmd950bjkhym"
+}

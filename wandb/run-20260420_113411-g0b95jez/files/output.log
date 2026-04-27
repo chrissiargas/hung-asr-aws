@@ -1,0 +1,71 @@
+Fetching 4 files: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:29<00:00,  7.36s/it]
+Loading checkpoint shards: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:39<00:00,  9.83s/it]
+------------------------------------------------------------------------------------------
+TOTAL PARAMS: 5,518,202,624
+TRAINABLE PARAMS: 168,666,880 (3.0566%)
+------------------------------
+ > LLM LoRA Params (Trainable):      6,815,744
+ > Whisper LoRA Params (Trainable): 0
+ > Downsampler Params (Frozen): 8,195,840
+ > Adapter Params (Frozen): 21,510,144
+ > Cross Attention Params (Trainable): 132,145,152
+ > CTC Head Params (Trainable): 0
+ > Audio Head Params (Trainable): 0
+ > Duration Token Params (Trainable): 0
+ > Base LLM (Frozen):            4,712,566,784
+ > Whisper (Frozen):     636,968,960
+==================================================
+
+
+--- Module Parameters ---
+Downsampler Params: 8,195,840
+Adapter Params: 21,510,144
+Cross-Attention Params: 132,145,152
+CTC Head Params: 0
+Audio Head Params: 0
+Duration Params: 0
+Whisper Params: 636,968,960
+LLM Params: 4,851,527,680
+----------------------------
+[34m[1mwandb[0m: [33mWARNING[0m The `run_name` is currently set to the same value as `TrainingArguments.output_dir`. If this was not intended, please specify a different run name by setting the `TrainingArguments.run_name` parameter.
+  0%|                                                                                                                             | 0/31500 [00:00<?, ?it/s]Traceback (most recent call last):
+
+An error occurred: list index out of range
+  File "/home/jovyan/home/jovyan/greek-asr-master/speechLM_utils/train.py", line 183, in train
+    setup(MODEL_TYPE, info, restart=RESTART, device=device, local_rank=local_rank)
+  File "/home/jovyan/home/jovyan/greek-asr-master/speechLM_utils/train.py", line 175, in setup
+    train_model(dataset, args, training_args, info, checkpoint_path, checkpoint_dir, writer, device)
+  File "/home/jovyan/home/jovyan/greek-asr-master/speechLM_utils/train.py", line 148, in train_model
+    trainer.train(resume_from_checkpoint=checkpoint_dir)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/transformers/trainer.py", line 2206, in train
+    return inner_training_loop(
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/transformers/trainer.py", line 2548, in _inner_training_loop
+    tr_loss_step = self.training_step(model, inputs, num_items_in_batch)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/transformers/trainer.py", line 3749, in training_step
+    loss = self.compute_loss(model, inputs, num_items_in_batch=num_items_in_batch)
+  File "/home/jovyan/home/jovyan/greek-asr-master/speechLM_utils/trainers.py", line 39, in compute_loss
+    outputs = model(**inputs, **kwargs)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1661, in forward
+    else self._run_ddp_forward(*inputs, **kwargs)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/torch/nn/parallel/distributed.py", line 1487, in _run_ddp_forward
+    return self.module(*inputs, **kwargs)  # type: ignore[index]
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1775, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1786, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/accelerate/utils/operations.py", line 819, in forward
+    return model_forward(*args, **kwargs)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/accelerate/utils/operations.py", line 807, in __call__
+    return convert_to_fp32(self.model_forward(*args, **kwargs))
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/torch/amp/autocast_mode.py", line 44, in decorate_autocast
+    return func(*args, **kwargs)
+  File "/home/jovyan/home/jovyan/greek-asr-master/speechLM_utils/dual_fusion_model.py", line 783, in forward
+    injection_audios, injection_masks = self.inject(audios,
+  File "/home/jovyan/home/jovyan/greek-asr-master/speechLM_utils/dual_fusion_model.py", line 696, in inject
+    if isinstance(self.injection_downsamplers[l], CIFireAdapter):
+IndexError: list index out of range
+  0%|                                                                                                                             | 0/31500 [00:12<?, ?it/s]

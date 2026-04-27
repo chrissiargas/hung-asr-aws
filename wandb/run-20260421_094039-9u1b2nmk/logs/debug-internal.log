@@ -1,0 +1,342 @@
+{"time":"2026-04-21T09:40:40.870074021Z","level":"INFO","msg":"stream: starting","core version":"0.23.1"}
+{"time":"2026-04-21T09:40:40.903796428Z","level":"ERROR","msg":"monitor: failed to initialize GPU resource: monitor: could not create portfile"}
+{"time":"2026-04-21T09:40:41.001518701Z","level":"INFO","msg":"stream: created new stream","id":"9u1b2nmk"}
+{"time":"2026-04-21T09:40:41.001585738Z","level":"INFO","msg":"handler: started","stream_id":"9u1b2nmk"}
+{"time":"2026-04-21T09:40:41.009516748Z","level":"INFO","msg":"stream: started","id":"9u1b2nmk"}
+{"time":"2026-04-21T09:40:41.009547652Z","level":"INFO","msg":"sender: started","stream_id":"9u1b2nmk"}
+{"time":"2026-04-21T09:40:41.009549242Z","level":"INFO","msg":"writer: started","stream_id":"9u1b2nmk"}
+{"time":"2026-04-21T10:26:01.100067895Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-21T10:26:01.242747938Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":50}
+{"time":"2026-04-21T10:26:03.284955229Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-21T10:26:03.319680037Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-21T11:10:11.491924333Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-21T11:10:11.512531836Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":101}
+{"time":"2026-04-21T11:10:14.039588553Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-21T11:10:14.079957636Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-21T11:54:24.36809481Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-21T11:54:24.394494801Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":152}
+{"time":"2026-04-21T11:54:26.610984634Z","level":"ERROR","msg":"HTTP error","status":409,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-21T11:54:26.641326683Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 409: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Error 1062 (23000): Duplicate entry '1n6kvpuc8d1wjcitfoyqbkk4cij2v2heifjfc2v37pqkojtpv60vaiy4va13u1gs' for key 'client_id_mappings.PRIMARY'\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-21T12:37:58.883242468Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-21T12:37:58.895910497Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":203}
+{"time":"2026-04-21T12:38:01.375698903Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-21T12:38:01.418110592Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-21T13:21:35.516752984Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-21T13:21:35.533725986Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":254}
+{"time":"2026-04-21T13:21:37.845737855Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-21T13:21:37.918709467Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-21T14:04:55.109829674Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-21T14:04:55.117744164Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":305}
+{"time":"2026-04-21T14:04:57.350192046Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-21T14:04:57.397040913Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-21T14:51:23.117730113Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-21T14:51:23.12784364Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":356}
+{"time":"2026-04-21T14:51:25.427913076Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-21T14:51:25.496837501Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-21T15:35:15.449672538Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-21T15:35:15.460037947Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":407}
+{"time":"2026-04-21T15:35:17.870838145Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-21T15:35:17.91543637Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-21T16:18:44.090838219Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-21T16:18:44.103655631Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":458}
+{"time":"2026-04-21T16:18:46.461688413Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-21T16:18:46.495386708Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-21T17:02:13.85590665Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-21T17:02:13.866471553Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":509}
+{"time":"2026-04-21T17:02:16.320043772Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-21T17:02:16.34875899Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-21T17:46:30.001167465Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-21T17:46:30.011782598Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":560}
+{"time":"2026-04-21T17:46:32.603764433Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-21T17:46:32.721016359Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-21T18:30:07.261564094Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-21T18:30:07.273460049Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":611}
+{"time":"2026-04-21T18:30:09.551828438Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-21T18:30:09.581194132Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-21T19:13:55.777212095Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-21T19:13:55.786654041Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":662}
+{"time":"2026-04-21T19:13:58.354215363Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-21T19:13:58.396185296Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-21T19:57:35.18806956Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-21T19:57:35.19756622Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":713}
+{"time":"2026-04-21T19:57:37.393169182Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-21T19:57:37.42733891Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-21T20:41:03.295408485Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-21T20:41:03.306041343Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":764}
+{"time":"2026-04-21T20:41:05.827285581Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-21T20:41:05.880815567Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-21T21:24:31.412329023Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-21T21:24:31.421155708Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":815}
+{"time":"2026-04-21T21:24:33.917387287Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-21T21:24:33.944728972Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-21T22:09:12.9896439Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-21T22:09:13.002770901Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":866}
+{"time":"2026-04-21T22:09:15.35726492Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-21T22:09:15.411138383Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-21T22:52:30.527842325Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-21T22:52:30.53853254Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":917}
+{"time":"2026-04-21T22:52:32.88126376Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-21T22:52:32.916625126Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-21T23:35:48.603893614Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-21T23:35:48.614647347Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":968}
+{"time":"2026-04-21T23:35:50.875623289Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-21T23:35:50.903849575Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T00:19:22.152144222Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T00:19:22.162389844Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":1019}
+{"time":"2026-04-22T00:19:24.795265999Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T00:19:24.824872716Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T01:02:55.669535506Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T01:02:55.679441033Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":1070}
+{"time":"2026-04-22T01:02:58.033340854Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T01:02:58.061671009Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T01:47:04.097330901Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T01:47:04.102545407Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":1121}
+{"time":"2026-04-22T01:47:06.447686198Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T01:47:06.476396608Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T02:31:00.503131414Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T02:31:00.511003521Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":1172}
+{"time":"2026-04-22T02:31:03.177913258Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T02:31:03.217106089Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T03:14:40.509335177Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T03:14:40.517569866Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":1223}
+{"time":"2026-04-22T03:14:42.930305342Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T03:14:42.974732333Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T03:56:56.817751276Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"An internal error occurred. Please contact support.\"}"}
+{"time":"2026-04-22T03:58:24.726007095Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T03:58:24.73468828Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":1274}
+{"time":"2026-04-22T03:58:28.605110582Z","level":"ERROR","msg":"HTTP error","status":409,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T03:58:28.628634555Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 409: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Error 1062 (23000): Duplicate entry '87xw69hzgopjdn8ezp7qyezg52kre4v9kypofkjw6nyqaelyyzz0jdcli6978v0b' for key 'client_id_mappings.PRIMARY'\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T04:42:40.590508333Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T04:42:40.601680031Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":1325}
+{"time":"2026-04-22T04:42:43.338916701Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T04:42:43.367355238Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T05:26:14.653363643Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T05:26:14.699141172Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":1376}
+{"time":"2026-04-22T05:26:17.089547099Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T05:26:17.119357591Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T05:44:47.46779842Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T05:45:45.55048836Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T05:47:21.391672201Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T05:49:28.651799602Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T05:50:32.556954345Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T05:51:49.589889473Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T05:52:52.728281786Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T05:53:51.983152261Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T05:55:01.949553152Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T05:57:48.171249663Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T05:58:45.50894338Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T05:59:45.791440297Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:04:13.202458955Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:05:18.892511138Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:06:36.390109453Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:08:51.961704215Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:10:21.322665872Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T06:10:21.330135889Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":1427}
+{"time":"2026-04-22T06:10:24.569539601Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T06:10:24.592769716Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T06:13:49.795528996Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:14:53.054951447Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:15:57.229035828Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:16:56.289629663Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:18:01.520700602Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:20:09.335326523Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:21:06.528203211Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:22:27.824838942Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:25:12.94572428Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:27:02.745847622Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:28:29.957943722Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:31:37.383794372Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:33:56.104478026Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:34:53.708986247Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:36:46.584404647Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:37:44.072704319Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:38:43.858757015Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:40:35.636255076Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:42:27.567052612Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:43:56.775274278Z","level":"INFO","msg":"api: retrying HTTP error","status":429,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"rate limit exceeded: per_run limit on filestream requests\"}"}
+{"time":"2026-04-22T06:46:00.431357718Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:47:00.187807891Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:47:57.240282797Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:48:57.156790884Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:50:44.645834363Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:51:42.495786609Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:54:13.911588822Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T06:54:13.918073542Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":1478}
+{"time":"2026-04-22T06:54:17.075458213Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T06:54:17.109319384Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T06:54:19.687128352Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:55:19.627114336Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T06:56:18.073051431Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T07:03:20.992595547Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T07:05:45.706690562Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T07:06:43.101575566Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T07:09:55.005717629Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T07:37:42.752113642Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T07:37:42.759748075Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":1529}
+{"time":"2026-04-22T07:37:45.222148113Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T07:37:45.245911279Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T08:21:37.212665918Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T08:21:37.220766752Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":1580}
+{"time":"2026-04-22T08:21:39.824454284Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T08:21:39.86298454Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T08:51:01.729297215Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T09:06:26.525975192Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T09:06:26.539191755Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":1631}
+{"time":"2026-04-22T09:06:29.897286028Z","level":"ERROR","msg":"HTTP error","status":409,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T09:06:29.924126657Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 409: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Error 1062 (23000): Duplicate entry 'q8y7fhwjwxzuxsf3l2n8ijtyold62f2jd9i82es5v3dmukjdbl1g3y2t5ovjyzxf' for key 'client_id_mappings.PRIMARY'\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T09:28:35.313600232Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T09:50:21.210041951Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T09:50:21.21719547Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":1682}
+{"time":"2026-04-22T09:50:23.784821894Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T09:50:23.826201064Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T10:18:55.472452073Z","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-04-22T10:34:58.33770462Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T10:34:58.348770918Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":1733}
+{"time":"2026-04-22T10:35:00.912051214Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T10:35:00.948793919Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T11:18:54.503401994Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T11:18:54.513699088Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":1784}
+{"time":"2026-04-22T11:18:56.805267668Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T11:18:56.838567028Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T12:02:30.211403067Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T12:02:30.2267495Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":1835}
+{"time":"2026-04-22T12:02:32.795342171Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T12:02:32.856786951Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T12:46:33.291706954Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T12:46:33.299751743Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":1886}
+{"time":"2026-04-22T12:46:39.256244326Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.writeManifest: unable to create temporary file: open tmp/tmpfile-1873361328: no such file or directory","artifactID":""}
+{"time":"2026-04-22T13:29:59.464246957Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T13:29:59.493207501Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":1937}
+{"time":"2026-04-22T13:30:01.875840749Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T13:30:01.91009298Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T14:13:22.753003822Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T14:13:22.764776813Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":1988}
+{"time":"2026-04-22T14:13:26.135061571Z","level":"ERROR","msg":"HTTP error","status":409,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T14:13:26.169419637Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 409: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Error 1062 (23000): Duplicate entry 'wfwbeby4ubzczjjy4mzvmcpsiln3ox5fl2moxq9wfb76av3s2sumh3b0n9cc7isu' for key 'client_id_mappings.PRIMARY'\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T14:56:49.096043713Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T14:56:49.105826845Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":2039}
+{"time":"2026-04-22T14:56:57.351015849Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T14:56:57.404923867Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T15:40:56.139096866Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T15:40:56.153028816Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":2090}
+{"time":"2026-04-22T15:40:58.651469816Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T15:40:58.705159059Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T16:24:43.103803053Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T16:24:43.111046421Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":2141}
+{"time":"2026-04-22T16:24:45.573742334Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T16:24:45.601147683Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T17:08:44.5301949Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T17:08:44.540068022Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":2192}
+{"time":"2026-04-22T17:08:46.757737533Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T17:08:46.789934697Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T17:52:10.802531325Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T17:52:10.825796741Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":2243}
+{"time":"2026-04-22T17:52:14.841447287Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.writeManifest: unable to create temporary file: open tmp/tmpfile-4076761150: no such file or directory","artifactID":""}
+{"time":"2026-04-22T18:35:38.628458298Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T18:35:38.644009006Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":2294}
+{"time":"2026-04-22T18:35:40.774077785Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T18:35:40.798850756Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T19:19:37.005548568Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T19:19:37.023942665Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":2345}
+{"time":"2026-04-22T19:19:39.217856767Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T19:19:39.252426575Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T20:03:09.32558299Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T20:03:09.341304471Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":2396}
+{"time":"2026-04-22T20:03:12.70073593Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.writeManifest: unable to create temporary file: open tmp/tmpfile-11224176: no such file or directory","artifactID":""}
+{"time":"2026-04-22T20:46:45.451770401Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T20:46:45.462784965Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":2447}
+{"time":"2026-04-22T20:46:47.974551012Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T20:46:48.008797441Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T21:30:39.877229466Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T21:30:39.896776487Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":2498}
+{"time":"2026-04-22T21:30:43.121527083Z","level":"ERROR","msg":"HTTP error","status":409,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T21:30:43.174237151Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 409: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Error 1062 (23000): Duplicate entry 'wvtmnyeurani8y66w6rkm2z682u6zv3iu6l5nfltq680cog1zn1riamwu28rl5h3' for key 'client_id_mappings.PRIMARY'\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T22:14:20.030388083Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T22:14:20.039437842Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":2549}
+{"time":"2026-04-22T22:14:22.296549867Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T22:14:22.327698459Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T22:58:20.73842034Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T22:58:20.747933113Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":2600}
+{"time":"2026-04-22T22:58:23.174382592Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T22:58:23.270220599Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-22T23:42:18.285529061Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-22T23:42:18.30715841Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":2651}
+{"time":"2026-04-22T23:42:21.045130299Z","level":"ERROR","msg":"HTTP error","status":409,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-22T23:42:21.075170219Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 409: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Error 1062 (23000): Duplicate entry 'sjffp5gofc5wu2550kqpga8vc1j2t2tngtg2lgj3s6ogq4ivn2qqzzfvb9ektr1t' for key 'client_id_mappings.PRIMARY'\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-23T00:26:05.670516889Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-23T00:26:05.693332095Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":2702}
+{"time":"2026-04-23T00:26:08.141022552Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-23T00:26:08.205933043Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-23T01:09:49.851760509Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-23T01:09:49.861360804Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":2753}
+{"time":"2026-04-23T01:09:52.395830493Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-23T01:09:52.429640155Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-23T01:53:36.368138771Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-23T01:53:36.384088367Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":2804}
+{"time":"2026-04-23T01:53:39.597996574Z","level":"ERROR","msg":"HTTP error","status":409,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-23T01:53:39.645181558Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 409: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Error 1062 (23000): Duplicate entry 'yd6i5ho9cy9pe0hdj7o9x66d7wdjv07irjg107r925dsiuaz71uf09uyg3ibg3hk' for key 'client_id_mappings.PRIMARY'\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-23T02:37:01.553213506Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-23T02:37:01.56228965Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":2855}
+{"time":"2026-04-23T02:37:04.162603719Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-23T02:37:04.21321612Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-23T03:20:32.114069387Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-23T03:20:32.130708527Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":2906}
+{"time":"2026-04-23T03:20:34.410335065Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-23T03:20:34.450036586Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-23T04:04:33.595484367Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-23T04:04:33.6017522Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":2957}
+{"time":"2026-04-23T04:04:36.07571481Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-23T04:04:36.1028572Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-23T04:48:44.557230951Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-23T04:48:44.572342293Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":3008}
+{"time":"2026-04-23T04:48:46.940699416Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-23T04:48:46.965143958Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-23T05:33:03.435950194Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-23T05:33:03.446126305Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":3059}
+{"time":"2026-04-23T05:33:05.954986691Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-23T05:33:05.98442971Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-23T06:16:38.623023035Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-23T06:16:38.634995367Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":3110}
+{"time":"2026-04-23T06:16:40.867475423Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-23T06:16:40.888461339Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-23T07:00:04.123085684Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-23T07:00:04.129931409Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":3161}
+{"time":"2026-04-23T07:00:06.460053098Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-23T07:00:06.483786542Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-23T07:44:15.325990674Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-23T07:44:15.33805569Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":3212}
+{"time":"2026-04-23T07:44:18.009913415Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-23T07:44:18.03336299Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-23T08:28:25.289135221Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-23T08:28:25.296862041Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":3263}
+{"time":"2026-04-23T08:28:27.800669397Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-23T08:28:27.825531255Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-23T09:11:46.883283121Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-23T09:11:46.89278586Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":3314}
+{"time":"2026-04-23T09:11:49.594055399Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-23T09:11:49.630408885Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-23T09:55:22.725263951Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-23T09:55:22.733436702Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":3365}
+{"time":"2026-04-23T09:55:25.295824671Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-23T09:55:25.325606644Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-23T10:38:56.548203045Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-23T10:38:56.559352779Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":3416}
+{"time":"2026-04-23T10:38:58.861927063Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-23T10:38:58.907197034Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-23T11:22:18.277623626Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-23T11:22:18.290021922Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":3467}
+{"time":"2026-04-23T11:22:21.161906996Z","level":"ERROR","msg":"HTTP error","status":409,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-23T11:22:21.193714911Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 409: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Error 1062 (23000): Duplicate entry 'opklj670ljc6wo7v1iz4jqi55jsyxufblpvr79yt1s4jida6ueyerbl6sgw2nrv4' for key 'client_id_mappings.PRIMARY'\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-23T12:06:12.970554451Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-23T12:06:12.97894832Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":3518}
+{"time":"2026-04-23T12:06:16.288781128Z","level":"ERROR","msg":"HTTP error","status":409,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-23T12:06:16.314374668Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 409: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Error 1062 (23000): Duplicate entry 'rwq1cgedbt8bz9t30b69c45ry27vmvwjmv06ddg680iuga4fegyyj5n860ath9kp' for key 'client_id_mappings.PRIMARY'\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-23T12:32:27.845619845Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/files/chrissiargas-innoetics/Greek-ASR/9u1b2nmk/file_stream\": read tcp 100.65.88.228:54784->34.8.250.101:443: read: connection reset by peer"}
+{"time":"2026-04-23T12:49:43.142588785Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-23T12:49:43.155296192Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":3569}
+{"time":"2026-04-23T12:49:45.60073675Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-23T12:49:45.630537884Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-23T13:33:07.987621406Z","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": unexpected EOF"}
+{"time":"2026-04-23T13:33:07.995087311Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":3620}
+{"time":"2026-04-23T13:33:10.589365427Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-23T13:33:10.613945565Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}

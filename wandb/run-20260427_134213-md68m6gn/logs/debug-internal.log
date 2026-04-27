@@ -1,0 +1,13 @@
+{"time":"2026-04-27T13:42:13.504227055Z","level":"INFO","msg":"stream: starting","core version":"0.23.1"}
+{"time":"2026-04-27T13:42:13.535708347Z","level":"ERROR","msg":"monitor: failed to initialize GPU resource: monitor: could not create portfile"}
+{"time":"2026-04-27T13:42:13.60524761Z","level":"INFO","msg":"stream: created new stream","id":"md68m6gn"}
+{"time":"2026-04-27T13:42:13.605304331Z","level":"INFO","msg":"handler: started","stream_id":"md68m6gn"}
+{"time":"2026-04-27T13:42:13.60755125Z","level":"INFO","msg":"stream: started","id":"md68m6gn"}
+{"time":"2026-04-27T13:42:13.607566213Z","level":"INFO","msg":"writer: started","stream_id":"md68m6gn"}
+{"time":"2026-04-27T13:42:13.607572595Z","level":"INFO","msg":"sender: started","stream_id":"md68m6gn"}
+{"time":"2026-04-27T13:42:36.921027436Z","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2026-04-27T13:42:37.110092891Z","level":"INFO","msg":"handler: operation stats","stats":{}}
+{"time":"2026-04-27T13:42:37.11440108Z","level":"INFO","msg":"stream: closing","id":"md68m6gn"}
+{"time":"2026-04-27T13:42:37.114414598Z","level":"INFO","msg":"handler: closed","stream_id":"md68m6gn"}
+{"time":"2026-04-27T13:42:37.116596618Z","level":"INFO","msg":"sender: closed","stream_id":"md68m6gn"}
+{"time":"2026-04-27T13:42:37.116604134Z","level":"INFO","msg":"stream: closed","id":"md68m6gn"}

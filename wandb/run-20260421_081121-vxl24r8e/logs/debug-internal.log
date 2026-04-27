@@ -1,0 +1,13 @@
+{"time":"2026-04-21T08:11:21.477079812Z","level":"INFO","msg":"stream: starting","core version":"0.23.1"}
+{"time":"2026-04-21T08:11:21.506932677Z","level":"ERROR","msg":"monitor: failed to initialize GPU resource: monitor: could not create portfile"}
+{"time":"2026-04-21T08:11:21.58472665Z","level":"INFO","msg":"stream: created new stream","id":"vxl24r8e"}
+{"time":"2026-04-21T08:11:21.584793908Z","level":"INFO","msg":"handler: started","stream_id":"vxl24r8e"}
+{"time":"2026-04-21T08:11:21.586369249Z","level":"INFO","msg":"stream: started","id":"vxl24r8e"}
+{"time":"2026-04-21T08:11:21.586376555Z","level":"INFO","msg":"writer: started","stream_id":"vxl24r8e"}
+{"time":"2026-04-21T08:11:21.586382059Z","level":"INFO","msg":"sender: started","stream_id":"vxl24r8e"}
+{"time":"2026-04-21T08:11:57.478465326Z","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2026-04-21T08:11:57.669636222Z","level":"INFO","msg":"handler: operation stats","stats":{}}
+{"time":"2026-04-21T08:11:57.672996083Z","level":"INFO","msg":"stream: closing","id":"vxl24r8e"}
+{"time":"2026-04-21T08:11:57.673020482Z","level":"INFO","msg":"handler: closed","stream_id":"vxl24r8e"}
+{"time":"2026-04-21T08:11:57.674265169Z","level":"INFO","msg":"sender: closed","stream_id":"vxl24r8e"}
+{"time":"2026-04-21T08:11:57.674672912Z","level":"INFO","msg":"stream: closed","id":"vxl24r8e"}

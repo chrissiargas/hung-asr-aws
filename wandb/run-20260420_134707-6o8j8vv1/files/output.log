@@ -1,0 +1,30 @@
+--- STARTING STAGE 1: ADAPTER ALIGNMENT ---
+Loading checkpoint shards: 100%|██████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:30<00:00,  7.68s/it]
+------------------------------------------------------------------------------------------
+TOTAL PARAMS: 5,511,386,880
+TRAINABLE PARAMS: 161,851,136 (2.9367%)
+------------------------------
+ > LLM LoRA Params (Trainable):      0
+ > Whisper LoRA Params (Trainable): 0
+ > Downsampler Params (Trainable): 8,195,840
+ > Adapter Params (Trainable): 21,510,144
+ > Cross Attention Params (Trainable): 132,145,152
+ > CTC Head Params (Trainable): 0
+ > Audio Head Params (Trainable): 0
+ > Duration Token Params (Trainable): 0
+ > Base LLM (Frozen):            4,712,566,784
+ > Whisper (Frozen):     636,968,960
+==================================================
+
+
+--- Module Parameters ---
+Downsampler Params: 8,195,840
+Adapter Params: 21,510,144
+Cross-Attention Params: 132,145,152
+CTC Head Params: 0
+Audio Head Params: 0
+Duration Params: 0
+Whisper Params: 636,968,960
+LLM Params: 4,844,711,936
+----------------------------
+  0%|                                                                                                                  | 4/44130 [00:20<44:59:02,  3.67s/it]

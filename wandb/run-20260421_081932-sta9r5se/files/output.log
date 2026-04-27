@@ -1,0 +1,168 @@
+Loading checkpoint shards: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:29<00:00,  7.33s/it]
+------------------------------------------------------------------------------------------
+TOTAL PARAMS: 5,539,700,480
+TRAINABLE PARAMS: 190,164,736 (3.4328%)
+------------------------------
+ > LLM LoRA Params (Trainable):      6,815,744
+ > Whisper LoRA Params (Trainable): 0
+ > Downsampler Params (Frozen): 8,195,840
+ > Adapter Params (Frozen): 43,008,000
+ > Cross Attention Params (Trainable): 132,145,152
+ > CTC Head Params (Trainable): 0
+ > Audio Head Params (Trainable): 0
+ > Duration Token Params (Trainable): 0
+ > Base LLM (Frozen):            4,712,566,784
+ > Whisper (Frozen):     636,968,960
+==================================================
+
+
+--- Module Parameters ---
+Downsampler Params: 8,195,840
+Adapter Params: 43,008,000
+Cross-Attention Params: 132,145,152
+CTC Head Params: 0
+Audio Head Params: 0
+Duration Params: 0
+Whisper Params: 636,968,960
+LLM Params: 4,851,527,680
+----------------------------
+[34m[1mwandb[0m: [33mWARNING[0m The `run_name` is currently set to the same value as `TrainingArguments.output_dir`. If this was not intended, please specify a different run name by setting the `TrainingArguments.run_name` parameter.
+                                                                                                                                                                                        
+
+{'loss': 9.1027, 'grad_norm': 56.8091926574707, 'learning_rate': 2.0000000000000003e-06, 'loss/total_loss': 2.229348564147949, 'loss/lm_loss': 2.229348564147949, 'epoch': 0.0}
+{'loss': 6.6183, 'grad_norm': 14.669478416442871, 'learning_rate': 4.5e-06, 'loss/total_loss': 1.6040897369384766, 'loss/lm_loss': 1.6040897369384766, 'epoch': 0.0}
+{'loss': 6.0526, 'grad_norm': 9.54831314086914, 'learning_rate': 7.000000000000001e-06, 'loss/total_loss': 1.563004970550537, 'loss/lm_loss': 1.563004970550537, 'epoch': 0.01}
+{'loss': 5.6719, 'grad_norm': 9.615017890930176, 'learning_rate': 9.5e-06, 'loss/total_loss': 1.483967399597168, 'loss/lm_loss': 1.483967399597168, 'epoch': 0.01}
+{'loss': 5.3687, 'grad_norm': 23.323307037353516, 'learning_rate': 1.2e-05, 'loss/total_loss': 1.348362636566162, 'loss/lm_loss': 1.348362636566162, 'epoch': 0.01}
+{'loss': 5.0562, 'grad_norm': 18.550724029541016, 'learning_rate': 1.45e-05, 'loss/total_loss': 1.2454459190368652, 'loss/lm_loss': 1.2454459190368652, 'epoch': 0.01}
+{'loss': 4.6755, 'grad_norm': 12.547597885131836, 'learning_rate': 1.7000000000000003e-05, 'loss/total_loss': 1.168712329864502, 'loss/lm_loss': 1.168712329864502, 'epoch': 0.02}
+{'loss': 4.5251, 'grad_norm': 14.648985862731934, 'learning_rate': 1.9500000000000003e-05, 'loss/total_loss': 1.1131468772888184, 'loss/lm_loss': 1.1131468772888184, 'epoch': 0.02}
+{'loss': 4.1986, 'grad_norm': 12.204564094543457, 'learning_rate': 2.2000000000000003e-05, 'loss/total_loss': 1.044857120513916, 'loss/lm_loss': 1.044857120513916, 'epoch': 0.02}
+{'loss': 3.8633, 'grad_norm': 8.929943084716797, 'learning_rate': 2.45e-05, 'loss/total_loss': 0.9700935363769532, 'loss/lm_loss': 0.9700935363769532, 'epoch': 0.02}
+{'loss': 3.7785, 'grad_norm': 7.88478946685791, 'learning_rate': 2.7000000000000002e-05, 'loss/total_loss': 0.9436675071716308, 'loss/lm_loss': 0.9436675071716308, 'epoch': 0.02}
+{'loss': 3.6658, 'grad_norm': 9.92829704284668, 'learning_rate': 2.95e-05, 'loss/total_loss': 0.8761902809143066, 'loss/lm_loss': 0.8761902809143066, 'epoch': 0.03}
+{'loss': 3.4006, 'grad_norm': 9.34482192993164, 'learning_rate': 3.2000000000000005e-05, 'loss/total_loss': 0.8429161071777344, 'loss/lm_loss': 0.8429161071777344, 'epoch': 0.03}
+{'loss': 3.3475, 'grad_norm': 8.348882675170898, 'learning_rate': 3.45e-05, 'loss/total_loss': 0.8492848396301269, 'loss/lm_loss': 0.8492848396301269, 'epoch': 0.03}
+{'loss': 3.2789, 'grad_norm': 6.890514850616455, 'learning_rate': 3.7e-05, 'loss/total_loss': 0.8337939262390137, 'loss/lm_loss': 0.8337939262390137, 'epoch': 0.03}
+{'loss': 3.129, 'grad_norm': 8.030402183532715, 'learning_rate': 3.9500000000000005e-05, 'loss/total_loss': 0.7950998306274414, 'loss/lm_loss': 0.7950998306274414, 'epoch': 0.04}
+{'loss': 3.1253, 'grad_norm': 6.42946195602417, 'learning_rate': 4.2e-05, 'loss/total_loss': 0.7720548629760742, 'loss/lm_loss': 0.7720548629760742, 'epoch': 0.04}
+{'loss': 2.9854, 'grad_norm': 5.053134441375732, 'learning_rate': 4.4500000000000004e-05, 'loss/total_loss': 0.7536505699157715, 'loss/lm_loss': 0.7536505699157715, 'epoch': 0.04}
+{'loss': 2.9148, 'grad_norm': 5.33549690246582, 'learning_rate': 4.7e-05, 'loss/total_loss': 0.7110544681549072, 'loss/lm_loss': 0.7110544681549072, 'epoch': 0.04}
+{'loss': 2.8539, 'grad_norm': 7.860110282897949, 'learning_rate': 4.9500000000000004e-05, 'loss/total_loss': 0.68949875831604, 'loss/lm_loss': 0.68949875831604, 'epoch': 0.05}
+{'loss': 2.7598, 'grad_norm': 5.1669816970825195, 'learning_rate': 5.2000000000000004e-05, 'loss/total_loss': 0.6917649745941162, 'loss/lm_loss': 0.6917649745941162, 'epoch': 0.05}
+{'loss': 2.6764, 'grad_norm': 10.402013778686523, 'learning_rate': 5.45e-05, 'loss/total_loss': 0.7145300388336182, 'loss/lm_loss': 0.7145300388336182, 'epoch': 0.05}
+{'loss': 2.6618, 'grad_norm': 6.214335918426514, 'learning_rate': 5.6999999999999996e-05, 'loss/total_loss': 0.6826510906219483, 'loss/lm_loss': 0.6826510906219483, 'epoch': 0.05}
+{'loss': 2.6619, 'grad_norm': 5.548105239868164, 'learning_rate': 5.95e-05, 'loss/total_loss': 0.6474674224853516, 'loss/lm_loss': 0.6474674224853516, 'epoch': 0.05}
+{'loss': 2.5755, 'grad_norm': 6.132127285003662, 'learning_rate': 6.2e-05, 'loss/total_loss': 0.6627695083618164, 'loss/lm_loss': 0.6627695083618164, 'epoch': 0.06}
+{'loss': 2.5818, 'grad_norm': 7.123579502105713, 'learning_rate': 6.450000000000001e-05, 'loss/total_loss': 0.6071477413177491, 'loss/lm_loss': 0.6071477413177491, 'epoch': 0.06}
+{'loss': 2.5517, 'grad_norm': 5.19824743270874, 'learning_rate': 6.7e-05, 'loss/total_loss': 0.6298011302947998, 'loss/lm_loss': 0.6298011302947998, 'epoch': 0.06}
+{'loss': 2.5181, 'grad_norm': 4.867666244506836, 'learning_rate': 6.95e-05, 'loss/total_loss': 0.6356277942657471, 'loss/lm_loss': 0.6356277942657471, 'epoch': 0.06}
+{'loss': 2.4153, 'grad_norm': 6.5467753410339355, 'learning_rate': 7.2e-05, 'loss/total_loss': 0.6196220397949219, 'loss/lm_loss': 0.6196220397949219, 'epoch': 0.07}
+{'loss': 2.3354, 'grad_norm': 7.093034744262695, 'learning_rate': 7.450000000000001e-05, 'loss/total_loss': 0.5742501735687255, 'loss/lm_loss': 0.5742501735687255, 'epoch': 0.07}
+{'loss': 2.3237, 'grad_norm': 5.88934850692749, 'learning_rate': 7.7e-05, 'loss/total_loss': 0.6520714282989502, 'loss/lm_loss': 0.6520714282989502, 'epoch': 0.07}
+{'loss': 2.2853, 'grad_norm': 5.518540382385254, 'learning_rate': 7.950000000000001e-05, 'loss/total_loss': 0.584092092514038, 'loss/lm_loss': 0.584092092514038, 'epoch': 0.07}
+{'loss': 2.2341, 'grad_norm': 5.822033405303955, 'learning_rate': 8.2e-05, 'loss/total_loss': 0.5933145523071289, 'loss/lm_loss': 0.5933145523071289, 'epoch': 0.07}
+{'loss': 2.1137, 'grad_norm': 4.969022750854492, 'learning_rate': 8.450000000000001e-05, 'loss/total_loss': 0.5103236198425293, 'loss/lm_loss': 0.5103236198425293, 'epoch': 0.08}
+{'loss': 2.0696, 'grad_norm': 6.833336353302002, 'learning_rate': 8.7e-05, 'loss/total_loss': 0.48011131286621095, 'loss/lm_loss': 0.48011131286621095, 'epoch': 0.08}
+{'loss': 1.9605, 'grad_norm': 6.266422748565674, 'learning_rate': 8.950000000000001e-05, 'loss/total_loss': 0.4924477577209473, 'loss/lm_loss': 0.4924477577209473, 'epoch': 0.08}
+{'loss': 1.8533, 'grad_norm': 5.4796857833862305, 'learning_rate': 9.200000000000001e-05, 'loss/total_loss': 0.47849693298339846, 'loss/lm_loss': 0.47849693298339846, 'epoch': 0.08}
+{'loss': 1.8255, 'grad_norm': 8.902469635009766, 'learning_rate': 9.449999999999999e-05, 'loss/total_loss': 0.48235421180725097, 'loss/lm_loss': 0.48235421180725097, 'epoch': 0.09}
+{'loss': 1.7047, 'grad_norm': 4.033727169036865, 'learning_rate': 9.7e-05, 'loss/total_loss': 0.42482867240905764, 'loss/lm_loss': 0.42482867240905764, 'epoch': 0.09}
+{'loss': 1.569, 'grad_norm': 5.4317731857299805, 'learning_rate': 9.95e-05, 'loss/total_loss': 0.40781292915344236, 'loss/lm_loss': 0.40781292915344236, 'epoch': 0.09}
+{'loss': 1.4875, 'grad_norm': 5.291850566864014, 'learning_rate': 9.99969740525002e-05, 'loss/total_loss': 0.370881986618042, 'loss/lm_loss': 0.370881986618042, 'epoch': 0.09}
+{'loss': 1.4646, 'grad_norm': 9.065436363220215, 'learning_rate': 9.999319161812542e-05, 'loss/total_loss': 0.3769593477249146, 'loss/lm_loss': 0.3769593477249146, 'epoch': 0.1}
+{'loss': 1.3228, 'grad_norm': 3.8207051753997803, 'learning_rate': 9.998940918375067e-05, 'loss/total_loss': 0.3404107570648193, 'loss/lm_loss': 0.3404107570648193, 'epoch': 0.1}
+{'loss': 1.2997, 'grad_norm': 4.691307067871094, 'learning_rate': 9.998562674937591e-05, 'loss/total_loss': 0.32676944732666013, 'loss/lm_loss': 0.32676944732666013, 'epoch': 0.1}
+{'loss': 1.1434, 'grad_norm': 4.248715400695801, 'learning_rate': 9.998184431500114e-05, 'loss/total_loss': 0.2755600929260254, 'loss/lm_loss': 0.2755600929260254, 'epoch': 0.1}
+{'loss': 1.2123, 'grad_norm': 5.307338714599609, 'learning_rate': 9.997806188062637e-05, 'loss/total_loss': 0.30676367282867434, 'loss/lm_loss': 0.30676367282867434, 'epoch': 0.1}
+{'loss': 1.1481, 'grad_norm': 4.072216033935547, 'learning_rate': 9.997427944625162e-05, 'loss/total_loss': 0.2537191867828369, 'loss/lm_loss': 0.2537191867828369, 'epoch': 0.11}
+{'loss': 1.1621, 'grad_norm': 4.793946743011475, 'learning_rate': 9.997049701187685e-05, 'loss/total_loss': 0.2728032350540161, 'loss/lm_loss': 0.2728032350540161, 'epoch': 0.11}
+{'loss': 1.063, 'grad_norm': 5.587481498718262, 'learning_rate': 9.996671457750208e-05, 'loss/total_loss': 0.264778733253479, 'loss/lm_loss': 0.264778733253479, 'epoch': 0.11}
+{'loss': 0.9528, 'grad_norm': 6.176570415496826, 'learning_rate': 9.996293214312732e-05, 'loss/total_loss': 0.2535335302352905, 'loss/lm_loss': 0.2535335302352905, 'epoch': 0.11}
+  File "/home/jovyan/home/jovyan/greek-asr-master/speechLM_utils/train.py", line 186, in train████████████████████████████████████████████████████████| 167/167 [19:24<00:00,  9.11s/it]
+An error occurred: libsamplerate not found
+    setup(MODEL_TYPE, info, restart=RESTART, device=device, local_rank=local_rank, exp=exp)
+  File "/home/jovyan/home/jovyan/greek-asr-master/speechLM_utils/train.py", line 178, in setup
+    train_model(dataset, args, training_args, info, checkpoint_path, checkpoint_dir, writer, device)
+  File "/home/jovyan/home/jovyan/greek-asr-master/speechLM_utils/train.py", line 150, in train_model
+    trainer.train(resume_from_checkpoint=checkpoint_dir)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/transformers/trainer.py", line 2206, in train
+    return inner_training_loop(
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/transformers/trainer.py", line 2623, in _inner_training_loop
+    self._maybe_log_save_evaluate(
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/transformers/trainer.py", line 3096, in _maybe_log_save_evaluate
+    metrics = self._evaluate(trial, ignore_keys_for_eval)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/transformers/trainer.py", line 3045, in _evaluate
+    metrics = self.evaluate(ignore_keys=ignore_keys_for_eval)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/transformers/trainer_seq2seq.py", line 191, in evaluate
+    return super().evaluate(eval_dataset, ignore_keys=ignore_keys, metric_key_prefix=metric_key_prefix)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/transformers/trainer.py", line 4199, in evaluate
+    output = eval_loop(
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/transformers/trainer.py", line 4489, in evaluation_loop
+    metrics = self.compute_metrics(
+  File "/home/jovyan/home/jovyan/greek-asr-master/speechLM_utils/metrics.py", line 42, in compute_metrics
+    wandb.log({"validation/sample_predictions": table}, step=current_step, commit=False)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 400, in wrapper
+    return func(self, *args, **kwargs)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 458, in wrapper_fn
+    return func(self, *args, **kwargs)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 445, in wrapper
+    return func(self, *args, **kwargs)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 2034, in log
+    self._log(data=data, step=step, commit=commit)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 1745, in _log
+    self._partial_history_callback(data, step, commit)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 400, in wrapper
+    return func(self, *args, **kwargs)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 1573, in _partial_history_callback
+    self._backend.interface.publish_partial_history(
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/interface/interface.py", line 689, in publish_partial_history
+    data = history_dict_to_json(run, data, step=user_step, ignore_copy_err=True)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/data_types/utils.py", line 54, in history_dict_to_json
+    payload[key] = val_to_json(
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/data_types/utils.py", line 151, in val_to_json
+    _log_table_artifact(val, key, run)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/data_types/utils.py", line 202, in _log_table_artifact
+    run.log_artifact(art)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 400, in wrapper
+    return func(self, *args, **kwargs)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 458, in wrapper_fn
+    return func(self, *args, **kwargs)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 445, in wrapper
+    return func(self, *args, **kwargs)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 3166, in log_artifact
+    return self._log_artifact(
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 3311, in _log_artifact
+    self._assert_can_log_artifact(artifact)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 3374, in _assert_can_log_artifact
+    expected_type = Artifact._expected_type(
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/artifacts/artifact.py", line 2627, in _expected_type
+    from ._generated import ARTIFACT_TYPE_GQL, ArtifactType
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/artifacts/_generated/__init__.py", line 151, in <module>
+    from .add_aliases import AddAliases
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/artifacts/_generated/add_aliases.py", line 11, in <module>
+    class AddAliases(GQLResult):
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/pydantic/_internal/_model_construction.py", line 242, in __new__
+    set_model_fields(cls, config_wrapper=config_wrapper, ns_resolver=ns_resolver)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/pydantic/_internal/_model_construction.py", line 566, in set_model_fields
+    fields, class_vars = collect_model_fields(cls, config_wrapper, ns_resolver, typevars_map=typevars_map)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/pydantic/_internal/_fields.py", line 411, in collect_model_fields
+    _update_fields_from_docstrings(cls, fields)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/pydantic/_internal/_fields.py", line 114, in _update_fields_from_docstrings
+    fields_docs = extract_docstrings_from_cls(cls, use_inspect=use_inspect)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/pydantic/_internal/_docs_extraction.py", line 104, in extract_docstrings_from_cls
+    source = _extract_source_from_frame(cls)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/pydantic/_internal/_docs_extraction.py", line 56, in _extract_source_from_frame
+    if inspect.getmodule(frame) is inspect.getmodule(cls):
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/inspect.py", line 869, in getmodule
+    if ismodule(module) and hasattr(module, '__file__'):
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/importlib/util.py", line 247, in __getattribute__
+    self.__spec__.loader.exec_module(self)
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/samplerate/__init__.py", line 9, in <module>
+    from samplerate.lowlevel import __libsamplerate_version__
+  File "/home/jovyan/miniconda/envs/nemo2/lib/python3.10/site-packages/samplerate/lowlevel.py", line 23, in <module>
+    raise OSError('{} not found'.format(lib_basename))
+OSError: libsamplerate not found
+  0%|▎                                                                                                                                         | 500/264780 [42:27<374:04:22,  5.10s/it]
+
+
