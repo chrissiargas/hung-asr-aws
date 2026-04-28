@@ -25,6 +25,7 @@ from speechLM_utils.trainers import MultiLossTrainer
 from speechLM_utils.checkpoint import *
 from speechLM_utils.metrics import wrap_compute_metrics
 from speechLM_utils.utils import init_gpu, init_info, init, init_wandb
+from distutils.util import strtobool
 
 # Load metrics once
 cer_metric = evaluate.load("cer")
@@ -42,25 +43,24 @@ class OffsetTensorBoardCallback(TensorBoardCallback):
         super().on_log(args, state, control, logs=logs, **kwargs)
         state.global_step = original_step
 
-def two_stage_train(dataset, args, training_args, info, checkpoint_path, checkpoint_dir, writer, device):
-    stage1_args = copy.deepcopy(args)
-
-    print("--- STARTING STAGE 1: ADAPTER ALIGNMENT ---")
-
-    stage1_args.linguistic_lora = False
-    stage1_args.static_projector = False
-    stage1_args.injection_layers = args.injection_layers
-    stage1_args.proj_lr = args.proj_lr
-
-    stage1_training_args = copy.deepcopy(training_args)
-    stage1_training_args.num_train_epochs = args.first_stage_epochs
-    stage1_training_args.output_dir = os.path.join(checkpoint_path, "stage1")
-    shared_logging_dir = os.path.join(checkpoint_path, "logs")
-    stage1_training_args.logging_dir = shared_logging_dir
-
+def two_stage_train(dataset, args, training_args, info, checkpoint_path, checkpoint_dir, writer, device, exp: int = 0):
     if not SKIP_STAGE1:
+        stage1_args = copy.deepcopy(args)
+
+        print("--- STARTING STAGE 1: ADAPTER ALIGNMENT ---")
+
+        stage1_args.linguistic_lora = False
+        stage1_args.static_projector = False
+        stage1_args.static_injection_layers = False
+
+        stage1_training_args = copy.deepcopy(training_args)
+        stage1_training_args.num_train_epochs = args.first_stage_epochs
+        stage1_training_args.output_dir = os.path.join(checkpoint_path, "stage1")
+        shared_logging_dir = os.path.join(checkpoint_path, "logs")
+        stage1_training_args.logging_dir = shared_logging_dir
+
         train_model(dataset, stage1_args, stage1_training_args, info, stage1_training_args.output_dir, checkpoint_dir,
-                    writer, device)
+                    writer, device, exp=exp)
 
         print("--- STAGE 1 COMPLETE ---")
 
@@ -72,17 +72,17 @@ def two_stage_train(dataset, args, training_args, info, checkpoint_path, checkpo
 
     stage2_args.linguistic_lora = True  # Turn LoRA ON
     stage2_args.static_projector = True
-    stage2_args.injection_layers = args.injection_layers
-    stage2_args.proj_lr = args.proj_lr * 0.1
+    stage2_args.static_injection_layers = True
 
     stage2_training_args = copy.deepcopy(training_args)
     stage2_training_args.num_train_epochs = args.second_stage_epochs
+    previous_checkpoint = os.path.join(checkpoint_path, "stage1")
     stage2_training_args.output_dir = os.path.join(checkpoint_path, "stage2")
     shared_logging_dir = os.path.join(checkpoint_path, "logs")
     stage2_training_args.logging_dir = shared_logging_dir
 
-    train_model(dataset, stage2_args, stage2_training_args, info, stage1_training_args.output_dir,
-                stage2_training_args.output_dir, writer, device, load=True)
+    train_model(dataset, stage2_args, stage2_training_args, info, previous_checkpoint,
+                stage2_training_args.output_dir, writer, device, load=True, exp=exp)
 
     print("--- STAGE 2 COMPLETE ---")
 
@@ -175,9 +175,9 @@ def setup(model_type, info, restart: bool = False, device: str = 'cuda', local_r
     init_wandb(local_rank, args, date, MODEL_TYPE, DATASETS, NOTE)
 
     if args.two_stage:
-        two_stage_train(dataset, args, training_args, info, checkpoint_path, checkpoint_dir, writer, device)
+        two_stage_train(dataset, args, training_args, info, checkpoint_path, checkpoint_dir, writer, device, exp=exp)
     else:
-        train_model(dataset, args, training_args, info, checkpoint_path, checkpoint_dir, writer, device)
+        train_model(dataset, args, training_args, info, checkpoint_path, checkpoint_dir, writer, device, exp=exp)
 
 def train(exp: int = 0):
     local_rank, device = init_gpu()
@@ -198,11 +198,6 @@ def train(exp: int = 0):
         torch.cuda.empty_cache()
 
 MODEL_TYPE = 'dual_fusion'
-RESTART = True
-MACHINE = None
-DATETIME = None
-INTERLEAVE = True
-SKIP_STAGE1 = False
 FILTERS = ['duration', 'ratio']
 
 import argparse
@@ -213,15 +208,34 @@ if __name__ == "__main__":
     parser.add_argument('--datasets', nargs='+', type=str, default=['common_voice', 'fleurs', 'hparl', 'tedx', 'logotypographia'], help='datasets')
     parser.add_argument('--iters', type=int, default=800, help='validation samples per dataset')
     parser.add_argument('--note', type=str, default='', help='note about this experiment')
+    parser.add_argument('--restart', default=True, help='Restart from the beginning', type=lambda x: bool(strtobool(x)))
+    parser.add_argument('--machine', type=str, default=None, help='machine name of model to load')
+    parser.add_argument('--datetime', type=str, default=None, help='datetime of model to load')
+    parser.add_argument('--skip_stage1', default=False, help='skip stage 1 training', type=lambda x: bool(strtobool(x)))
+    parser.add_argument('--interleave', default=True, help='interleave data', type=lambda x: bool(strtobool(x)))
     parser.add_argument('--attn_implementation', type=str, default='sdpa', help='attention implementation type')
 
     args, unknown = parser.parse_known_args()
 
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpus
-    
     DATASETS = args.datasets
     ITERS = args.iters
     NOTE = args.note
+    RESTART = args.restart
+    MACHINE = args.machine
+    DATETIME = args.datetime
+    INTERLEAVE = args.interleave
+    SKIP_STAGE1 = args.skip_stage1
     ATTN_IMPL = args.attn_implementation
+
+    print('EXPERIMENT SETUP: ')
+    print('datasets: ', DATASETS)
+    print('iters: ', ITERS)
+    print('restart: ', RESTART)
+    print('machine: ', MACHINE)
+    print('datetime: ', DATETIME)
+    print('interleave: ', INTERLEAVE)
+    print('skip_stage1: ', SKIP_STAGE1)
+    print('attention_implementation: ', ATTN_IMPL)
 
     train(args.exp)

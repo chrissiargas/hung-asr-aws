@@ -25,6 +25,7 @@ class SinusoidalPositionalEmbedding(nn.Module):
         seq_len = x.size(1)
         return x + self.pe[:, :seq_len, :]
 
+
 class CrossAttention(nn.Module):
     def __init__(self,
                  hidden_dim,
@@ -69,7 +70,8 @@ class CrossAttention(nn.Module):
         if self.positional_info:
             self.audio_pos_embed = SinusoidalPositionalEmbedding(d_model=audio_embed_dim, max_len=seq_len)
 
-    def compute_mask(self, prm_len, prm_audio_len, inj_audio_len, device, dtype, prm_audio_mask=None, inj_audio_mask=None):
+    def compute_mask(self, prm_len, prm_audio_len, inj_audio_len, device, dtype, prm_audio_mask=None,
+                     inj_audio_mask=None):
         min_val = torch.finfo(dtype).min
 
         if self.causal_fusion:
@@ -80,7 +82,7 @@ class CrossAttention(nn.Module):
             prm_audio_masked = prm_audio_len - prm_audio_end
 
             prm_indices = torch.arange(prm_len, device=device).view(1, prm_len, 1)
-            inj_indices = torch.arange(inj_audio_len, device=device).view(1, 1 , inj_audio_len)
+            inj_indices = torch.arange(inj_audio_len, device=device).view(1, 1, inj_audio_len)
 
             content_prm_audio_len = prm_audio_len - prm_audio_masked
             content_inj_audio_len = inj_audio_len - inj_audio_masked
@@ -131,7 +133,8 @@ class CrossAttention(nn.Module):
         value = value.view(batch_size, inj_audio_len, self.num_heads, self.head_dim).transpose(1, 2)
 
         scores = torch.matmul(query, key.transpose(-2, -1)) / (self.head_dim ** 0.5)
-        mask = self.compute_mask(prm_len, prm_audio_len, inj_audio_len, scores.device, scores.dtype, prm_audio_mask, inj_audio_mask)
+        mask = self.compute_mask(prm_len, prm_audio_len, inj_audio_len, scores.device, scores.dtype, prm_audio_mask,
+                                 inj_audio_mask)
 
         scores = scores + mask
 
@@ -149,6 +152,7 @@ class CrossAttention(nn.Module):
 
         return fused_output
 
+
 class InjectionLayer(nn.Module):
     def __init__(self, lm_layer, cross_attention_layer):
         super().__init__()
@@ -164,12 +168,12 @@ class InjectionLayer(nn.Module):
     def forward(self, hidden_states, *args, **kwargs):
         lm_outputs = self.LM_layer(hidden_states, *args, **kwargs)
         lm_hidden_states = lm_outputs[0]
-            
+
         fused_hidden_states = self.cross_attention_layer(lm_hidden_states,
-                                                           self.injection_audio,
-                                                           self.prompt_audio,
-                                                           self.injection_audio_mask,
-                                                           self.prompt_audio_mask)
+                                                         self.injection_audio,
+                                                         self.prompt_audio,
+                                                         self.injection_audio_mask,
+                                                         self.prompt_audio_mask)
 
         rest = lm_outputs[1:] if len(lm_outputs) > 1 else ()
         if isinstance(rest, torch.Tensor):

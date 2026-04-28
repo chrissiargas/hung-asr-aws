@@ -14,32 +14,41 @@ def get_tags(args: Dict, datasets: List[str]):
     tags = []
     tags.append(socket.gethostname())
     tags.append(','.join(datasets))
-    if args['norm_mono']:
-        tags.append('norm_mono')
+
+    ## Regularization & Augmentation Configurations
     if args['blank_training']:
         tags.append('blank_training')
     if args['text_perturbation']:
         tags.append('text_perturbation')
-    if args['static_projector']:
-        tags.append('static_projector')
+
+    ## Input Injection Configurations
     if args['include_adapter']:
         tags.append('include_adapter')
-    if args['positional_info']:
-        tags.append('positional_info')
+    if args['static_projector']:
+        tags.append('static_projector')
     tags.append('downsample_K: ' + str(args['downsample_K']))
+
+    ## Cross-Attention Injection Configurations
     tags.append('downsample_L: ' + str(args['downsample_L']))
-    tags.append('input_downsample: ' + str(args['input_downsample']))
     tags.append('injection_downsample: ' + str(args['injection_downsample']))
     tags.append('injection_layers: ' + ','.join(str(args['injection_layers'])))
-    if args['pyramid_layers']:
-        tags.append('pyramid_layers')
     tags.append('downsamplers: ' + str(args['downsamplers']))
-    if args['causal_fusion']:
-        tags.append('causal_fusion')
     if args['gated_cross_attention']:
         tags.append('gated_cross_attention')
+    if args['causal_fusion']:
+        tags.append('causal_fusion')
+    if args['positional_info']:
+        tags.append('positional_info')
+    if args['pyramid_layers']:
+        tags.append('pyramid_layers')
+
+    ## LoRA Configurations
+    if args['linguistic_lora']:
+        tags.append('linguistic_lora')
     if args['two_stage']:
         tags.append('two_stage')
+
+    ## Auxiliary Losses Configurations
     if args['predict_duration']:
         tags.append('predict_duration')
     if args['ctc']:
@@ -47,11 +56,13 @@ def get_tags(args: Dict, datasets: List[str]):
     if args['audio_forecasting']:
         tags.append('audio_forecasting')
 
-
-    # if args['prompt_persona'] is not None:
-    #     tags.append('prompt_persona: ' + str(args['prompt_persona']))
-    # if args['prompt_instruction'] is not None:
-    #     tags.append('prompt_instruction: ' + str(args['prompt_instruction']))
+    ## Prompt Configurations
+    if args['prompt_persona'] is not None:
+        persona_len = len(args['prompt_persona'])
+        tags.append(f'prompt_persona len: {persona_len}')
+    if args['prompt_instruction'] is not None:
+        instruct_len = len(args['prompt_instruction'])
+        tags.append(f'prompt_instruction: {instruct_len}')
 
     return tags
 

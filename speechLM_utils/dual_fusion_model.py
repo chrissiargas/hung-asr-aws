@@ -100,6 +100,7 @@ class DualFusionModel(nn.Module):
                  static_projector,
                  downsample_K,
                  hidden_dim,
+                 static_injection,
                  injection_layers,
                  pyramid_layers,
                  gated,
@@ -146,6 +147,7 @@ class DualFusionModel(nn.Module):
         self.hidden_dim = hidden_dim
         self.input_downsample = input_downsample
 
+        self.static_injection = static_injection
         self.injection_layer_ids = injection_layers
         self.downsample_L = downsample_L
         self.causal_fusion = causal_fusion
@@ -241,8 +243,6 @@ class DualFusionModel(nn.Module):
             token=access_token
         )
 
-        self.original_vocab_size = len(self.language_tokenizer)
-
         if self.language_tokenizer.pad_token is None:
             self.language_tokenizer.pad_token = self.language_tokenizer.eos_token
 
@@ -284,7 +284,7 @@ class DualFusionModel(nn.Module):
 
         self.embed_bank = {"embed1": None, "embed2": None, "att1": None, "att2": None}
 
-        self.set_embed_bank(self.device)
+        self.set_embed_bank()
         self.audio_offset = self.embed_bank['embed1'].shape[1]
 
         if self.lng_lora:
@@ -341,7 +341,7 @@ class DualFusionModel(nn.Module):
             self.audio_predictor = nn.Sequential(
                 nn.Linear(language_project_dim, self.hidden_dim),
                 nn.ReLU(),
-                nn.Linear(self.hidden_dim, self.audio_dim * self.downsample_K)
+                nn.Linear(self.hidden_dim, self.downsampled_dim)
             ).to(self.device, dtype=self.speech_encoder.dtype)
             self.audio_loss = nn.MSELoss(reduction='none')
 
@@ -357,7 +357,20 @@ class DualFusionModel(nn.Module):
         self.cif_weight = 1.0
 
         self.get_gradient()
-        self.with_gradient = torch.no_grad() if self.static_projector else contextlib.nullcontext()
+        self.with_adapter_gradient = torch.no_grad() if self.static_projector else contextlib.nullcontext()
+        self.with_injection_gradient = torch.no_grad() if self.static_injection else contextlib.nullcontext()
+
+        if self.static_projector and self.include_adapter:
+            for param in self.adapter.parameters(): param.requires_grad = False
+            for param in self.input_downsampler.parameters(): param.requires_grad = False
+
+        if self.static_injection:
+            for layer in self.injection_layers:
+                for param in layer.cross_attention_layer.parameters(): param.requires_grad = False
+            if self.injection_downsampler:
+                for param in self.injection_downsampler.parameters(): param.requires_grad = False
+            for ds in self.injection_downsamplers:
+                for param in ds.parameters(): param.requires_grad = False
 
     @property
     def injection_layers(self):
@@ -467,6 +480,8 @@ class DualFusionModel(nn.Module):
                 if is_adapter: adapter_params += param.numel()
 
         adapter_trainable = 'Frozen' if self.static_projector else 'Trainable'
+        injection_trainable = 'Frozen' if self.static_injection else 'Trainable'
+
         print("-" * 90)
         print(f"TOTAL PARAMS: {all_params:,}")
         print(f"TRAINABLE PARAMS: {trainable_params:,} ({100 * trainable_params / all_params:.4f}%)")
@@ -475,8 +490,8 @@ class DualFusionModel(nn.Module):
         print(f" > Whisper LoRA Params (Trainable): {whisper_lora_params:,}")
         print(f" > Input Downsampler Params ({adapter_trainable}): {input_down_params:,}")
         print(f" > Adapter Params ({adapter_trainable}): {adapter_params:,}")
-        print(f" > Injection Downsampler Params (Trainable): {injection_down_params:,}")
-        print(f" > Cross Attention Params (Trainable): {cross_attn_params:,}")
+        print(f" > Injection Downsampler Params ({injection_trainable}): {injection_down_params:,}")
+        print(f" > Cross Attention Params ({injection_trainable}): {cross_attn_params:,}")
         print(f" > CTC Head Params (Trainable): {ctc_params:,}")
         print(f" > Audio Head Params (Trainable): {audio_params:,}")
         print(f" > Duration Token Params (Trainable): {duration_params:,}")
@@ -560,7 +575,7 @@ class DualFusionModel(nn.Module):
     def get_token_embeddings(self, token_ids):
         return self.language_model.get_input_embeddings()(token_ids)
 
-    def set_embed_bank(self, device):
+    def set_embed_bank(self):
         if self.prompt_persona is None or str(self.prompt_persona).strip().lower() == "none":
             msg_pre_audio = [
                 {"role": "user", "content": "AudioContentPlaceholder"}
@@ -576,8 +591,8 @@ class DualFusionModel(nn.Module):
         self.prompt_part1, prompt_part2 = full_prompt.split("AudioContentPlaceholder")
         self.prompt_part2 = self.prompt_instruction + prompt_part2
 
-        e1, a1 = self.get_text_embeddings([self.prompt_part1], device=device)
-        e2, a2 = self.get_text_embeddings([self.prompt_part2], device=device)
+        e1, a1 = self.get_text_embeddings([self.prompt_part1], device=self.device)
+        e2, a2 = self.get_text_embeddings([self.prompt_part2], device=self.device)
 
         self.embed_bank["embed1"] = e1.to(dtype=self.dtype)
         self.embed_bank["att1"] = a1
@@ -704,7 +719,7 @@ class DualFusionModel(nn.Module):
                 if l == self.n_injections - 1:
                     audio_features = encoder_outputs.last_hidden_state
                 else:
-                    audio_features = encoder_outputs.hidden_states[l]
+                    audio_features = encoder_outputs.hidden_states[injection_layer]
 
                 if isinstance(self.injection_downsamplers[l], CIFireAdapter):
                     injection_audio, inj_audio_mask, _ = self.injection_downsamplers[l](audio_features, audio_masks)
@@ -793,7 +808,7 @@ class DualFusionModel(nn.Module):
         down_embeddings = None
         down_masks = None
 
-        with self.with_gradient:
+        with self.with_adapter_gradient:
             if self.include_adapter:
                 (proj_embeddings,
                  down_embeddings,
@@ -807,11 +822,12 @@ class DualFusionModel(nn.Module):
             batch_size, proj_embeddings, down_masks, labels, label_masks, noisy_label_ids
         )
 
-        injection_audios, injection_masks = self.inject(encoder_outputs,
-                                                        audio_embeddings,
-                                                        audio_masks,
-                                                        down_embeddings,
-                                                        down_masks)
+        with self.with_injection_gradient:
+            injection_audios, injection_masks = self.inject(encoder_outputs,
+                                                            audio_embeddings,
+                                                            audio_masks,
+                                                            down_embeddings,
+                                                            down_masks)
 
         for injection_audio, injection_mask, injection_layer in zip(injection_audios, injection_masks, self.injection_layers):
             injection_layer.injection_audio = injection_audio

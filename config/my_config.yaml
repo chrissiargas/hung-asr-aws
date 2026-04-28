@@ -25,9 +25,9 @@ dual_fuse_args:
   randomize: True
   norm_mono: False
   ## Regularization & Augmentation Configurations
-  blank_training: True
+  blank_training: False
   audio_dropout: 0.1
-  text_perturbation: True
+  text_perturbation: False
   text_dropout: 0.1
   spec_augment: True
   ## Input Injection Configurations
@@ -37,6 +37,7 @@ dual_fuse_args:
   downsample_K: 5
   input_downsample: 'reshape'
   ## Cross-Attention Injection Configurations
+  static_injection_layers: False
   downsample_L: 5
   injection_downsample: 'conv1d'
   injection_layers: [10, 20, 30]
@@ -89,9 +90,9 @@ dual_fuse_args:
     'report_to': 'tensorboard',
     'logging_steps': 10,
     'save_strategy': 'steps',
-    'save_steps': 10,
+    'save_steps': 1000,
     'eval_strategy': 'steps',
-    'eval_steps': 10,
+    'eval_steps': 1000,
     'save_total_limit': 3,
     'eval_accumulation_steps': 2,
     'per_device_eval_batch_size': 4,

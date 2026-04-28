@@ -12,6 +12,8 @@ import safetensors
 def load_weights(model: nn.Module, checkpoint_path: str, args: Dict, device: str = 'cuda'):
     max_step = get_max_step(checkpoint_path)
     weights_checkpoint = join(checkpoint_path, f"checkpoint-{max_step}")
+    print('Found checkpoint to load: ', weights_checkpoint)
+
     index_file = os.path.join(weights_checkpoint, "model.safetensors.index.json")
     state_dict = {}
 
@@ -38,11 +40,10 @@ def load_weights(model: nn.Module, checkpoint_path: str, args: Dict, device: str
         filtered_state_dict = {}
         for k, v in state_dict.items():
             if any(trained_key in k for trained_key in trained_keys):
-                if args.get('linguistic_lora', False) and "language_model.model.layers" in k:
-                    new_key = k.replace("language_model.model.layers", "language_model.base_model.model.model.layers")
-                    filtered_state_dict[new_key] = v
-                else:
-                    filtered_state_dict[k] = v
+                new_k = k
+                if 'language_model.model.layers' in k:
+                    new_k = k.replace('language_model.model.layers', 'language_model.base_model.model.model.layers')
+                filtered_state_dict[new_k] = v
 
         if not filtered_state_dict:
             print(f"[{device}] WARNING: No projector/adapter keys found in Stage 1 checkpoint!")
@@ -78,6 +79,7 @@ def get_model(model_type, args: Dict, info: Dict, device = 'cuda', exp: int = 0,
             static_projector=args['static_projector'],
             downsample_K=args['downsample_K'],
             hidden_dim=args['hidden_dim'],
+            static_injection=args['static_injection_layers'],
             injection_layers=args['injection_layers'],
             pyramid_layers=args['pyramid_layers'],
             gated=args['gated_cross_attention'],

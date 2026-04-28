@@ -17,8 +17,6 @@ def wrap_compute_metrics(tokenizer, dataset, writer, info):
         decoded_preds = tokenizer.batch_decode(predictions, skip_special_tokens=True)
         decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
 
-        current_step = trainer.state.global_step if 'trainer' in locals() else 0
-
         markdown_table = ''
         wandb_data = []
 
@@ -29,7 +27,7 @@ def wrap_compute_metrics(tokenizer, dataset, writer, info):
         for i in sample_indices:
             raw_audio = dataset['eval'][i]['audio']['array']
             raw_audio = np.asarray(raw_audio, dtype=np.float32)
-            audio_html = wandb.Audio(raw_audio, sample_rate=16000, caption=f"Step {current_step}")
+            audio_html = wandb.Audio(raw_audio, sample_rate=16000)
 
             reference = decoded_labels[i].replace('\n', ' ')
             prediction = decoded_preds[i].replace('\n', ' ')
@@ -37,9 +35,9 @@ def wrap_compute_metrics(tokenizer, dataset, writer, info):
             wandb_data.append([audio_html, reference, prediction])
 
         if wandb.run is not None:
-            writer.add_text('validation/sample_subset', markdown_table, global_step=current_step)
+            writer.add_text('validation/sample_subset', markdown_table)
             table = wandb.Table(columns=['Audio', 'Reference', 'Prediction'], data=wandb_data)
-            wandb.log({"validation/sample_predictions": table}, step=current_step, commit=False)
+            wandb.log({"validation/sample_predictions": table})
 
         metrics = {}
         if info['compute_wer_cer']:

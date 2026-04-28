@@ -128,6 +128,7 @@ class Parser:
         self.dual_fuse_args.static_projector = args.dual_fuse_args['static_projector']
 
         ## Cross-Attention Injection Configurations
+        self.dual_fuse_args.static_injection_layers = args.dual_fuse_args['static_injection_layers']
         self.dual_fuse_args.injection_layers = args.dual_fuse_args['injection_layers']
         self.dual_fuse_args.pyramid_layers = args.dual_fuse_args['pyramid_layers']
         self.dual_fuse_args.downsample_L = args.dual_fuse_args['downsample_L']
