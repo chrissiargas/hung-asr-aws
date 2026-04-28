@@ -863,11 +863,12 @@ class DualFusionModel(nn.Module):
             return out
 
         finally:
-            for injection_layer in self.injection_layers:
-                injection_layer.injection_audio = None
-                injection_layer.injection_audio_mask = None
-                injection_layer.prompt_audio = None
-                injection_layer.prompt_audio_mask = None
+            pass
+            # for injection_layer in self.injection_layers:
+            #     injection_layer.injection_audio = None
+            #     injection_layer.injection_audio_mask = None
+            #     injection_layer.prompt_audio = None
+            #     injection_layer.prompt_audio_mask = None
 
     def generate(self, audios=None,
                  audio_masks=None,
@@ -914,7 +915,7 @@ class DualFusionModel(nn.Module):
             if self.include_adapter:
                 (proj_embeddings,
                  down_embeddings,
-                 down_masks, _) = self.get_input_embeddings(encoder_outputs, batch_masks)
+                 down_masks, _) = self.get_input_embeddings(audio_embeddings, batch_masks)
 
             prompt_embed, prompt_mask, _, _ = self._prepare_input_embeds(batch_size, proj_embeddings, down_masks)
 
@@ -947,11 +948,12 @@ class DualFusionModel(nn.Module):
                 )
 
             finally:
-                for injection_layer in self.injection_layers:
-                    injection_layer.injection_audio = None
-                    injection_layer.injection_audio_mask = None
-                    injection_layer.prompt_audio = None
-                    injection_layer.prompt_audio_mask = None
+                pass
+                # for injection_layer in self.injection_layers:
+                #     injection_layer.injection_audio = None
+                #     injection_layer.injection_audio_mask = None
+                #     injection_layer.prompt_audio = None
+                #     injection_layer.prompt_audio_mask = None
 
             return outputs
 

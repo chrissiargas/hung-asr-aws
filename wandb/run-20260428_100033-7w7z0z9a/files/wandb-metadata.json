@@ -1,0 +1,32 @@
+{
+  "os":  "Linux-5.10.234-225.895.amzn2.x86_64-x86_64-with-glibc2.39",
+  "python":  "CPython 3.10.19",
+  "startedAt":  "2026-04-28T10:00:33.894008Z",
+  "args":  [
+    "--exp",
+    "1"
+  ],
+  "program":  "/home/jovyan/greek-asr-master/speechLM_utils/train.py",
+  "codePath":  "speechLM_utils/train.py",
+  "codePathLocal":  "speechLM_utils/train.py",
+  "git":  {
+    "remote":  "https://git.innoetics.com/c.siargkas/greek-asr.git",
+    "commit":  "5d081e5397506afffcefb9ad21cc2380c2096123"
+  },
+  "email":  "chrissiargas@gmail.com",
+  "root":  "/home/jovyan/greek-asr-master",
+  "host":  "greekasr1-0",
+  "executable":  "/home/jovyan/miniconda3/envs/nemo2/bin/python",
+  "cpu_count":  48,
+  "cpu_count_logical":  96,
+  "disk":  {
+    "/":  {
+      "total":  "7459416539136",
+      "used":  "811358183424"
+    }
+  },
+  "memory":  {
+    "total":  "1204529885184"
+  },
+  "writerId":  "8z142izfocdo0klt2fnr96669tq2il9b"
+}

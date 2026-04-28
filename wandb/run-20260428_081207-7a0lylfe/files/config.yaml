@@ -1,0 +1,207 @@
+_wandb:
+    value:
+        cli_version: 0.23.1
+        e:
+            ftu22r8fs2bb40mb4qm4ext0j9rrzjkd:
+                args:
+                    - --exp
+                    - "1"
+                    - --iters
+                    - "10"
+                codePath: speechLM_utils/train.py
+                codePathLocal: speechLM_utils/train.py
+                cpu_count: 48
+                cpu_count_logical: 96
+                disk:
+                    /:
+                        total: "7459416539136"
+                        used: "810896859136"
+                email: chrissiargas@gmail.com
+                executable: /home/jovyan/miniconda3/envs/nemo2/bin/python
+                git:
+                    commit: 5d081e5397506afffcefb9ad21cc2380c2096123
+                    remote: https://git.innoetics.com/c.siargkas/greek-asr.git
+                host: greekasr1-0
+                memory:
+                    total: "1204529885184"
+                os: Linux-5.10.234-225.895.amzn2.x86_64-x86_64-with-glibc2.39
+                program: /home/jovyan/greek-asr-master/speechLM_utils/train.py
+                python: CPython 3.10.19
+                root: /home/jovyan/greek-asr-master
+                startedAt: "2026-04-28T08:12:07.718726Z"
+                writerId: ftu22r8fs2bb40mb4qm4ext0j9rrzjkd
+        m: []
+        python_version: 3.10.19
+        t:
+            "1":
+                - 1
+                - 5
+                - 11
+                - 41
+                - 49
+                - 51
+                - 53
+                - 71
+                - 98
+                - 100
+                - 106
+            "2":
+                - 1
+                - 5
+                - 11
+                - 41
+                - 49
+                - 51
+                - 53
+                - 63
+                - 71
+                - 98
+                - 100
+                - 106
+            "3":
+                - 2
+                - 13
+                - 15
+                - 16
+            "4": 3.10.19
+            "5": 0.23.1
+            "6": 4.53.3
+            "10":
+                - 20
+            "12": 0.23.1
+            "13": linux-x86_64
+acoustic_lora:
+    value: false
+audio_dropout:
+    value: 0.1
+audio_forecasting:
+    value: false
+audio_weight:
+    value: 0.5
+blank_training:
+    value: true
+causal_fusion:
+    value: false
+checkpoint_path:
+    value: cache/checkpoints
+ctc:
+    value: false
+ctc_weight:
+    value: 0.1
+downsample_K:
+    value: 5
+downsample_L:
+    value: 5
+downsamplers:
+    value: injection_common
+duration_resolution:
+    value: 0.1
+duration_weight:
+    value: 0.1
+early_stopping_patience:
+    value: 15
+first_stage_epochs:
+    value: 10
+gated_cross_attention:
+    value: false
+hidden_dim:
+    value: 2048
+include_adapter:
+    value: false
+injection_downsample:
+    value: conv1d
+injection_layers:
+    value:
+        - 10
+        - 20
+        - 30
+input_downsample:
+    value: reshape
+interleave_temperature:
+    value: 1.2
+linguistic_lora:
+    value: true
+lora_lr:
+    value: 0.0001
+lora_params:
+    value:
+        - q_proj
+        - k_proj
+        - v_proj
+        - o_proj
+max_duration:
+    value: 30
+micro_data:
+    value: false
+micro_size:
+    value: 800
+norm_mono:
+    value: false
+positional_info:
+    value: false
+predict_duration:
+    value: false
+proj_lr:
+    value: 0.0001
+prompt_instruction:
+    value: |4-
+        Μετάγραψε το προηγούμενο ηχητικό απόσπασμα σε ελληνικό κείμενο με απόλυτη ακρίβεια.
+prompt_persona:
+    value: none
+prompt_verbatim:
+    value: false
+pyramid_layers:
+    value: false
+randomize:
+    value: true
+second_stage_epochs:
+    value: 40
+spec_augment:
+    value: true
+static_projector:
+    value: false
+text_dropout:
+    value: 0.1
+text_perturbation:
+    value: true
+training_args:
+    value:
+        bf16: true
+        dataloader_num_workers: 4
+        dataloader_pin_memory: true
+        ddp_find_unused_parameters: true
+        do_train: true
+        eval_accumulation_steps: 2
+        eval_steps: 10
+        eval_strategy: steps
+        generation_config: |
+            GenerationConfig {
+              "max_new_tokens": 410
+            }
+        generation_max_length: 410
+        gradient_accumulation_steps: 4
+        gradient_checkpointing: true
+        gradient_checkpointing_kwargs:
+            use_reentrant: false
+        greater_is_better: false
+        group_by_length: false
+        load_best_model_at_end: true
+        logging_dir: /home/jovyan/cache/checkpoints/dual_fusion_checkpoints/greekasr1-0/whisper-large-v3_Llama-Krikri-8B-Instruct/LoRA_1_['common_voice', 'fleurs', 'hparl', 'tedx', 'logotypographia']@Apr28_08-11
+        logging_steps: 10
+        lr_scheduler_type: linear
+        metric_for_best_model: eval_wer
+        num_train_epochs: 60
+        optim: adamw_torch
+        output_dir: /home/jovyan/cache/checkpoints/dual_fusion_checkpoints/greekasr1-0/whisper-large-v3_Llama-Krikri-8B-Instruct/LoRA_1_['common_voice', 'fleurs', 'hparl', 'tedx', 'logotypographia']@Apr28_08-11
+        per_device_eval_batch_size: 4
+        per_device_train_batch_size: 2
+        predict_with_generate: true
+        remove_unused_columns: false
+        report_to:
+            - wandb
+        save_steps: 10
+        save_strategy: steps
+        save_total_limit: 3
+        warmup_steps: 400
+two_stage:
+    value: false

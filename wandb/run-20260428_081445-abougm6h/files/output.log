@@ -1,0 +1,40 @@
+[34m[1mwandb[0m: Detected [mcp] in use.
+[34m[1mwandb[0m: Use W&B Weave for improved LLM call tracing. Install Weave with `pip install weave` then add `import weave` to the top of your script.
+[34m[1mwandb[0m: For more information, check out the docs at: https://weave-docs.wandb.ai/
+Loading checkpoint shards: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:37<00:00,  9.46s/it]
+
+---MODEL PARAMETERS---
+------------------------------------------------------------------------------------------
+TOTAL PARAMS: 5,496,692,480
+TRAINABLE PARAMS: 147,156,736 (2.6772%)
+------------------------------
+ > LLM LoRA Params (Trainable):      6,815,744
+ > Whisper LoRA Params (Trainable): 0
+ > Input Downsampler Params (Trainable): 0
+ > Adapter Params (Trainable): 0
+ > Injection Downsampler Params (Trainable): 8,195,840
+ > Cross Attention Params (Trainable): 132,145,152
+ > CTC Head Params (Trainable): 0
+ > Audio Head Params (Trainable): 0
+ > Duration Token Params (Trainable): 0
+ > Base LLM (Frozen):            4,712,566,784
+ > Whisper (Frozen):     636,968,960
+==================================================
+
+
+--- Module Parameters ---
+Input Downsampler Params: 0
+Adapter Params: 0
+Injection Downsampler Params: 8,195,840
+Cross-Attention Params: 132,145,152
+CTC Head Params: 0
+Audio Head Params: 0
+Duration Params: 0
+Whisper Params: 636,968,960
+LLM Params: 4,851,527,680
+----------------------------
+[34m[1mwandb[0m: [33mWARNING[0m The `run_name` is currently set to the same value as `TrainingArguments.output_dir`. If this was not intended, please specify a different run name by setting the `TrainingArguments.run_name` parameter.
+  0%|                                                                                                                              | 10/264780 [00:53<218:50:50,  2.98s/it]
+
+{'loss': 4.0929, 'grad_norm': 24.998458862304688, 'learning_rate': 2.25e-06, 'loss/total_loss': 1.0725215911865233, 'loss/lm_loss': 1.0725215911865233, 'epoch': 0.0}
+  0%|                                                                                                                                                | 0/3 [00:00<?, ?it/s]

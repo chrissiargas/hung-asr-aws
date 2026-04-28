@@ -1,0 +1,126 @@
+[34m[1mwandb[0m: Detected [mcp] in use.
+[34m[1mwandb[0m: Use W&B Weave for improved LLM call tracing. Install Weave with `pip install weave` then add `import weave` to the top of your script.
+[34m[1mwandb[0m: For more information, check out the docs at: https://weave-docs.wandb.ai/
+Loading checkpoint shards: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:30<00:00,  7.68s/it]
+
+---MODEL PARAMETERS---
+------------------------------------------------------------------------------------------
+TOTAL PARAMS: 5,496,692,480
+TRAINABLE PARAMS: 147,156,736 (2.6772%)
+------------------------------
+ > LLM LoRA Params (Trainable):      6,815,744
+ > Whisper LoRA Params (Trainable): 0
+ > Input Downsampler Params (Trainable): 0
+ > Adapter Params (Trainable): 0
+ > Injection Downsampler Params (Trainable): 8,195,840
+ > Cross Attention Params (Trainable): 132,145,152
+ > CTC Head Params (Trainable): 0
+ > Audio Head Params (Trainable): 0
+ > Duration Token Params (Trainable): 0
+ > Base LLM (Frozen):            4,712,566,784
+ > Whisper (Frozen):     636,968,960
+==================================================
+
+
+--- Module Parameters ---
+Input Downsampler Params: 0
+Adapter Params: 0
+Injection Downsampler Params: 8,195,840
+Cross-Attention Params: 132,145,152
+CTC Head Params: 0
+Audio Head Params: 0
+Duration Params: 0
+Whisper Params: 636,968,960
+LLM Params: 4,851,527,680
+----------------------------
+[34m[1mwandb[0m: [33mWARNING[0m The `run_name` is currently set to the same value as `TrainingArguments.output_dir`. If this was not intended, please specify a different run name by setting the `TrainingArguments.run_name` parameter.
+  0%|                                                                                                                              | 10/264780 [00:40<202:55:38,  2.76s/it]Traceback (most recent call last):
+
+{'loss': 4.2472, 'grad_norm': 26.534290313720703, 'learning_rate': 2.25e-06, 'loss/total_loss': 1.0993913650512694, 'loss/lm_loss': 1.0993913650512694, 'epoch': 0.0}
+  File "/home/jovyan/greek-asr-master/speechLM_utils/train.py", line 188, in train███████████████████████████████████████████████████████████| 3/3 [00:48<00:00, 19.58s/it]
+An error occurred: libsamplerate not found
+    setup(MODEL_TYPE, info, restart=RESTART, device=device, local_rank=local_rank, exp=exp)
+  File "/home/jovyan/greek-asr-master/speechLM_utils/train.py", line 180, in setup
+    train_model(dataset, args, training_args, info, checkpoint_path, checkpoint_dir, writer, device)
+  File "/home/jovyan/greek-asr-master/speechLM_utils/train.py", line 153, in train_model
+    trainer.train(resume_from_checkpoint=checkpoint_dir)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/transformers/trainer.py", line 2206, in train
+    return inner_training_loop(
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/transformers/trainer.py", line 2623, in _inner_training_loop
+    self._maybe_log_save_evaluate(
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/transformers/trainer.py", line 3096, in _maybe_log_save_evaluate
+    metrics = self._evaluate(trial, ignore_keys_for_eval)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/transformers/trainer.py", line 3045, in _evaluate
+    metrics = self.evaluate(ignore_keys=ignore_keys_for_eval)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/transformers/trainer_seq2seq.py", line 191, in evaluate
+    return super().evaluate(eval_dataset, ignore_keys=ignore_keys, metric_key_prefix=metric_key_prefix)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/transformers/trainer.py", line 4199, in evaluate
+    output = eval_loop(
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/transformers/trainer.py", line 4489, in evaluation_loop
+    metrics = self.compute_metrics(
+  File "/home/jovyan/greek-asr-master/speechLM_utils/metrics.py", line 42, in compute_metrics
+    wandb.log({"validation/sample_predictions": table}, step=current_step, commit=False)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 400, in wrapper
+    return func(self, *args, **kwargs)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 458, in wrapper_fn
+    return func(self, *args, **kwargs)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 445, in wrapper
+    return func(self, *args, **kwargs)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 2034, in log
+    self._log(data=data, step=step, commit=commit)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 1745, in _log
+    self._partial_history_callback(data, step, commit)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 400, in wrapper
+    return func(self, *args, **kwargs)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 1573, in _partial_history_callback
+    self._backend.interface.publish_partial_history(
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/interface/interface.py", line 689, in publish_partial_history
+    data = history_dict_to_json(run, data, step=user_step, ignore_copy_err=True)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/data_types/utils.py", line 54, in history_dict_to_json
+    payload[key] = val_to_json(
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/data_types/utils.py", line 151, in val_to_json
+    _log_table_artifact(val, key, run)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/data_types/utils.py", line 202, in _log_table_artifact
+    run.log_artifact(art)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 400, in wrapper
+    return func(self, *args, **kwargs)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 458, in wrapper_fn
+    return func(self, *args, **kwargs)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 445, in wrapper
+    return func(self, *args, **kwargs)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 3166, in log_artifact
+    return self._log_artifact(
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 3311, in _log_artifact
+    self._assert_can_log_artifact(artifact)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/wandb_run.py", line 3374, in _assert_can_log_artifact
+    expected_type = Artifact._expected_type(
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/artifacts/artifact.py", line 2627, in _expected_type
+    from ._generated import ARTIFACT_TYPE_GQL, ArtifactType
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/artifacts/_generated/__init__.py", line 151, in <module>
+    from .add_aliases import AddAliases
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/wandb/sdk/artifacts/_generated/add_aliases.py", line 11, in <module>
+    class AddAliases(GQLResult):
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/pydantic/_internal/_model_construction.py", line 242, in __new__
+    set_model_fields(cls, config_wrapper=config_wrapper, ns_resolver=ns_resolver)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/pydantic/_internal/_model_construction.py", line 566, in set_model_fields
+    fields, class_vars = collect_model_fields(cls, config_wrapper, ns_resolver, typevars_map=typevars_map)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/pydantic/_internal/_fields.py", line 411, in collect_model_fields
+    _update_fields_from_docstrings(cls, fields)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/pydantic/_internal/_fields.py", line 114, in _update_fields_from_docstrings
+    fields_docs = extract_docstrings_from_cls(cls, use_inspect=use_inspect)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/pydantic/_internal/_docs_extraction.py", line 104, in extract_docstrings_from_cls
+    source = _extract_source_from_frame(cls)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/pydantic/_internal/_docs_extraction.py", line 56, in _extract_source_from_frame
+    if inspect.getmodule(frame) is inspect.getmodule(cls):
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/inspect.py", line 869, in getmodule
+    if ismodule(module) and hasattr(module, '__file__'):
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/importlib/util.py", line 247, in __getattribute__
+    self.__spec__.loader.exec_module(self)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/samplerate/__init__.py", line 9, in <module>
+    from samplerate.lowlevel import __libsamplerate_version__
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/samplerate/lowlevel.py", line 23, in <module>
+    raise OSError('{} not found'.format(lib_basename))
+OSError: libsamplerate not found
+  0%|                                                                                                                              | 10/264780 [01:50<815:12:47, 11.08s/it]
+
+

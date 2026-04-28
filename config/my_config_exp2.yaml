@@ -25,13 +25,13 @@ dual_fuse_args:
   randomize: True
   norm_mono: False
   ## Regularization & Augmentation Configurations
-  blank_training: True
+  blank_training: False
   audio_dropout: 0.1
   text_perturbation: True
   text_dropout: 0.1
   spec_augment: True
   ## Input Injection Configurations
-  include_adapter: False
+  include_adapter: True
   hidden_dim: 2048
   static_projector: False
   downsample_K: 5
@@ -71,7 +71,7 @@ dual_fuse_args:
   prompt_verbatim: False
   training_args: {
     # --- PERFORMANCE OPTIMIZATIONS ---
-    'fp16': True,                   # CRITICAL: Native speed for Titan RTX
+    'bf16': True,                   # CRITICAL: Native speed for Titan RTX
     'dataloader_num_workers': 4,    # Optimized for 14-core CPU (3 workers * 4 GPUs = 12 threads)
     'dataloader_pin_memory': True,  # Fast CPU->GPU transfer
     'per_device_train_batch_size': 2, # Maximize VRAM usage
@@ -89,9 +89,9 @@ dual_fuse_args:
     'report_to': 'tensorboard',
     'logging_steps': 10,
     'save_strategy': 'steps',
-    'save_steps': 500,
+    'save_steps': 1000,
     'eval_strategy': 'steps',
-    'eval_steps': 500,
+    'eval_steps': 1000,
     'save_total_limit': 3,
     'eval_accumulation_steps': 2,
     'per_device_eval_batch_size': 4,

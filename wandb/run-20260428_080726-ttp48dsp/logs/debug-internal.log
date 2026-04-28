@@ -1,0 +1,13 @@
+{"time":"2026-04-28T08:07:27.42664092Z","level":"INFO","msg":"stream: starting","core version":"0.23.1"}
+{"time":"2026-04-28T08:07:27.460110615Z","level":"ERROR","msg":"monitor: failed to initialize GPU resource: monitor: could not create portfile"}
+{"time":"2026-04-28T08:07:27.544538665Z","level":"INFO","msg":"stream: created new stream","id":"ttp48dsp"}
+{"time":"2026-04-28T08:07:27.544662956Z","level":"INFO","msg":"handler: started","stream_id":"ttp48dsp"}
+{"time":"2026-04-28T08:07:27.547578862Z","level":"INFO","msg":"stream: started","id":"ttp48dsp"}
+{"time":"2026-04-28T08:07:27.547596659Z","level":"INFO","msg":"writer: started","stream_id":"ttp48dsp"}
+{"time":"2026-04-28T08:07:27.54760035Z","level":"INFO","msg":"sender: started","stream_id":"ttp48dsp"}
+{"time":"2026-04-28T08:07:54.496713307Z","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2026-04-28T08:07:54.849901038Z","level":"INFO","msg":"handler: operation stats","stats":{}}
+{"time":"2026-04-28T08:07:54.855705795Z","level":"INFO","msg":"stream: closing","id":"ttp48dsp"}
+{"time":"2026-04-28T08:07:54.855723882Z","level":"INFO","msg":"handler: closed","stream_id":"ttp48dsp"}
+{"time":"2026-04-28T08:07:54.865733191Z","level":"INFO","msg":"sender: closed","stream_id":"ttp48dsp"}
+{"time":"2026-04-28T08:07:54.865761989Z","level":"INFO","msg":"stream: closed","id":"ttp48dsp"}

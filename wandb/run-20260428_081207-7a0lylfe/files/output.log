@@ -1,0 +1,26 @@
+[34m[1mwandb[0m: Detected [mcp] in use.
+[34m[1mwandb[0m: Use W&B Weave for improved LLM call tracing. Install Weave with `pip install weave` then add `import weave` to the top of your script.
+[34m[1mwandb[0m: For more information, check out the docs at: https://weave-docs.wandb.ai/
+An error occurred: FlashAttention2 has been toggled on, but it cannot be used due to the following error: the package flash_attn seems to be not installed. Please refer to the documentation of https://huggingface.co/docs/transformers/perf_infer_gpu_one#flashattention-2 to install Flash Attention 2.
+Traceback (most recent call last):
+  File "/home/jovyan/greek-asr-master/speechLM_utils/train.py", line 188, in train
+    setup(MODEL_TYPE, info, restart=RESTART, device=device, local_rank=local_rank, exp=exp)
+  File "/home/jovyan/greek-asr-master/speechLM_utils/train.py", line 180, in setup
+    train_model(dataset, args, training_args, info, checkpoint_path, checkpoint_dir, writer, device)
+  File "/home/jovyan/greek-asr-master/speechLM_utils/train.py", line 91, in train_model
+    model, tokenizer = get_model(MODEL_TYPE, args, info, device, exp)
+  File "/home/jovyan/greek-asr-master/speechLM_utils/model.py", line 68, in get_model
+    model = DualFusionModel(
+  File "/home/jovyan/greek-asr-master/speechLM_utils/dual_fusion_model.py", line 252, in __init__
+    self.language_model = AutoModelForCausalLM.from_pretrained(
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/transformers/models/auto/auto_factory.py", line 600, in from_pretrained
+    return model_class.from_pretrained(
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/transformers/modeling_utils.py", line 311, in _wrapper
+    return func(*args, **kwargs)
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/transformers/modeling_utils.py", line 4758, in from_pretrained
+    config = cls._autoset_attn_implementation(
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/transformers/modeling_utils.py", line 2315, in _autoset_attn_implementation
+    cls._check_and_enable_flash_attn_2(
+  File "/home/jovyan/miniconda3/envs/nemo2/lib/python3.10/site-packages/transformers/modeling_utils.py", line 2457, in _check_and_enable_flash_attn_2
+    raise ImportError(f"{preface} the package flash_attn seems to be not installed. {install_message}")
+ImportError: FlashAttention2 has been toggled on, but it cannot be used due to the following error: the package flash_attn seems to be not installed. Please refer to the documentation of https://huggingface.co/docs/transformers/perf_infer_gpu_one#flashattention-2 to install Flash Attention 2.

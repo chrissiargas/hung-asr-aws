@@ -1,0 +1,13 @@
+{"time":"2026-04-28T08:54:06.649844367Z","level":"INFO","msg":"stream: starting","core version":"0.23.1"}
+{"time":"2026-04-28T08:54:06.65891486Z","level":"ERROR","msg":"monitor: failed to initialize GPU resource: monitor: could not create portfile"}
+{"time":"2026-04-28T08:54:06.732117986Z","level":"INFO","msg":"stream: created new stream","id":"hmxlscmv"}
+{"time":"2026-04-28T08:54:06.732170738Z","level":"INFO","msg":"handler: started","stream_id":"hmxlscmv"}
+{"time":"2026-04-28T08:54:06.7339897Z","level":"INFO","msg":"stream: started","id":"hmxlscmv"}
+{"time":"2026-04-28T08:54:06.73400353Z","level":"INFO","msg":"writer: started","stream_id":"hmxlscmv"}
+{"time":"2026-04-28T08:54:06.734009321Z","level":"INFO","msg":"sender: started","stream_id":"hmxlscmv"}
+{"time":"2026-04-28T08:54:25.831049792Z","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2026-04-28T08:54:26.17299302Z","level":"INFO","msg":"handler: operation stats","stats":{}}
+{"time":"2026-04-28T08:54:26.177440432Z","level":"INFO","msg":"stream: closing","id":"hmxlscmv"}
+{"time":"2026-04-28T08:54:26.177455758Z","level":"INFO","msg":"handler: closed","stream_id":"hmxlscmv"}
+{"time":"2026-04-28T08:54:26.179209359Z","level":"INFO","msg":"sender: closed","stream_id":"hmxlscmv"}
+{"time":"2026-04-28T08:54:26.17921803Z","level":"INFO","msg":"stream: closed","id":"hmxlscmv"}

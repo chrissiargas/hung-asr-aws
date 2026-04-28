@@ -63,7 +63,7 @@ def load_weights(model: nn.Module, checkpoint_path: str, args: Dict, device: str
 
     return model, max_step
 
-def get_model(model_type, args: Dict, info: Dict, device = 'cuda', exp: int = 0):
+def get_model(model_type, args: Dict, info: Dict, device = 'cuda', exp: int = 0, attn_implementation: str = 'sdpa'):
     if model_type == 'dual_fusion':
         model = DualFusionModel(
             speech_encoder_model_id=info['speech_encoder_id'],
@@ -102,7 +102,7 @@ def get_model(model_type, args: Dict, info: Dict, device = 'cuda', exp: int = 0)
             prompt_verbatim=args['prompt_verbatim'],
             dtype=torch.float32,
             bit4=info['bit4'],
-            attn_implementation='flash_attention_2',
+            attn_implementation=attn_implementation,
             device=device,
             exp=exp
         )

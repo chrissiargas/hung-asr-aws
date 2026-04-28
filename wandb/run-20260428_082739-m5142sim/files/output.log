@@ -1,0 +1,63 @@
+[34m[1mwandb[0m: Detected [mcp] in use.
+[34m[1mwandb[0m: Use W&B Weave for improved LLM call tracing. Install Weave with `pip install weave` then add `import weave` to the top of your script.
+[34m[1mwandb[0m: For more information, check out the docs at: https://weave-docs.wandb.ai/
+Loading checkpoint shards: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████| 4/4 [00:31<00:00,  7.90s/it]
+
+---MODEL PARAMETERS---
+------------------------------------------------------------------------------------------
+TOTAL PARAMS: 5,496,692,480
+TRAINABLE PARAMS: 147,156,736 (2.6772%)
+------------------------------
+ > LLM LoRA Params (Trainable):      6,815,744
+ > Whisper LoRA Params (Trainable): 0
+ > Input Downsampler Params (Trainable): 0
+ > Adapter Params (Trainable): 0
+ > Injection Downsampler Params (Trainable): 8,195,840
+ > Cross Attention Params (Trainable): 132,145,152
+ > CTC Head Params (Trainable): 0
+ > Audio Head Params (Trainable): 0
+ > Duration Token Params (Trainable): 0
+ > Base LLM (Frozen):            4,712,566,784
+ > Whisper (Frozen):     636,968,960
+==================================================
+
+
+--- Module Parameters ---
+Input Downsampler Params: 0
+Adapter Params: 0
+Injection Downsampler Params: 8,195,840
+Cross-Attention Params: 132,145,152
+CTC Head Params: 0
+Audio Head Params: 0
+Duration Params: 0
+Whisper Params: 636,968,960
+LLM Params: 4,851,527,680
+----------------------------
+[34m[1mwandb[0m: [33mWARNING[0m The `run_name` is currently set to the same value as `TrainingArguments.output_dir`. If this was not intended, please specify a different run name by setting the `TrainingArguments.run_name` parameter.
+  0%|                                                                                                                              | 10/264780 [00:40<205:19:30,  2.79s/it][34m[1mwandb[0m: [33mWARNING[0m Fatal error while uploading data. Some run data will not be synced, but it will still be written to disk. Use `wandb sync` at the end of the run to try uploading.
+
+{'loss': 4.2552, 'grad_norm': 24.812969207763672, 'learning_rate': 2.25e-06, 'loss/total_loss': 1.108529281616211, 'loss/lm_loss': 1.108529281616211, 'epoch': 0.0}
+  0%|                                                                                                                              | 10/264780 [03:28<205:19:30,  2.79s/it][34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 0 that is less than the current step 1. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+  0%|                                                                                                                              | 20/264780 [06:43<387:12:08,  5.26s/it][34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 0 that is less than the current step 3. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+{'eval_loss': 4.89827299118042, 'eval_cer': 8.279673234022106, 'eval_wer': 9.15922619047619, 'eval_runtime': 168.161, 'eval_samples_per_second': 0.244, 'eval_steps_per_second': 0.018, 'epoch': 0.0}
+{'loss': 3.2575, 'grad_norm': 7.8556976318359375, 'learning_rate': 4.75e-06, 'loss/total_loss': 0.7763106346130371, 'loss/lm_loss': 0.7763106346130371, 'epoch': 0.0}
+  0%|                                                                                                                              | 30/264780 [09:58<345:49:48,  4.70s/it][34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 0 that is less than the current step 5. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+{'eval_loss': 4.053552627563477, 'eval_cer': 3.1071600192215283, 'eval_wer': 4.050595238095238, 'eval_runtime': 130.9002, 'eval_samples_per_second': 0.313, 'eval_steps_per_second': 0.023, 'epoch': 0.0}
+{'loss': 2.9542, 'grad_norm': 6.375331878662109, 'learning_rate': 7.25e-06, 'loss/total_loss': 0.7649815559387207, 'loss/lm_loss': 0.7649815559387207, 'epoch': 0.01}
+  0%|                                                                                                                              | 40/264780 [12:09<352:02:02,  4.79s/it][34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 0 that is less than the current step 7. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+{'eval_loss': 3.768664598464966, 'eval_cer': 2.104276790004805, 'eval_wer': 2.7529761904761907, 'eval_runtime': 129.9046, 'eval_samples_per_second': 0.316, 'eval_steps_per_second': 0.023, 'epoch': 0.01}
+{'loss': 2.7552, 'grad_norm': 7.297220706939697, 'learning_rate': 9.750000000000002e-06, 'loss/total_loss': 0.7330538749694824, 'loss/lm_loss': 0.7330538749694824, 'epoch': 0.01}
+  0%|                                                                                                                              | 50/264780 [13:41<295:41:44,  4.02s/it][34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 0 that is less than the current step 9. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+{'eval_loss': 3.5762271881103516, 'eval_cer': 1.1982220086496878, 'eval_wer': 1.6473214285714286, 'eval_runtime': 61.0454, 'eval_samples_per_second': 0.672, 'eval_steps_per_second': 0.049, 'epoch': 0.01}
+{'loss': 2.4832, 'grad_norm': 5.910978317260742, 'learning_rate': 1.225e-05, 'loss/total_loss': 0.621411943435669, 'loss/lm_loss': 0.621411943435669, 'epoch': 0.01}
+  0%|                                                                                                                              | 60/264780 [15:10<244:09:06,  3.32s/it][34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 0 that is less than the current step 11. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+{'eval_loss': 3.5141451358795166, 'eval_cer': 0.8625660740028832, 'eval_wer': 1.1235119047619047, 'eval_runtime': 27.3017, 'eval_samples_per_second': 1.502, 'eval_steps_per_second': 0.11, 'epoch': 0.01}
+{'loss': 2.6977, 'grad_norm': 6.471776008605957, 'learning_rate': 1.475e-05, 'loss/total_loss': 0.7176955699920654, 'loss/lm_loss': 0.7176955699920654, 'epoch': 0.01}
+  0%|                                                                                                                              | 70/264780 [16:39<237:21:43,  3.23s/it][34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 0 that is less than the current step 13. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+{'eval_loss': 3.4500980377197266, 'eval_cer': 0.857760691975012, 'eval_wer': 1.1220238095238095, 'eval_runtime': 25.6177, 'eval_samples_per_second': 1.6, 'eval_steps_per_second': 0.117, 'epoch': 0.01}
+{'loss': 2.4816, 'grad_norm': 9.949481010437012, 'learning_rate': 1.725e-05, 'loss/total_loss': 0.6188201427459716, 'loss/lm_loss': 0.6188201427459716, 'epoch': 0.02}
+  0%|                                                                                                                              | 80/264780 [18:09<251:15:09,  3.42s/it][34m[1mwandb[0m: [33mWARNING[0m Tried to log to step 0 that is less than the current step 15. Steps must be monotonically increasing, so this data will be ignored. See https://wandb.me/define-metric to log data out of order.
+{'eval_loss': 3.4794065952301025, 'eval_cer': 0.9495434887073523, 'eval_wer': 1.3005952380952381, 'eval_runtime': 29.9658, 'eval_samples_per_second': 1.368, 'eval_steps_per_second': 0.1, 'epoch': 0.02}
+{'loss': 2.6388, 'grad_norm': 6.181293964385986, 'learning_rate': 1.9750000000000002e-05, 'loss/total_loss': 0.6539263248443603, 'loss/lm_loss': 0.6539263248443603, 'epoch': 0.02}
+                                                                                                                                                                           
+{'eval_loss': 3.325531005859375, 'eval_cer': 0.8315713599231139, 'eval_wer': 1.0952380952380953, 'eval_runtime': 21.1129, 'eval_samples_per_second': 1.942, 'eval_steps_per_second': 0.142, 'epoch': 0.02}

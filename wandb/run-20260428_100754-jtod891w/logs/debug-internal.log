@@ -1,0 +1,13 @@
+{"time":"2026-04-28T10:07:55.317339455Z","level":"INFO","msg":"stream: starting","core version":"0.23.1"}
+{"time":"2026-04-28T10:07:55.35021606Z","level":"ERROR","msg":"monitor: failed to initialize GPU resource: monitor: could not create portfile"}
+{"time":"2026-04-28T10:07:55.41416851Z","level":"INFO","msg":"stream: created new stream","id":"jtod891w"}
+{"time":"2026-04-28T10:07:55.414218865Z","level":"INFO","msg":"handler: started","stream_id":"jtod891w"}
+{"time":"2026-04-28T10:07:55.416188086Z","level":"INFO","msg":"stream: started","id":"jtod891w"}
+{"time":"2026-04-28T10:07:55.416200134Z","level":"INFO","msg":"writer: started","stream_id":"jtod891w"}
+{"time":"2026-04-28T10:07:55.416215405Z","level":"INFO","msg":"sender: started","stream_id":"jtod891w"}
+{"time":"2026-04-28T11:10:42.204256681Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-28T11:10:42.204777758Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":100}
+{"time":"2026-04-28T11:10:42.242391614Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID digest\",\"path\":[\"createArtifact\"]}]}","artifactID":""}
+{"time":"2026-04-28T12:12:58.31438064Z","level":"WARN","msg":"handler: ignoring partial history record","step":0,"current":201}
+{"time":"2026-04-28T12:12:58.736167373Z","level":"ERROR","msg":"HTTP error","status":400,"method":"POST","url":"https://api.wandb.ai/graphql"}
+{"time":"2026-04-28T12:12:58.773470192Z","level":"ERROR","msg":"sender: failed to log artifact: ArtifactSaver.createArtifact: returned error 400: {\"data\":{\"createArtifact\":null},\"errors\":[{\"message\":\"Invalid Client ID target\",\"path\":[\"createArtifact\"]}]}","artifactID":""}

@@ -88,7 +88,7 @@ def two_stage_train(dataset, args, training_args, info, checkpoint_path, checkpo
 
 
 def train_model(dataset, args, training_args, info, checkpoint_path, checkpoint_dir, writer, device, load: bool = False, exp: int = 0):
-    model, tokenizer = get_model(MODEL_TYPE, args, info, device, exp)
+    model, tokenizer = get_model(MODEL_TYPE, args, info, device, exp, ATTN_IMPL)
 
     if load:
         model, max_step = load_weights(model, checkpoint_path, args, device)
@@ -213,12 +213,15 @@ if __name__ == "__main__":
     parser.add_argument('--datasets', nargs='+', type=str, default=['common_voice', 'fleurs', 'hparl', 'tedx', 'logotypographia'], help='datasets')
     parser.add_argument('--iters', type=int, default=800, help='validation samples per dataset')
     parser.add_argument('--note', type=str, default='', help='note about this experiment')
+    parser.add_argument('--attn_implementation', type=str, default='sdpa', help='attention implementation type')
 
     args, unknown = parser.parse_known_args()
 
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpus
+    
     DATASETS = args.datasets
     ITERS = args.iters
     NOTE = args.note
+    ATTN_IMPL = args.attn_implementation
 
     train(args.exp)
