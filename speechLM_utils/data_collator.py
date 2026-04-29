@@ -3,11 +3,11 @@ from typing import Optional, Dict, Sequence
 import torch
 from transformers import WhisperProcessor, AutoTokenizer, WhisperTokenizer
 
-# --- NEW: Define Character Vocabulary ---
 GREEK_CHARS = "αβγδεζηθικλμνξοπρστυφχψωςάέήίόύώϊϋΐΰ"
 EN_CHARS = "abcdefghijklmnopqrstuvwxyz"
 PUNCT = " '.,!?;:-"
-ALL_CHARS = ["<pad>", "<unk>", "<blank>"] + list(GREEK_CHARS + EN_CHARS + PUNCT)
+NUMBERS = "0123456789"
+ALL_CHARS = ["<pad>", "<unk>", "<blank>"] + list(GREEK_CHARS + EN_CHARS + PUNCT + NUMBERS)
 
 CHAR2ID = {c: i for i, c in enumerate(ALL_CHARS)}
 BLANK_IDX = CHAR2ID["<blank>"]

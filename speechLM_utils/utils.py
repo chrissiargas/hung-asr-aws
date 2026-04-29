@@ -94,7 +94,7 @@ def init_info(model_type, datasets, machine = None, datetime = None, interleave 
 
     return info
 
-def init(model_type, info, restart = False, exp: int = 0):
+def init(model_type, info, restart = True, exp: int = 0):
     conf = Parser()
     conf.get_args(exp)
 
@@ -108,6 +108,7 @@ def init(model_type, info, restart = False, exp: int = 0):
         args = conf.dual_fuse_args
         training_args = args.training_args
 
+
     if info['model_name'] is None:
         model_name = (info['speech_encoder_id'].split('/')[1] + '_' +
                       info['language_model_id'].split('/')[1])
@@ -116,15 +117,18 @@ def init(model_type, info, restart = False, exp: int = 0):
 
     info['model_name'] = model_name
 
-    checkpoint_path, checkpoint_dir, writer, logging_dir, date = get_checkpoint(args, info, model_name, restart)
-    print(f'Checkpoint Folder: {checkpoint_dir}')
+    checkpoint_path, checkpoint_dir, writer, date, loaded_args = get_checkpoint(args.checkpoint_path, info, model_name, restart)
 
-    config_file = os.path.join(checkpoint_path, 'config.json')
-    with open(config_file, 'w') as f:
-        json.dump(args.__dict__, f)
+    if loaded_args is not None:
+        args = loaded_args
+
+    else:
+        config_file = os.path.join(checkpoint_path, 'config.json')
+        with open(config_file, 'w') as f:
+            json.dump(args.__dict__, f)
 
     training_args['output_dir'] = checkpoint_path
-    training_args['logging_dir'] = logging_dir
+    training_args['logging_dir'] = checkpoint_path
     training_args['report_to'] = ['wandb']
     training_args['generation_config'] = GenerationConfig(**training_args['generation_config'])
     training_args = Seq2SeqTrainingArguments(**training_args)

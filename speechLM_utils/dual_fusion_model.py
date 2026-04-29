@@ -35,6 +35,7 @@ cer = CharErrorRate()
 wer = WordErrorRate()
 access_token = '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'
 from speechLM_utils.data_collator import NUM_CLASSES, BLANK_IDX
+import torch.nn.functional as F
 
 def apply_text_dropout(batch_labels, batch_label_masks, tokenizer, dropout_prob=0.1, device=None):
     noisy_labels = batch_labels.clone()
@@ -665,8 +666,14 @@ class DualFusionModel(nn.Module):
             return prompt_embed, prompt_mask, None, None
 
     def calculate_mask(self, old_mask, new_embeds):
-        stride = int(old_mask.shape[-1] / new_embeds.shape[1])
-        return old_mask[:, ::stride]
+        stride = old_mask.shape[-1] // new_embeds.shape[1]
+
+        new_mask = F.max_pool1d(
+            old_mask.float().unsqueeze(1),
+            kernel_size=stride
+        ).squeeze(1)
+
+        return new_mask
 
     def get_input_embeddings(self, audio_embeddings, audio_masks):
         alphas = None

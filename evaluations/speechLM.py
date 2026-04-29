@@ -29,11 +29,12 @@ import numpy as np
 from metrics import get_metrics
 from speechLM_utils.model import get_model
 import wandb
-
+import json
 from transformers import TrainerCallback
 from tqdm.auto import tqdm
 from speechLM_utils.utils import init_gpu, resume_wandb, init
-
+from speechLM_utils.model import get_max_step
+import argparse
 
 class PredictionProgressCallback(TrainerCallback):
     def __init__(self):
@@ -62,18 +63,44 @@ class PredictionProgressCallback(TrainerCallback):
             self.prediction_bar.close()
             self.prediction_bar = None
 
-def load_model(model_type, args, info, device='cuda'):
+def load_model(model_type, args, info, checkpoint_path, checkpoint_dir=None, device='cuda'):
     print(f"Initializing model...")
 
-    model, _ = get_model(model_type, args, info, device)
+    model, tokenizer = get_model(model_type, args, info, device)
 
-    checkpoint_path, checkpoint_dir, _, _, _ = get_checkpoint(args, info, info['model_name'], False)
-    safetensors_path = os.path.join(checkpoint_dir, 'model.safetensors')
+    if checkpoint_dir is None:
+        max_step = get_max_step(checkpoint_path)
+        weights_checkpoint = os.path.join(checkpoint_path, f"checkpoint-{max_step}")
+        print('Found checkpoint to load: ', weights_checkpoint)
+    else:
+        weights_checkpoint = checkpoint_dir
+
+    index_file = os.path.join(weights_checkpoint, "model.safetensors.index.json")
+    state_dict = {}
 
     try:
-        state_dict = safetensors.torch.load_file(safetensors_path)
-        missing_keys, unexpected_keys = model.load_state_dict(state_dict, strict=False)
-        print(f"[{device}] Weights loaded. Missing keys: {len(missing_keys)}, Unexpected keys: {len(unexpected_keys)}")
+        if os.path.exists(index_file):
+            with open(index_file, "r") as f:
+                index = json.load(f)
+            shard_files = set(index["weight_map"].values())
+            for shard in shard_files:
+                shard_path = os.path.join(weights_checkpoint, shard)
+                state_dict.update(safetensors.torch.load_file(shard_path))
+        elif os.path.exists(os.path.join(weights_checkpoint, "model.safetensors")):
+            state_dict = safetensors.torch.load_file(os.path.join(weights_checkpoint, "model.safetensors"))
+        elif os.path.exists(os.path.join(weights_checkpoint, "pytorch_model.bin")):
+            state_dict = torch.load(os.path.join(weights_checkpoint, "pytorch_model.bin"), map_location="cpu")
+        else:
+            raise FileNotFoundError(f"No valid weights found in {weights_checkpoint}")
+
+        clean_state_dict = {
+            k: v for k, v in state_dict.items()
+            if 'bitsandbytes' not in k and 'quant_map' not in k and 'absmax' not in k
+        }
+
+        missing_keys, unexpected_keys = model.load_state_dict(clean_state_dict, strict=False)
+        print(f"[{device}] Weights loaded from {weights_checkpoint}.")
+        print(f"[{device}] Missing keys: {len(missing_keys)} | Unexpected keys: {len(unexpected_keys)}")
     except Exception as e:
         print(f"[{device}] Error: Could not load weights. {e}")
 
@@ -103,29 +130,23 @@ def debug_predictions(predictions, references, generated_ids, label_ids, tokeniz
         print(ref_len)
 
 
-def get_eval_metrics(data, model_type, conf, info, device = 'cuda'):
-    if model_type == 'continuous_fusion':
-        args = conf.cont_fuse_args
-    elif model_type == 'slam_asr':
-        args = conf.slam_args
-    elif model_type == 'dual_fusion':
-        args = conf.dual_fuse_args
-
+def get_eval_metrics(data, model_type, conf, args, info, checkpoint_path, checkpoint_dir, device = 'cuda'):
     training_args = conf.eval_args.training_args
     training_args['report_to'] = "none"
     training_args['generation_config'] = GenerationConfig(**training_args['generation_config'])
     training_args['disable_tqdm'] = True
     training_args = Seq2SeqTrainingArguments(**training_args)
 
-    model = load_model(model_type, args, info, device)
+    model = load_model(model_type, args, info, checkpoint_path, checkpoint_dir, device)
     tokenizer = model.language_tokenizer
 
     collator = DataCollator(processor=model.processor,
                             language_tokenizer=tokenizer,
                             padding='max_length',
                             truncation=True,
-                            has_audio_lb_tokens=args['has_decoder'],
+                            has_audio_lb_tokens=True,
                             has_duration_lb=args['predict_duration'],
+                            to_chars=args['ctc'] or args['injection_downsample'] == 'cif',
                             contain_index=False)
 
     trainer = Seq2SeqTrainer(
@@ -184,7 +205,7 @@ def get_results_path(conf, info, data_folder: bool = True):
                                 info['machine'],
                                 info['model_name'],
                                 info['datetime'],
-                                info['turn'])
+                                str(info['turn']))
 
     if data_folder:
         results_path = os.path.join(results_path, info['test_dataset'])
@@ -194,51 +215,68 @@ def get_results_path(conf, info, data_folder: bool = True):
     return results_path
 
 def evaluate(info, set='test', device='cuda', iters = None):
-    conf, args, _, bad_folder, _, _, _, _ = init(info['model_type'], info)
+    conf, args, _, bad_folder, _, checkpoint_path, checkpoint_dir, _ = init(info['model_type'], info, restart=False)
 
     res_folder = get_results_path(conf, info)
     info['res_folder'] = res_folder
 
     if type(info['test_dataset']) is not list:
-        dataset_name = [info['test_dataset']]
+        dataset_names = [info['test_dataset']]
+    else:
+        dataset_names = info['test_dataset']
 
     split = splitter()
-    data = split.split(datasets=dataset_name)
+    data = split.split(datasets=dataset_names)
     data_set = get_data(data[set], bad_folder, iters=iters, normalized=False, has_duration=True, filters=FILTERS, split=set)
     data_set = concatenate(data_set)
 
-    print(f"Evaluating on {dataset_name} ({len(data_set)} samples)...")
-    get_eval_metrics(data_set, info['model_type'], conf, info, device)
+    print(f"Evaluating on {dataset_names} ({len(data_set)} samples)...")
+    get_eval_metrics(data_set, info['model_type'], conf, args, info, checkpoint_path, checkpoint_dir, device)
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2,3'
-DATASETS = ['fleurs', 'common_voice', 'hparl', 'tedx', 'logotypographia']
 FILTERS = ['duration', 'length']
 
-BASE_INFO = {
-        'model_type': 'dual_fusion',
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--gpus', type=str, default='0,1,2,3', help='GPUs to be used')
+    parser.add_argument('--datasets', nargs='+', type=str, default=['common_voice', 'fleurs', 'hparl', 'tedx', 'logotypographia'], help='datasets')
+    parser.add_argument('--model_type', type=str, default='dual_fusion')
+    parser.add_argument('--train_datasets', nargs='+', type=str, default=['common_voice', 'fleurs', 'hparl', 'tedx', 'logotypographia'], help='datasets of the trained models')
+    parser.add_argument('--checkpoint_folder', type=str, default='dual_fusion_checkpoints')
+    parser.add_argument('--model_name', type=str, default=None)
+    parser.add_argument('--speech_encoder_id', type=str, default='openai/whisper-large-v3')
+    parser.add_argument('--language_model_id', type=str, default='ilsp/Llama-Krikri-8B-Instruct')
+    parser.add_argument('--machine', type=str, default='kronos')
+    parser.add_argument('--datetime', type=str, default='Apr03_16-04')
+    parser.add_argument('--turn', type=str, default=None)
+
+    args, unknown = parser.parse_known_args()
+
+    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpus
+    DATASETS = args.datasets
+
+    base_info = {
+        'model_type': args.model_type,
         'res_folder': None,
-        'train_dataset': ['common_voice', 'fleurs', 'hparl', 'tedx', 'logotypographia'],
+        'train_dataset': args.train_datasets,
         's_': False,
-        'checkpoint_folder': "dual_fusion_checkpoints",
-        'model_name': None,
-        'speech_encoder_id': 'openai/whisper-large-v3',
-        'language_model_id': 'ilsp/Llama-Krikri-8B-Instruct',
+        'checkpoint_folder': args.checkpoint_folder,
+        'model_name': args.model_name,
+        'speech_encoder_id': args.speech_encoder_id,
+        'language_model_id': args.language_model_id,
         'bit4': True,
-        'machine': 'kronos',
-        'datetime': 'Apr03_16-04',
-        'turn': '32500'
+        'machine': args.machine,
+        'datetime': args.datetime,
+        'turn': args.turn
     }
 
-if __name__ == "__main__":
     local_rank, device = init_gpu()
-    resume_wandb(local_rank, BASE_INFO)
+    resume_wandb(local_rank, base_info)
 
     try:
         for dataset in DATASETS:
-            info = BASE_INFO.copy()
-            info['test_dataset'] = dataset
+            base_info['test_dataset'] = dataset
 
-            evaluate(info,
+            evaluate(base_info,
                      set='test',
                      device=device,
                      iters=None)

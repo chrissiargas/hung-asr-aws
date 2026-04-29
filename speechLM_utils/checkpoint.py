@@ -1,9 +1,12 @@
 from typing import Dict, List
 from datetime import datetime
+
+from numpy.f2py.auxfuncs import throw_error
 from torch.utils.tensorboard import SummaryWriter
 from os.path import exists, join, isdir
 import os
 import socket
+import json
 
 def get_max_step(checkpoint_dir):
     max_step = 0
@@ -31,8 +34,8 @@ def get_last_checkpoint(checkpoint_dir):
 
     return None, False
 
-def get_last_name(args: Dict, info: Dict, restart: bool):
-    lora = 'LoRA_' + str(int(args['linguistic_lora']))
+def get_last_name(info: Dict, restart: bool):
+    lora = 'LoRA_1'
     dataset = info['train_dataset']
     date = '' if info['datetime'] is None else info['datetime']
 
@@ -41,8 +44,9 @@ def get_last_name(args: Dict, info: Dict, restart: bool):
 
     return f'{lora}_{dataset}@{date}', date
 
-def get_checkpoint(args: Dict, info: Dict, model_name: str, restart: bool = False):
-    last_name, date = get_last_name(args, info, restart)
+def get_checkpoint(checkpoints_path: str, info: Dict, model_name: str, restart: bool = False):
+    load = not restart
+    last_name, date = get_last_name(info, restart)
 
     if 'machine' in info and info['machine'] is not None:
         machine = info['machine']
@@ -50,7 +54,7 @@ def get_checkpoint(args: Dict, info: Dict, model_name: str, restart: bool = Fals
         machine = socket.gethostname()
 
     checkpoint_path = os.path.join(os.path.expanduser('~'),
-                                   args.checkpoint_path,
+                                   checkpoints_path,
                                    info['checkpoint_folder'],
                                    machine,
                                    model_name,
@@ -59,16 +63,26 @@ def get_checkpoint(args: Dict, info: Dict, model_name: str, restart: bool = Fals
     os.makedirs(checkpoint_path, exist_ok=True)
     writer = SummaryWriter(log_dir=checkpoint_path)
 
-    if 'turn' in info and info['turn'] is not None:
-        checkpoint_dir = join(checkpoint_path, f"checkpoint-{info['turn']}")
-        print(f"Found a previous checkpoint at: {checkpoint_dir}")
+    if load:
+        if 'turn' in info and info['turn'] is not None:
+            checkpoint_dir = join(checkpoint_path, f"checkpoint-{info['turn']}")
+        else:
+            max_step = get_max_step(checkpoint_path)
+            checkpoint_dir = join(checkpoint_path, f"checkpoint-{max_step}")
+            info['turn'] = max_step
+
+        if checkpoint_dir is not None:
+            print(f"Found checkpoint at: {checkpoint_dir}")
+
+        config_file = join(checkpoint_path, 'config.json')
+        if os.path.exists(config_file):
+            print(f"Loading model configuration strictly from {config_file}...")
+            with open(config_file, 'r') as f:
+                args = json.load(f)
+        else:
+            print(f"WARNING: args.json not found in {checkpoint_path}. Falling back to codebase YAML.")
+            args = None
     else:
-        checkpoint_dir, completed_training = get_last_checkpoint(checkpoint_path)
+        args = None
 
-        if completed_training:
-            print("Detected that training was already completed!")
-
-    if checkpoint_dir is not None:
-        print(f"Found checkpoint at: {checkpoint_dir}")
-
-    return checkpoint_path, checkpoint_dir, writer, checkpoint_path, date
+    return checkpoint_path, checkpoint_dir, writer, date, args
