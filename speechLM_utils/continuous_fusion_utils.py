@@ -77,16 +77,17 @@ class CrossAttention(nn.Module):
             self.audio_pos_embed = SinusoidalPositionalEmbedding(d_model=audio_embed_dim, max_len=seq_len)
 
     def compute_mask(self, prm_len, prm_audio_len, inj_audio_len, device, dtype, prm_audio_mask=None,
-                     inj_audio_mask=None):
+                     inj_audio_mask=None, verbose: bool = False):
         min_val = torch.finfo(dtype).min
 
-        if prm_audio_mask is not None:
-            plt.imshow(prm_audio_mask[0].unsqueeze(0).detach().cpu(), aspect='auto')
-            plt.show()
+        if verbose:
+            if prm_audio_mask is not None:
+                plt.imshow(prm_audio_mask[0].unsqueeze(0).detach().cpu(), aspect='auto')
+                plt.show()
 
-        if inj_audio_mask is not None:
-            plt.imshow(inj_audio_mask[0].unsqueeze(0).detach().cpu(), aspect='auto')
-            plt.show()
+            if inj_audio_mask is not None:
+                plt.imshow(inj_audio_mask[0].unsqueeze(0).detach().cpu(), aspect='auto')
+                plt.show()
 
         if self.causal_fusion:
             batch_size = inj_audio_mask.shape[0]
@@ -109,7 +110,7 @@ class CrossAttention(nn.Module):
             causal_mask = torch.where(inj_indices <= inj_boundary, 0.0, min_val)
             causal_mask = causal_mask.unsqueeze(1)
 
-            if isinstance(causal_mask, torch.Tensor):
+            if verbose and isinstance(causal_mask, torch.Tensor):
                 plt.imshow(~causal_mask[0, 0].to(torch.bool).detach().cpu(), aspect='auto', interpolation='nearest')
                 plt.show()
         else:
@@ -123,7 +124,7 @@ class CrossAttention(nn.Module):
 
         mask = causal_mask + audio_mask
 
-        if isinstance(causal_mask, torch.Tensor):
+        if verbose and isinstance(causal_mask, torch.Tensor):
             plt.imshow(~mask[0, 0].to(torch.bool).detach().cpu(), aspect='auto', interpolation='nearest')
             plt.show()
 
@@ -242,7 +243,8 @@ if __name__ == "__main__":
         device=device,
         dtype=dtype,
         prm_audio_mask=prm_audio_mask,
-        inj_audio_mask=inj_audio_mask
+        inj_audio_mask=inj_audio_mask,
+        verbose=True
     )
 
     # # 5. Format and Print Results
