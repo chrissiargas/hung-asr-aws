@@ -1,10 +1,16 @@
+import os
+import sys
+from os.path import dirname
+
+sys.path.insert(0, dirname(dirname(os.path.abspath(__file__))))
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from typing import Optional
 import math
-
-from speechLM_utils.downsamplers import ReshapeAdapter, Conv1DAdapter, AvgPoolAdapter, LinearAdapter, CIFireAdapter
+import matplotlib.pyplot as plt
+from speechLM_utils.downsamplers import ReshapeAdapter
 
 
 class SinusoidalPositionalEmbedding(nn.Module):
@@ -74,6 +80,14 @@ class CrossAttention(nn.Module):
                      inj_audio_mask=None):
         min_val = torch.finfo(dtype).min
 
+        if prm_audio_mask is not None:
+            plt.imshow(prm_audio_mask[0].unsqueeze(0).detach().cpu(), aspect='auto')
+            plt.show()
+
+        if inj_audio_mask is not None:
+            plt.imshow(inj_audio_mask[0].unsqueeze(0).detach().cpu(), aspect='auto')
+            plt.show()
+
         if self.causal_fusion:
             batch_size = inj_audio_mask.shape[0]
             inj_audio_end = inj_audio_mask.sum(dim=1)
@@ -87,13 +101,17 @@ class CrossAttention(nn.Module):
             content_prm_audio_len = prm_audio_len - prm_audio_masked
             content_inj_audio_len = inj_audio_len - inj_audio_masked
 
-            slope = (content_prm_audio_len / content_inj_audio_len).view(batch_size, 1, 1)
+            slope = (content_inj_audio_len / content_prm_audio_len).view(batch_size, 1, 1)
 
             t_rel = torch.clamp(prm_indices - self.audio_offset, min=0)
             inj_boundary = torch.floor(t_rel * slope)
 
             causal_mask = torch.where(inj_indices <= inj_boundary, 0.0, min_val)
             causal_mask = causal_mask.unsqueeze(1)
+
+            if isinstance(causal_mask, torch.Tensor):
+                plt.imshow(~causal_mask[0, 0].to(torch.bool).detach().cpu(), aspect='auto', interpolation='nearest')
+                plt.show()
         else:
             causal_mask = 0
 
@@ -104,6 +122,10 @@ class CrossAttention(nn.Module):
             audio_mask = 0
 
         mask = causal_mask + audio_mask
+
+        if isinstance(causal_mask, torch.Tensor):
+            plt.imshow(~mask[0, 0].to(torch.bool).detach().cpu(), aspect='auto', interpolation='nearest')
+            plt.show()
 
         if isinstance(mask, torch.Tensor):
             mask = torch.clamp(mask, min=min_val).to(dtype)
@@ -180,3 +202,65 @@ class InjectionLayer(nn.Module):
             rest = (rest,)
 
         return (fused_hidden_states,) + rest
+
+
+if __name__ == "__main__":
+    print("=== Testing Causal Masking in CrossAttention ===")
+
+    # 1. Setup Dummy Dimensions for the experiment
+    batch_size = 1
+    hidden_dim = 4096
+    audio_dim = 1280
+    audio_offset = 0  # Let's say 2 text tokens appear before the audio prompt
+    prm_len = 363  # Total LLM tokens (2 text + 8 audio + 3 generated text)
+    prm_audio_len = 300  # Prompt-level audio tokens
+    inj_audio_len = 500  # Deep-level injection audio tokens (more heavily downsampled)
+
+    # 2. Instantiate CrossAttention
+    cross_attn = CrossAttention(
+        hidden_dim=hidden_dim,
+        audio_dim=audio_dim,
+        audio_offset=audio_offset,
+        num_heads=8,  # Arbitrary for this test
+        causal_fusion=True,
+        downsample_L=3
+    )
+
+    # 3. Create dummy masks (assuming no padding for this test)
+    device = torch.device('cpu')
+    dtype = torch.float32
+    prm_audio_mask = torch.ones(batch_size, prm_audio_len, device=device)
+    prm_audio_mask[:, 150:] = 0
+    inj_audio_mask = torch.ones(batch_size, inj_audio_len, device=device)
+    inj_audio_mask[:, 250:] = 0
+
+    # 4. Compute Mask using your class method
+    mask = cross_attn.compute_mask(
+        prm_len=prm_len,
+        prm_audio_len=prm_audio_len,
+        inj_audio_len=inj_audio_len,
+        device=device,
+        dtype=dtype,
+        prm_audio_mask=prm_audio_mask,
+        inj_audio_mask=inj_audio_mask
+    )
+
+    # # 5. Format and Print Results
+    # print(f"LLM Total Sequence Length: {prm_len}")
+    # print(f"Prompt Audio Tokens: {prm_audio_len} (starts at offset {audio_offset})")
+    # print(f"Injection Audio Tokens: {inj_audio_len}")
+    # print("-" * 50)
+    #
+    # mask_to_print = mask.squeeze()
+    #
+    # header = "      " + "".join([f"Inj{i:<4}" for i in range(mask_to_print.shape[1])])
+    # print(header)
+    # print("      " + "-" * (mask_to_print.shape[1] * 7))
+    #
+    # for i, row in enumerate(mask_to_print):
+    #     # Print 0.0 for unmasked (attend), -inf for masked
+    #     # formatting heavily negative numbers to ' -inf' for readability
+    #     row_str = " ".join([f"{' 0.0' if val == 0.0 else ' -inf':<6}" for val in row])
+    #     print(f"LLM{i:<2} | {row_str}")
+    #
+    # print("================================================")
