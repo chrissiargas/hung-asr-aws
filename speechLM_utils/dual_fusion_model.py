@@ -721,12 +721,12 @@ class DualFusionModel(nn.Module):
                     injection_audio = self.injection_downsampler(audio_embs)
                     inj_audio_mask = self.calculate_mask(audio_masks, injection_audio)
 
-        for l, injection_layer in enumerate(self.injection_layers):
+        for l, injection_layer_id in enumerate(self.injection_layer_ids):
             if self.pyramid_layers:
                 if l == self.n_injections - 1:
                     audio_features = encoder_outputs.last_hidden_state
                 else:
-                    audio_features = encoder_outputs.hidden_states[injection_layer]
+                    audio_features = encoder_outputs.hidden_states[injection_layer_id]
 
                 if isinstance(self.injection_downsamplers[l], CIFireAdapter):
                     injection_audio, inj_audio_mask, _ = self.injection_downsamplers[l](audio_features, audio_masks)
