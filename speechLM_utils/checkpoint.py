@@ -83,6 +83,7 @@ def get_checkpoint(checkpoints_path: str, info: Dict, model_name: str, restart: 
             print(f"WARNING: args.json not found in {checkpoint_path}. Falling back to codebase YAML.")
             args = None
     else:
+        checkpoints_dir = None
         args = None
 
     return checkpoint_path, checkpoint_dir, writer, date, args
