@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Optional, Dict, Sequence
 import torch
+from diffusers.pipelines.audioldm2.modeling_audioldm2 import add_special_tokens
 from transformers import WhisperProcessor, AutoTokenizer, WhisperTokenizer
 
 GREEK_CHARS = "αβγδεζηθικλμνξοπρστυφχψωςάέήίόύώϊϋΐΰ"
@@ -31,6 +32,7 @@ class DataCollator(object):
     add_to_vocab: bool = False
     contain_index: bool = False
     to_chars: bool = False
+    prompt_verbatim: bool = False
 
     def get_duration_id(self, duration):
         bin_idx = round(duration / self.duration_resolution)
@@ -79,6 +81,18 @@ class DataCollator(object):
         else:
             transcriptions = [x["reference"] + self.language_tokenizer.eos_token for x in instances]
 
+        if self.prompt_verbatim:
+            tags = ["Κατά λέξη μεταγραφή: "
+                    if x.get('dataset_name', '') in ['common_voice', 'fleurs', 'logotypographia']
+                    else "Κανονικοποιημένη μεταγραφή: " for x in instances]
+
+            tag_tokens = self.language_tokenizer(
+                tags,
+                return_tensors="pt",
+                padding=True,
+                add_special_tokens=False
+            )
+
         # noinspection PyCallingNonCallable
         label_tokens = self.language_tokenizer(
             transcriptions,
@@ -88,7 +102,6 @@ class DataCollator(object):
             max_length=1024,
             add_special_tokens=False
         )
-
         if self.contain_index:
             indices = [x["index"] for x in instances]
 
@@ -125,6 +138,10 @@ class DataCollator(object):
                 xy['ctc_labels'] = CTC_labels_padded.to(self.device)
                 xy['ctc_lengths'] = CTC_lengths.to(self.device)
 
+            if self.prompt_verbatim:
+                xy['tag_tokens'] = tag_tokens.input_ids
+                xy['tag_masks'] = tag_tokens.attention_mask
+
         else:
             xy = {
                 "audios": batch_audio.input_features,
@@ -146,6 +163,10 @@ class DataCollator(object):
             if self.to_chars:
                 xy['ctc_labels'] = CTC_labels_padded
                 xy['ctc_lengths'] = CTC_lengths
+
+            if self.prompt_verbatim:
+                xy['tag_tokens'] = tag_tokens.input_ids
+                xy['tag_masks'] = tag_tokens.attention_mask
 
         return xy
 

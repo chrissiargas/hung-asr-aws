@@ -1,7 +1,6 @@
 import os
 import sys
 from os.path import dirname
-
 sys.path.insert(0, dirname(dirname(os.path.abspath(__file__))))
 
 import torch
@@ -30,7 +29,6 @@ class SinusoidalPositionalEmbedding(nn.Module):
     def forward(self, x):
         seq_len = x.size(1)
         return x + self.pe[:, :seq_len, :]
-
 
 class CrossAttention(nn.Module):
     def __init__(self,
@@ -175,7 +173,6 @@ class CrossAttention(nn.Module):
 
         return fused_output
 
-
 class InjectionLayer(nn.Module):
     def __init__(self, lm_layer, cross_attention_layer):
         super().__init__()
@@ -193,10 +190,10 @@ class InjectionLayer(nn.Module):
         lm_hidden_states = lm_outputs[0]
 
         fused_hidden_states = self.cross_attention_layer(lm_hidden_states,
-                                                         self.injection_audio,
-                                                         self.prompt_audio,
-                                                         self.injection_audio_mask,
-                                                         self.prompt_audio_mask)
+                                                           self.injection_audio,
+                                                           self.prompt_audio,
+                                                           self.injection_audio_mask,
+                                                           self.prompt_audio_mask)
 
         rest = lm_outputs[1:] if len(lm_outputs) > 1 else ()
         if isinstance(rest, torch.Tensor):

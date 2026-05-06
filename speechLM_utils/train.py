@@ -103,7 +103,8 @@ def train_model(dataset, args, training_args, info, checkpoint_path, checkpoint_
                             padding=padding, truncation=truncation,
                             has_audio_lb_tokens=True,
                             has_duration_lb=args['predict_duration'],
-                            to_chars=args['ctc'] or args['injection_downsample'] == 'cif')
+                            to_chars=args['ctc'] or args['injection_downsample'] == 'cif',
+                            prompt_verbatim=args['prompt_verbatim'])
 
     params = model.get_named_params()
 

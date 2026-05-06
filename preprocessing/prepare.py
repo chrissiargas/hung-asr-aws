@@ -74,14 +74,16 @@ def get_typed_data(dataset, audio_name: str,
             audio_name: [x["audio_filepath"] for x in dataset],
             text_name: [x["text"] for x in dataset],
             "duration": [x["duration"] for x in dataset],
-            "index": [x["index"] for x in dataset]
+            "index": [x["index"] for x in dataset],
+            "dataset_name": [x["dataset_name"] for x in dataset]
         }
 
     else:
         hf_data = {
             audio_name: [x["audio_filepath"] for x in dataset],
             text_name: [x["text"] for x in dataset],
-            "index": [x["index"] for x in dataset]
+            "index": [x["index"] for x in dataset],
+            "dataset_name": [x["dataset_name"] for x in dataset]
         }
 
     hf_data = Dataset.from_dict(hf_data)
@@ -131,12 +133,18 @@ def get_data(paths, bad_folder: str, process: bool = True,
                 for l, line in enumerate(f):
                     item = json.loads(line)
                     item['index'] = l
+                    item['dataset_name'] = name
                     if item.get("audio_filepath") not in bad_filepaths:
                         dataset.append(item)
 
         else:
             with open(manifest_path, 'r', encoding='utf-8') as f:
-                dataset = [json.loads(line) for line in f]
+                dataset = []
+                for l, line in enumerate(f):
+                    item = json.loads(line)
+                    item['index'] = l
+                    item['dataset_name'] = name
+                    dataset.append(item)
 
         if iters:
             n = iters if iters < len(dataset) else len(dataset)

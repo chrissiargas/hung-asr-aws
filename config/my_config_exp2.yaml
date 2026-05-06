@@ -27,7 +27,7 @@ dual_fuse_args:
   ## Regularization & Augmentation Configurations
   blank_training: False
   audio_dropout: 0.1
-  text_perturbation: True
+  text_perturbation: False
   text_dropout: 0.1
   spec_augment: True
   ## Input Injection Configurations
@@ -37,6 +37,7 @@ dual_fuse_args:
   downsample_K: 5
   input_downsample: 'reshape'
   ## Cross-Attention Injection Configurations
+  static_injection_layers: False
   downsample_L: 5
   injection_downsample: 'conv1d'
   injection_layers: [10, 20, 30]
@@ -58,20 +59,20 @@ dual_fuse_args:
   max_duration: 30.0
   ctc: False
   audio_forecasting: False
-  duration_weight: 0.1
-  ctc_weight: 0.1
-  audio_weight: 0.5
+  duration_weight: 0.4
+  ctc_weight: 0.4
+  audio_weight: 0.4
   ## Training Behavior Configurations
   early_stopping_patience: 15
-  first_stage_epochs: 10
-  second_stage_epochs: 40
+  first_stage_epochs: 20
+  second_stage_epochs: 20
   ## Prompt Configurations
   prompt_persona: none
   prompt_instruction: "\nΜετάγραψε το προηγούμενο ηχητικό απόσπασμα σε ελληνικό κείμενο με απόλυτη ακρίβεια."
   prompt_verbatim: False
   training_args: {
     # --- PERFORMANCE OPTIMIZATIONS ---
-    'bf16': True,                   # CRITICAL: Native speed for Titan RTX
+    'fp16': True,                   # CRITICAL: Native speed for Titan RTX
     'dataloader_num_workers': 4,    # Optimized for 14-core CPU (3 workers * 4 GPUs = 12 threads)
     'dataloader_pin_memory': True,  # Fast CPU->GPU transfer
     'per_device_train_batch_size': 2, # Maximize VRAM usage
@@ -86,7 +87,7 @@ dual_fuse_args:
     'optim': 'adamw_torch',
 
     # --- LOGGING & SAVING ---
-    'report_to': 'tensorboard',
+    'report_to': 'wandb',
     'logging_steps': 10,
     'save_strategy': 'steps',
     'save_steps': 1000,
@@ -138,3 +139,44 @@ eval_args:
       'use_cache': True,
     }
   }
+
+#slam_args:
+#  seed: 0
+#  num_train_epochs: 50
+#  training_args: {
+#    'train_on_source': False,
+#    'report_to': 'tensorboard',
+#    'optim': 'adamw_torch',
+#    'per_device_train_batch_size': 4,
+#    'gradient_accumulation_steps': 4,
+#    'max_steps': 40000,
+#    'weight_decay': 0.0,
+#    'learning_rate': 1e-4,
+#    'warmup_ratio': 0.1,
+#    'lr_scheduler_type': 'linear',
+#    'remove_unused_columns': False,
+#    'max_grad_norm': 0.3,
+#    'gradient_checkpointing': True,
+#    'logging_steps': 10,
+#    'group_by_length': True,
+#    'save_strategy': 'epoch',
+#    'save_steps': 250,
+#    'save_total_limit': 40,
+#    'generation_args': {
+#        'max_new_tokens': 32,
+#        'min_new_tokens': None,
+#        'do_sample': False,
+#        'num_beams': 1,
+#        'num_beam_groups': 1,
+#        'penalty_alpha': None,
+#        'use_cache': True,
+#        'temperature': 1.0,
+#        'top_k': 50,
+#        'top_p': 1.0,
+#        'typical_p': 1.0,
+#        'repetition_penalty': 1.0,
+#        'length_penalty': 1.0,
+#        'no_repeat_ngram_size': 0,
+#        'diversity_penalty': 0.0
+#      }
+#  }

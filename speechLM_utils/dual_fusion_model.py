@@ -294,9 +294,10 @@ class DualFusionModel(nn.Module):
             layers = self.language_model.model.layers
 
         self.injection_downsampler = None
-        if self.downsamplers == 'common':
+
+        if self.downsamplers == 'common' and self.downsample_L == self.downsample_K:
             self.injection_downsampler = self.input_downsampler
-        elif self.downsamplers == 'injection_common':
+        elif self.downsamplers == 'injection_common' and self.downsample_L > 1:
             self.injection_downsampler, _ = get_downsampler(self.injection_downsample,
                                                             self.downsample_L,
                                                             self.audio_dim,
@@ -306,11 +307,14 @@ class DualFusionModel(nn.Module):
         self.injection_downsamplers = []
         if self.downsamplers == 'different':
             for _ in self.injection_layer_ids:
-                injection_downsampler, _ = get_downsampler(self.injection_downsample,
-                                                            self.downsample_L,
-                                                            self.audio_dim,
-                                                            self.device,
-                                                            self.dtype)
+                if self.downsample_L > 1:
+                    injection_downsampler, _ = get_downsampler(self.injection_downsample,
+                                                                self.downsample_L,
+                                                                self.audio_dim,
+                                                                self.device,
+                                                                self.dtype)
+                else:
+                    injection_downsampler = None
 
                 self.injection_downsamplers.append(injection_downsampler)
 
@@ -522,11 +526,11 @@ class DualFusionModel(nn.Module):
             for param in self.input_downsampler.parameters():
                 input_down_params += param.numel()
 
-        if self.downsamplers == 'injection_common':
+        if self.downsamplers == 'injection_common' and self.downsample_L > 1:
             for param in self.injection_downsampler.parameters():
                 injection_down_params += param.numel()
 
-        elif self.downsamplers == 'different':
+        elif self.downsamplers == 'different' and self.downsample_L > 1:
             for injection_downsampler in self.injection_downsamplers:
                 for param in injection_downsampler.parameters():
                     injection_down_params += param.numel()
@@ -601,7 +605,9 @@ class DualFusionModel(nn.Module):
         self.embed_bank["att2"] = a2
 
     def _prepare_input_embeds(
-            self, batch_size, audio_embeds = None, audio_masks = None, label_ids= None, label_masks = None, noisy_label_ids = None
+            self, batch_size, audio_embeds = None, audio_masks = None,
+            label_ids= None, label_masks = None, noisy_label_ids = None,
+            tag_tokens = None, tag_masks = None
     ):
         target_dtype = self.embed_bank["embed1"].dtype
 
@@ -614,26 +620,38 @@ class DualFusionModel(nn.Module):
         user_mask = self.embed_bank["att1"].to(self.device).repeat(batch_size, 1)
         assistant_mask = self.embed_bank["att2"].to(self.device).repeat(batch_size, 1)
 
+        if tag_tokens is not None:
+            tag_embeds = self.get_token_embeddings(tag_tokens.to(self.device))
+            tag_masks = tag_masks.to(self.device)
+        else:
+            tag_embeds = None
+
+        embed_components = [user_embeds]
+        mask_components = [user_mask]
+
+        if audio_embeds is not None:
+            embed_components.append(audio_embeds)
+            mask_components.append(audio_masks)
+
+        embed_components.append(assistant_embeds)
+        mask_components.append(assistant_mask)
+
+        if tag_embeds is not None:
+            embed_components.append(tag_embeds)
+            mask_components.append(tag_masks)
+
         if label_ids is not None:
             label_ids = label_ids.to(self.device)
-
             input_context_ids = noisy_label_ids.to(self.device) if noisy_label_ids is not None else label_ids
             label_embeds = self.get_token_embeddings(input_context_ids)
 
-            if audio_embeds is None:
-                prompt_embed = torch.cat(
-                    [user_embeds, assistant_embeds, label_embeds], dim=1
-                )
-            else:
-                prompt_embed = torch.cat(
-                    [user_embeds, audio_embeds, assistant_embeds, label_embeds], dim=1
-                )
+            embed_components.append(label_embeds)
+            mask_components.append(label_masks)
 
-            if audio_masks is None:
-                prompt_mask = torch.cat([user_mask, assistant_mask, label_masks], dim=1)
-            else:
-                prompt_mask = torch.cat([user_mask, audio_masks, assistant_mask, label_masks], dim=1)
+        prompt_embed = torch.cat(embed_components, dim=1)
+        prompt_mask = torch.cat(mask_components, dim=1)
 
+        if label_ids is not None:
             labels = torch.full(
                 (batch_size, prompt_embed.shape[1]),
                 -100
@@ -644,26 +662,11 @@ class DualFusionModel(nn.Module):
 
             actual_label_length = (label_masks == 1).sum(dim=1).max().detach()
 
-            return prompt_embed, prompt_mask, actual_label_length, labels
-
         else:
-            if audio_embeds is None:
-                prompt_embed = torch.cat(
-                    [user_embeds, assistant_embeds], dim=1
-                )
-            else:
-                prompt_embed = torch.cat(
-                    [user_embeds, audio_embeds, assistant_embeds], dim=1
-                )
+            actual_label_length = None
+            labels = None
 
-            if audio_masks is None:
-                prompt_mask = torch.cat(
-                    [user_mask, assistant_mask], dim=1
-                )
-            else:
-                prompt_mask = torch.cat([user_mask, audio_masks, assistant_mask], dim=1)
-
-            return prompt_embed, prompt_mask, None, None
+        return prompt_embed, prompt_mask, actual_label_length, labels
 
     def calculate_mask(self, old_mask, new_embeds):
         stride = old_mask.shape[-1] // new_embeds.shape[1]
@@ -711,7 +714,10 @@ class DualFusionModel(nn.Module):
             return injection_audios, injection_masks
 
         if not self.pyramid_layers:
-            if self.downsamplers == 'common' and down_embs is not None:
+            if self.downsample_L == 1:
+                inj_audio_mask = self.calculate_mask(audio_masks, audio_embs)
+                injection_audio = audio_embs
+            elif self.downsamplers == 'common' and down_embs is not None:
                 injection_audio = down_embs
                 inj_audio_mask = down_masks
             elif self.downsamplers == 'injection_common':
@@ -721,25 +727,33 @@ class DualFusionModel(nn.Module):
                     injection_audio = self.injection_downsampler(audio_embs)
                     inj_audio_mask = self.calculate_mask(audio_masks, injection_audio)
 
-        for l, injection_layer_id in enumerate(self.injection_layer_ids):
+        for l, injection_layer in enumerate(self.injection_layers):
             if self.pyramid_layers:
                 if l == self.n_injections - 1:
                     audio_features = encoder_outputs.last_hidden_state
                 else:
-                    audio_features = encoder_outputs.hidden_states[injection_layer_id]
+                    audio_features = encoder_outputs.hidden_states[injection_layer]
 
-                if isinstance(self.injection_downsamplers[l], CIFireAdapter):
-                    injection_audio, inj_audio_mask, _ = self.injection_downsamplers[l](audio_features, audio_masks)
+                if self.downsample_L > 1:
+                    if isinstance(self.injection_downsamplers[l], CIFireAdapter):
+                        injection_audio, inj_audio_mask, _ = self.injection_downsamplers[l](audio_features, audio_masks)
+                    else:
+                        injection_audio = self.injection_downsamplers[l](audio_features)
+                        inj_audio_mask = self.calculate_mask(audio_masks, injection_audio)
                 else:
-                    injection_audio = self.injection_downsamplers[l](audio_features)
-                    inj_audio_mask = self.calculate_mask(audio_masks, injection_audio)
+                    inj_audio_mask = self.calculate_mask(audio_masks, audio_features)
+                    injection_audio = audio_features
 
             elif self.downsamplers == 'different':
-                if isinstance(self.injection_downsamplers[l], CIFireAdapter):
-                    injection_audio, inj_audio_mask, _ = self.injection_downsamplers[l](audio_embs, audio_masks)
+                if self.downsample_L > 1:
+                    if isinstance(self.injection_downsamplers[l], CIFireAdapter):
+                        injection_audio, inj_audio_mask, _ = self.injection_downsamplers[l](audio_embs, audio_masks)
+                    else:
+                        injection_audio = self.injection_downsamplers[l](audio_embs)
+                        inj_audio_mask = self.calculate_mask(audio_masks, injection_audio)
                 else:
-                    injection_audio = self.injection_downsamplers[l](audio_embs)
-                    inj_audio_mask = self.calculate_mask(audio_masks, injection_audio)
+                    inj_audio_mask = self.calculate_mask(audio_masks, audio_embs)
+                    injection_audio = audio_embs
 
             injection_audios.append(injection_audio)
             injection_masks.append(inj_audio_mask)
@@ -789,6 +803,8 @@ class DualFusionModel(nn.Module):
                 index=None,
                 ctc_labels=None,
                 ctc_lengths=None,
+                tag_tokens=None,
+                tag_masks=None,
                 **kwargs):
 
         batch_size = audios.shape[0]
@@ -825,9 +841,14 @@ class DualFusionModel(nn.Module):
                 if self.ctc:
                     aux_ctc_loss = self.ctc_calculate(proj_embeddings, down_masks, ctc_labels, ctc_lengths)
 
-        prompt_embed, prompt_mask, label_length, true_labels = self._prepare_input_embeds(
-            batch_size, proj_embeddings, down_masks, labels, label_masks, noisy_label_ids
-        )
+        prompt_embed, prompt_mask, label_length, true_labels = self._prepare_input_embeds(batch_size,
+                                                                                        proj_embeddings,
+                                                                                        down_masks,
+                                                                                        labels,
+                                                                                        label_masks,
+                                                                                        noisy_label_ids,
+                                                                                        tag_tokens,
+                                                                                        tag_masks)
 
         with self.with_injection_gradient:
             injection_audios, injection_masks = self.inject(encoder_outputs,
@@ -902,6 +923,8 @@ class DualFusionModel(nn.Module):
                  index=None,
                  ctc_labels=None,
                  ctc_lengths=None,
+                 tag_tokens=None,
+                 tag_masks=None,
                  **kwargs):
 
         with torch.inference_mode():
@@ -940,7 +963,11 @@ class DualFusionModel(nn.Module):
                  down_embeddings,
                  down_masks, _) = self.get_input_embeddings(audio_embeddings, batch_masks)
 
-            prompt_embed, prompt_mask, _, _ = self._prepare_input_embeds(batch_size, proj_embeddings, down_masks)
+            prompt_embed, prompt_mask, _, _ = self._prepare_input_embeds(batch_size,
+                                                                         proj_embeddings,
+                                                                         down_masks,
+                                                                         tag_tokens=tag_tokens,
+                                                                         tag_masks=tag_masks)
 
             pad_token_id = self.language_tokenizer.pad_token_id
             input_ids = torch.ones(
