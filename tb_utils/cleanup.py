@@ -1,4 +1,11 @@
+import warnings
+
+warnings.filterwarnings("ignore")
 import os
+import sys
+from os.path import dirname
+sys.path.insert(0, dirname(dirname(os.path.abspath(__file__))))
+
 import shutil
 from config.parser import Parser
 from datetime import datetime
@@ -11,6 +18,9 @@ def cleanup_short_runs(base_dir, min_steps, cutoff_date, contains_one_dataset=Fa
         return
 
     for machine in os.listdir(base_dir):
+        print('-------------------------------------------------------------')
+        print(f'DELETING CHECKPOINT FOLDERS FOR {machine}')
+
         machine_path = os.path.join(base_dir, machine)
         if not os.path.isdir(machine_path): continue
 
@@ -97,12 +107,11 @@ if __name__ == "__main__":
 
     task = 'dual_fusion_checkpoints'
     checkpoint_dir = os.path.join(os.path.expanduser('~'),
-                            conf.dual_fuse_args.checkpoint_path,
-                            task)
-    min_steps = 10000
-    cutoff_date = datetime(2026, 4, 7, 5, 0)
+                                conf.dual_fuse_args.checkpoint_path,
+                                task)
+    min_steps = 5000
+    cutoff_date = datetime(2026, 6, 7, 5, 0)
     contains_one_dataset = True
     contains_dataset = 'eurospeech'
 
     kept = cleanup_short_runs(checkpoint_dir, min_steps, cutoff_date, contains_one_dataset, contains_dataset, dry_run=False)
-    print(kept)
