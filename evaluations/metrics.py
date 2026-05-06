@@ -19,11 +19,11 @@ def get_metrics(predictions, references, indices, durations, with_total_metrics:
     for reference, prediction, n_reference, n_prediction in zip(references, predictions, norm_references,
                                                                 norm_predictions):
         wers.append(jiwer.wer(reference, prediction))
-        norm_wers.append(jiwer.wer(n_reference, n_prediction))
+        n_wers.append(jiwer.wer(n_reference, n_prediction))
         cers.append(jiwer.cer(reference, prediction))
         n_cers.append(jiwer.cer(n_reference, n_prediction))
         ratio.append(len(prediction) / len(reference) if len(reference) > 0 else 0)
-        norm_ratio.append(len(n_prediction) / len(n_reference) if len(reference) > 0 else 0)
+        n_ratio.append(len(n_prediction) / len(n_reference) if len(reference) > 0 else 0)
 
         out = jiwer.process_words(reference, prediction)
         subs.append(out.substitutions)
@@ -34,11 +34,11 @@ def get_metrics(predictions, references, indices, durations, with_total_metrics:
                             'reference': references,
                             'prediction': predictions,
                             'wer': wers,
-                            'n_wer': norm_wers,
+                            'n_wer': n_wers,
                             'cer': cers,
-                            'n_cer': norm_cers,
+                            'n_cer': n_cers,
                             'ratio': ratio,
-                            'n_ratio': norm_ratio,
+                            'n_ratio': n_ratio,
                             'substitutions': subs,
                             'insertions': ins,
                             'deletions': dels,

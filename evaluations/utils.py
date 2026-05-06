@@ -16,7 +16,87 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from typing import Dict
 import argparse
+from bert_score import score
 
+def generate_semantic_drift_plot(info: Dict):
+    conf = Parser()
+    conf.get_args()
+
+    for dataset_name in DATASETS:
+        local_info = info.copy()
+        local_info['test_dataset'] = dataset_name
+        results_folder = get_results_path(conf, local_info)
+        predictions_path = os.path.join(results_folder, 'predictions.csv')
+
+        if os.path.exists(predictions_path):
+            df = pd.read_csv(predictions_path)
+
+        df['reference'] = df['reference'].fillna('')
+        df['prediction'] = df['prediction'].fillna('')
+
+        refs = df['reference'].tolist()
+        preds = df['prediction'].tolist()
+
+        print("Calculating BERTScore on GPU (using multilingual model for Greek)...")
+        P, R, F1 = score(
+            preds,
+            refs,
+            lang="el",
+            model_type="bert-base-multilingual-cased",
+            batch_size=32,
+            verbose=False
+        )
+
+        df['semantic_f1'] = F1.tolist()
+
+        plot_df = df[df['wer'] <= 10.0].copy()
+
+        plt.figure(figsize=(11, 8))
+
+        sns.scatterplot(
+            data=plot_df,
+            x='wer',
+            y='semantic_f1',
+            hue='is_looping',
+            palette={True: '#e74c3c', False: '#3498db'},  # Red for loops, Blue for healthy text
+            alpha=0.7,
+            edgecolor='w',
+            s=70
+        )
+
+        # Draw quadrant guidelines
+        plt.axhline(y=0.80, color='#2ecc71', linestyle='--', alpha=0.8, label='Acceptable Semantics')
+        plt.axvline(x=0.20, color='#f39c12', linestyle='--', alpha=0.8, label='Acceptable WER')
+
+        # Annotate the specific regions to explain the "Lazy Decoder" problem
+        plt.text(0.02, 0.95, 'Top-Left\nPerfect', color='green', fontsize=10, alpha=0.8)
+        plt.text(1.2, 0.95, 'Top-Right\nParaphrasing / Grammar Fixes\n(Lazy Decoder)', color='orange', fontsize=10,
+                 alpha=0.8)
+        plt.text(1.2, 0.40, 'Bottom-Right\nCatastrophic Hallucination\n(Lost Meaning)', color='red', fontsize=10, alpha=0.8)
+
+        # Formatting
+        plt.title(f"Semantic Drift Analysis - {dataset_name}\n(Whisper Acoustics vs KriKri Semantics)", fontsize=14, pad=15)
+        plt.xlabel("Word Error Rate (WER) ➔ Lower is Better", fontsize=12)
+        plt.ylabel("Semantic F1 (BERTScore) ➔ Higher is Better", fontsize=12)
+
+        # Customize Legend
+        handles, labels = plt.gca().get_legend_handles_labels()
+        # Filter out the seaborn legend artifacts
+        valid_handles = [h for h, l in zip(handles, labels) if
+                         l in ['False', 'True', 'Acceptable Semantics', 'Acceptable WER']]
+        valid_labels = [l for l in labels if l in ['False', 'True', 'Acceptable Semantics', 'Acceptable WER']]
+        plt.legend(valid_handles, valid_labels, title="Caught in Generation Loop", loc="lower left")
+
+        plt.grid(True, linestyle=':', alpha=0.6)
+        plt.tight_layout()
+
+        # 5. Save the plot
+        save_dir = get_plots_dir(conf, info, 'semantic_drift')
+        save_path = os.path.join(save_dir, f"{dataset_name}.png")
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        plt.close()
+
+        print(f"Plot saved successfully to: {save_path}\n")
 
 def get_plots_dir(conf, info, viz):
     base_res_dir = get_results_path(conf, info, data_folder=False)
