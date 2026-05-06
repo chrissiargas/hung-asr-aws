@@ -1,5 +1,6 @@
 import re
 import unicodedata
+import num2words
 
 vowel_pattern = re.compile(r'(αι|ει|οι|υι|ου|αυ|ευ|ηυ|α|ε|η|ι|ο|υ|ω|ά|έ|ή|ί|ό|ύ|ώ)', re.IGNORECASE)
 
@@ -52,10 +53,10 @@ def normalize(text, ss: bool = False, s_: bool = False, with_signs: bool = True,
 
     if with_signs:
         text = re.sub(r'([^\w\s])\1*', r' \g<0> ', text)
-        text = re.sub(r'\s+', ' ', text)
     else:
-        text = re.sub(r'[^\w\s]', '', text)
-        text = re.sub(r'\s+', ' ', text)
+        text = re.sub(r'[^\w\s]', ' ', text)
+
+    text = re.sub(r'\s+', ' ', text)
 
     if norm_mono:
         text = normalize_monosyllables(text)
@@ -64,7 +65,7 @@ def normalize(text, ss: bool = False, s_: bool = False, with_signs: bool = True,
 
 def remove_signs(text):
     try:
-        text = re.sub(r'[^\w\s]', '', text)
+        text = re.sub(r'[^\w\s]', ' ', text)
         text = re.sub(r'\s+', ' ', text)
     except:
         print(text)

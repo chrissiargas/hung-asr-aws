@@ -161,6 +161,8 @@ def get_eval_metrics(data, model_type, conf, args, info, checkpoint_path, checkp
 
     output = trainer.predict(data)
     indices = data['index']
+    durations = data['duration']
+
     generated_ids = output.predictions
     label_ids = output.label_ids
 
@@ -178,7 +180,7 @@ def get_eval_metrics(data, model_type, conf, args, info, checkpoint_path, checkp
 
     print(f"Computing metrics...")
 
-    res_samples, res_total = get_metrics(predictions, references, indices, with_total_metrics=True)
+    res_samples, res_total = get_metrics(predictions, references, indices, durations, with_total_metrics=True)
 
     samples_path = os.path.join(info['res_folder'], "predictions.csv")
     total_path = os.path.join(info['res_folder'], "results.csv")
