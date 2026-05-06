@@ -34,13 +34,13 @@ dual_fuse_args:
   include_adapter: True
   hidden_dim: 2048
   static_projector: False
-  downsample_K: 5
+  downsample_K: 5d
   input_downsample: 'reshape'
   ## Cross-Attention Injection Configurations
   static_injection_layers: False
   downsample_L: 5
   injection_downsample: 'conv1d'
-  injection_layers: [10, 20, 30]
+  injection_layers: [8, 16, 24]
   pyramid_layers: False
   downsamplers: 'injection_common' # common, injection_common, different
   causal_fusion: False
