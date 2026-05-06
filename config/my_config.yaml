@@ -34,13 +34,13 @@ dual_fuse_args:
   include_adapter: True
   hidden_dim: 2048
   static_projector: False
-  downsample_K: 5d
+  downsample_K: 5
   input_downsample: 'reshape'
   ## Cross-Attention Injection Configurations
   static_injection_layers: False
   downsample_L: 5
   injection_downsample: 'conv1d'
-  injection_layers: [8, 16, 24]
+  injection_layers: [10, 20, 30]
   pyramid_layers: False
   downsamplers: 'injection_common' # common, injection_common, different
   causal_fusion: False
@@ -72,7 +72,7 @@ dual_fuse_args:
   prompt_verbatim: False
   training_args: {
     # --- PERFORMANCE OPTIMIZATIONS ---
-    'fp16': True,                   # CRITICAL: Native speed for Titan RTX
+    'bf16': True,                   # CRITICAL: Native speed for Titan RTX
     'dataloader_num_workers': 4,    # Optimized for 14-core CPU (3 workers * 4 GPUs = 12 threads)
     'dataloader_pin_memory': True,  # Fast CPU->GPU transfer
     'per_device_train_batch_size': 2, # Maximize VRAM usage
@@ -124,7 +124,7 @@ eval_args:
     'eval_accumulation_steps': 4,
     'remove_unused_columns': False,
     'predict_with_generate': True,
-    'fp16': True,
+    'bf16': True,
     'dataloader_num_workers': 4,
     'dataloader_pin_memory': True,
     'eval_strategy': 'no',

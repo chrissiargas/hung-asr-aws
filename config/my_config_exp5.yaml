@@ -72,7 +72,7 @@ dual_fuse_args:
   prompt_verbatim: False
   training_args: {
     # --- PERFORMANCE OPTIMIZATIONS ---
-    'fp16': True,                   # CRITICAL: Native speed for Titan RTX
+    'bf16': True,                   # CRITICAL: Native speed for Titan RTX
     'dataloader_num_workers': 4,    # Optimized for 14-core CPU (3 workers * 4 GPUs = 12 threads)
     'dataloader_pin_memory': True,  # Fast CPU->GPU transfer
     'per_device_train_batch_size': 2, # Maximize VRAM usage
@@ -124,7 +124,7 @@ eval_args:
     'eval_accumulation_steps': 4,
     'remove_unused_columns': False,
     'predict_with_generate': True,
-    'fp16': True,
+    'bf16': True,
     'dataloader_num_workers': 4,
     'dataloader_pin_memory': True,
     'eval_strategy': 'no',
