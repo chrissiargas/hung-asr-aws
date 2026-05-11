@@ -10,6 +10,7 @@ from transformers import GenerationConfig, Seq2SeqTrainingArguments
 from typing import Dict, List
 import socket
 
+
 def get_tags(args: Dict, datasets: List[str]):
     tags = []
     tags.append(socket.gethostname())
@@ -64,7 +65,11 @@ def get_tags(args: Dict, datasets: List[str]):
         instruct_len = len(args['prompt_instruction'])
         tags.append(f'prompt_instruction: {instruct_len}')
 
+    if args['prompt_verbatim']:
+        tags.append('prompt_verbatim')
+
     return tags
+
 
 def init_gpu():
     gc.collect()
@@ -83,7 +88,8 @@ def init_gpu():
 
     return local_rank, device
 
-def init_info(model_type, datasets, machine = None, datetime = None, interleave = True, iters = 800):
+
+def init_info(model_type, datasets, machine=None, datetime=None, interleave=True, iters=800):
     info = Info[model_type]
     info['checkpoint_folder'] = f'{model_type}_checkpoints'
     info['train_dataset'] = datasets
@@ -94,7 +100,8 @@ def init_info(model_type, datasets, machine = None, datetime = None, interleave 
 
     return info
 
-def init(model_type, info, restart = True, exp: int = 0):
+
+def init(model_type, info, restart=True, exp: int = 0):
     conf = Parser()
     conf.get_args(exp)
 
@@ -108,7 +115,6 @@ def init(model_type, info, restart = True, exp: int = 0):
         args = conf.dual_fuse_args
         training_args = args.training_args
 
-
     if info['model_name'] is None:
         model_name = (info['speech_encoder_id'].split('/')[1] + '_' +
                       info['language_model_id'].split('/')[1])
@@ -117,7 +123,8 @@ def init(model_type, info, restart = True, exp: int = 0):
 
     info['model_name'] = model_name
 
-    checkpoint_path, checkpoint_dir, writer, date, loaded_args = get_checkpoint(args.checkpoint_path, info, model_name, restart)
+    checkpoint_path, checkpoint_dir, writer, date, loaded_args = get_checkpoint(args.checkpoint_path, info, model_name,
+                                                                                restart)
 
     if loaded_args is not None:
         args = loaded_args
@@ -155,6 +162,7 @@ def resume_wandb(local_rank, info):
             print(f"Could not find existing run '{info['datetime']}'. Starting a new evaluation run...")
             wandb.init(project="Greek-ASR", entity="chrissiargas-innoetics", name=f"{info['datetime']}_EVAL",
                        group=info['model_type'])
+
 
 def init_wandb(local_rank, args, date, model_type, datasets, note):
     tags = get_tags(args, datasets)

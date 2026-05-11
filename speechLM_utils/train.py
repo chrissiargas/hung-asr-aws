@@ -6,8 +6,10 @@ warnings.filterwarnings("ignore")
 import os
 import sys
 from os.path import dirname
+
 sys.path.insert(0, dirname(dirname(os.path.abspath(__file__))))
 from speechLM_utils.environment import set_environment
+
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.environ["PYTORCH_ALLOC_CONF"] = "expandable_segments:True"
 set_environment()
@@ -32,6 +34,7 @@ cer_metric = evaluate.load("cer")
 wer_metric = evaluate.load("wer")
 N_samples_for_metrics = 200
 
+
 class OffsetTensorBoardCallback(TensorBoardCallback):
     def __init__(self, step_offset=0, tb_writer=None):
         super().__init__(tb_writer=tb_writer)
@@ -42,6 +45,7 @@ class OffsetTensorBoardCallback(TensorBoardCallback):
         state.global_step = original_step + self.step_offset
         super().on_log(args, state, control, logs=logs, **kwargs)
         state.global_step = original_step
+
 
 def two_stage_train(dataset, args, training_args, info, checkpoint_path, checkpoint_dir, writer, device, exp: int = 0):
     if not SKIP_STAGE1:
@@ -87,7 +91,8 @@ def two_stage_train(dataset, args, training_args, info, checkpoint_path, checkpo
     print("--- STAGE 2 COMPLETE ---")
 
 
-def train_model(dataset, args, training_args, info, checkpoint_path, checkpoint_dir, writer, device, load: bool = False, exp: int = 0):
+def train_model(dataset, args, training_args, info, checkpoint_path, checkpoint_dir, writer, device, load: bool = False,
+                exp: int = 0):
     model, tokenizer = get_model(MODEL_TYPE, args, info, device, exp, ATTN_IMPL)
 
     if load:
@@ -108,7 +113,7 @@ def train_model(dataset, args, training_args, info, checkpoint_path, checkpoint_
 
     params = model.get_named_params()
 
-    optimizer_grouped_parameters = [ group for group in [
+    optimizer_grouped_parameters = [group for group in [
         {"params": params['lora'], "lr": args.lora_lr},
         {"params": params['downsamplers'], 'lr': args.proj_lr},
         {"params": params['adapter'], "lr": args.proj_lr},
@@ -116,8 +121,8 @@ def train_model(dataset, args, training_args, info, checkpoint_path, checkpoint_
         {"params": params['ctc_head'], "lr": args.proj_lr},
         {"params": params['audio_head'], "lr": args.proj_lr},
         {"params": params['duration_token_params'], "lr": args.proj_lr}
-        ] if len(group["params"]) > 0
-    ]
+    ] if len(group["params"]) > 0
+                                    ]
 
     optimizer = torch.optim.AdamW(
         optimizer_grouped_parameters,
@@ -158,8 +163,11 @@ def train_model(dataset, args, training_args, info, checkpoint_path, checkpoint_
 
     return checkpoint_path
 
+
 def setup(model_type, info, restart: bool = False, device: str = 'cuda', local_rank: int = -1, exp: int = 0):
-    conf, args, training_args, bad_folder, date, checkpoint_path, checkpoint_dir, writer = init(model_type, info, restart, exp)
+    conf, args, training_args, bad_folder, date, checkpoint_path, checkpoint_dir, writer = init(model_type, info,
+                                                                                                restart, exp)
+    print(args)
 
     dataset = make_data_module(DATASETS,
                                bad_folder,
@@ -180,6 +188,7 @@ def setup(model_type, info, restart: bool = False, device: str = 'cuda', local_r
     else:
         train_model(dataset, args, training_args, info, checkpoint_path, checkpoint_dir, writer, device, exp=exp)
 
+
 def train(exp: int = 0):
     local_rank, device = init_gpu()
 
@@ -198,15 +207,18 @@ def train(exp: int = 0):
         gc.collect()
         torch.cuda.empty_cache()
 
+
 MODEL_TYPE = 'dual_fusion'
 FILTERS = ['duration', 'ratio']
 
 import argparse
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--exp', type=int, default=0, help='Path to config file')
     parser.add_argument('--gpus', type=str, default='0,1,2,3', help='GPUs to be used')
-    parser.add_argument('--datasets', nargs='+', type=str, default=['common_voice', 'fleurs', 'hparl', 'tedx', 'logotypographia'], help='datasets')
+    parser.add_argument('--datasets', nargs='+', type=str,
+                        default=['common_voice', 'fleurs', 'hparl', 'tedx', 'logotypographia'], help='datasets')
     parser.add_argument('--iters', type=int, default=800, help='validation samples per dataset')
     parser.add_argument('--note', type=str, default='', help='note about this experiment')
     parser.add_argument('--restart', default=True, help='Restart from the beginning', type=lambda x: bool(strtobool(x)))

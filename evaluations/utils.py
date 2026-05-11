@@ -16,14 +16,16 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from typing import Dict
 import argparse
+
 from bert_score import score
+
 
 def generate_semantic_drift_plot(info: Dict):
     conf = Parser()
     conf.get_args()
+    local_info = info.copy()
 
     for dataset_name in DATASETS:
-        local_info = info.copy()
         local_info['test_dataset'] = dataset_name
         results_folder = get_results_path(conf, local_info)
         predictions_path = os.path.join(results_folder, 'predictions.csv')
@@ -57,7 +59,6 @@ def generate_semantic_drift_plot(info: Dict):
             data=plot_df,
             x='wer',
             y='semantic_f1',
-            hue='is_looping',
             palette={True: '#e74c3c', False: '#3498db'},  # Red for loops, Blue for healthy text
             alpha=0.7,
             edgecolor='w',
@@ -72,10 +73,12 @@ def generate_semantic_drift_plot(info: Dict):
         plt.text(0.02, 0.95, 'Top-Left\nPerfect', color='green', fontsize=10, alpha=0.8)
         plt.text(1.2, 0.95, 'Top-Right\nParaphrasing / Grammar Fixes\n(Lazy Decoder)', color='orange', fontsize=10,
                  alpha=0.8)
-        plt.text(1.2, 0.40, 'Bottom-Right\nCatastrophic Hallucination\n(Lost Meaning)', color='red', fontsize=10, alpha=0.8)
+        plt.text(1.2, 0.40, 'Bottom-Right\nCatastrophic Hallucination\n(Lost Meaning)', color='red', fontsize=10,
+                 alpha=0.8)
 
         # Formatting
-        plt.title(f"Semantic Drift Analysis - {dataset_name}\n(Whisper Acoustics vs KriKri Semantics)", fontsize=14, pad=15)
+        plt.title(f"Semantic Drift Analysis - {dataset_name}\n(Whisper Acoustics vs KriKri Semantics)", fontsize=14,
+                  pad=15)
         plt.xlabel("Word Error Rate (WER) ➔ Lower is Better", fontsize=12)
         plt.ylabel("Semantic F1 (BERTScore) ➔ Higher is Better", fontsize=12)
 
@@ -97,6 +100,7 @@ def generate_semantic_drift_plot(info: Dict):
         plt.close()
 
         print(f"Plot saved successfully to: {save_path}\n")
+
 
 def get_plots_dir(conf, info, viz):
     base_res_dir = get_results_path(conf, info, data_folder=False)
@@ -243,7 +247,10 @@ def plot_sid_stacked_bar(info: Dict):
                     horizontalalignment='center', verticalalignment='center')
 
     plt.tight_layout()
-    plt.show()
+
+    save_dir = get_plots_dir(conf, info, 'sid_stacked_bar')
+    save_path = os.path.join(save_dir, f"{dataset_name}.png")
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()
 
 
@@ -286,7 +293,10 @@ def plot_wer_vs_duration(info: Dict):
         plt.legend()
         plt.grid(True, linestyle=':', alpha=0.6)
         plt.tight_layout()
-        plt.show()
+
+        save_dir = get_plots_dir(conf, info, 'wer_vs_duration')
+        save_path = os.path.join(save_dir, f"{dataset_name}.png")
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
         plt.close()
 
 
@@ -408,4 +418,4 @@ if __name__ == "__main__":
         base_info['model_name'] = (base_info['speech_encoder_id'].split('/')[1] + '_' +
                                    base_info['language_model_id'].split('/')[1])
 
-    df1 = plot_length_correlation(base_info)
+    generate_semantic_drift_plot(base_info)

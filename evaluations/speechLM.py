@@ -1,4 +1,5 @@
 import os
+from platform import machine
 
 import safetensors.torch
 import torch
@@ -248,7 +249,7 @@ if __name__ == "__main__":
     parser.add_argument('--speech_encoder_id', type=str, default='openai/whisper-large-v3')
     parser.add_argument('--language_model_id', type=str, default='ilsp/Llama-Krikri-8B-Instruct')
     parser.add_argument('--machine', type=str, default='kronos')
-    parser.add_argument('--datetime', type=str, default='Apr03_16-04')
+    parser.add_argument('--datetime', type=str, default=None)
     parser.add_argument('--turn', type=str, default=None)
 
     args, unknown = parser.parse_known_args()
@@ -271,20 +272,59 @@ if __name__ == "__main__":
         'turn': args.turn
     }
 
-    local_rank, device = init_gpu()
-    resume_wandb(local_rank, base_info)
+    if base_info['datetime'] is None:
+        checkpoints_path = os.path.join(os.path.expanduser('~'),
+                                        'cache',
+                                        'checkpoints',
+                                        base_info['model_type'],
+                                        base_info['machine'],
+                                        base_info['model_name'])
 
-    try:
-        for dataset in DATASETS:
-            base_info['test_dataset'] = dataset
+        for datetime_folder in os.listdir(checkpoints_path):
+            base_info['datetime'] = datetime_folder.split('@')[-1]
+            turns = os.listdir(os.path.join(checkpoints_path, datetime_folder))
+            base_info['turn'] = turns[0].replace('checkpoint-', '')
 
-            evaluate(base_info,
-                     set='test',
-                     device=device,
-                     iters=None)
+            print('\n')
+            print('---------------------------------------------------------')
+            print(base_info['machine'])
+            print(base_info['datetime'])
+            print(base_info['turn'])
+            print('---------------------------------------------------------')
 
-        wandb.finish()
+            local_rank, device = init_gpu()
+            resume_wandb(local_rank, base_info)
 
-    finally:
-        if local_rank in [-1, 0] and wandb.run is not None:
+            try:
+                for dataset in DATASETS:
+                    base_info['test_dataset'] = dataset
+
+                    evaluate(base_info,
+                             set='test',
+                             device=device,
+                             iters=None)
+
+                wandb.finish()
+
+            finally:
+                if local_rank in [-1, 0] and wandb.run is not None:
+                    wandb.finish()
+
+    else:
+        local_rank, device = init_gpu()
+        resume_wandb(local_rank, base_info)
+
+        try:
+            for dataset in DATASETS:
+                base_info['test_dataset'] = dataset
+
+                evaluate(base_info,
+                         set='test',
+                         device=device,
+                         iters=None)
+
             wandb.finish()
+
+        finally:
+            if local_rank in [-1, 0] and wandb.run is not None:
+                wandb.finish()
