@@ -20,15 +20,11 @@ class tedx:
         self.conf = Parser()
         self.conf.get_args()
 
-        if self.conf.language == 'greek':
-            self.language = 'el'
-
         self.load_path = os.path.join(os.path.expanduser('~'),
                                       self.conf.dataset_path,
                                       self.conf.language,
-                                      'tedx',
-                                      'el-el',
-                                      'data')
+                                      'bea',
+                                      'raw-data')
 
         self.target_path = os.path.join(
             os.path.expanduser('~'),

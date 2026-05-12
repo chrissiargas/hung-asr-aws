@@ -32,7 +32,6 @@ class common_voice:
         if download:
             self.client.load_dataset(dataset_id[self.conf.language])
 
-
         if self.conf.language == 'greek':
             self.language = 'el'
 

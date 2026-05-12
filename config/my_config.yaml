@@ -1,8 +1,8 @@
 data_args:
-  tmpdir: "tmp"
-  hf_cache: "~/cache/huggingface"
-  dataset_path: "cache/datasets"
-  language: 'greek'
+  tmpdir: "/data/c.siargkas/tmp"
+  hf_cache: "/data/c.siargkas/.cache/huggingface"
+  dataset_path: "/data-sinno/c.siargkas/datasets"
+  language: 'hungarian'
   sampling_rate: 16000
   other_to_train: True
 
@@ -13,11 +13,11 @@ main_args:
     - css10
     - hparl
   split_type: 'default'
-  results_path: "cache/results"
-  checkpoint_path: "cache/checkpoints"
+  results_path: "/data-sinno/c.siargkas/results"
+  checkpoint_path: "/data-sinno/c.siargkas/checkpoints"
 
 dual_fuse_args:
-  checkpoint_path: "cache/checkpoints"
+  checkpoint_path: "/data-sinno/c.siargkas/checkpoints"
    ## Data Configurations
   interleave_temperature: 1.2
   micro_data: False
