@@ -56,7 +56,7 @@ class ScalableFuzzyOverlapChecker:
         if not is_test_set:
             return source_utterance
 
-    def run_fuzzy_search(self, dataset_name: str, chunk_size: int = 10000):
+    def compare(self, dataset_name: str, chunk_size: int = 10000):
         print(f"\nBuilding TF-IDF Vectorizer for Character N-Grams...")
         vectorizer = TfidfVectorizer(analyzer='char_wb', ngram_range=(3, 4))
 
@@ -92,5 +92,24 @@ class ScalableFuzzyOverlapChecker:
                 for src_idx, trg_idx, score in zip(source_indices, target_indices, scores)
             ])
 
+            overlaps_found.sort(key=lambda x: x['similarity_score'], reverse=True)
+            print(f"\nTotal Overlaps Detected: {len(overlaps_found)}")
+
+            output_path = os.path.join(self.base_dir, "overlaps.json")
+            with open(output_path, 'w', encoding='utf-8') as f:
+                json.dump(overlaps_found, f, indent=4, ensure_ascii=False)
+
+            print(f"Results successfully saved to: {output_path}")
+            return overlaps_found
+
+
         return overlaps_found
+
+if __name__ == '__main__':
+    checker = ScalableFuzzyOverlapChecker(language='hungarian', threshold=0.85)
+    checker.load_manifest(dataset_name='fleurs', is_test_set=True)
+    checker.load_manifest(dataset_name='common_voice', is_test_set=True)
+    checker.load_manifest(dataset_name='voxpopuli', is_test_set=True)
+
+    overlaps = checker.compare('yodas')
 
