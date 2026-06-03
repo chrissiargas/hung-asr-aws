@@ -85,3 +85,6 @@ class dataocean_tts:
                     manifest_f.write(json.dumps(manifest_entry, ensure_ascii=False) + '\n')
                     total_processed += 1
 
+if __name__ == '__main__':
+    extractor = dataocean_tts()
+    extractor.load_dataocean_subset('train')
