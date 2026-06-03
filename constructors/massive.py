@@ -68,8 +68,7 @@ class speech_massive:
                     load_path,
                     self.language,
                     split=orig_split,
-                    trust_remote_code=True,
-                    streaming = True
+                    trust_remote_code=True
                 )
 
                 manifest_entries = [self.extract_samples(sample, audio_dir, manifest_dir, idx_offset + idx)

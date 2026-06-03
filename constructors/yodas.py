@@ -34,7 +34,8 @@ class yodas:
             self.load_path,
             self.subset,
             split='asr_only',
-            trust_remote_code=True
+            trust_remote_code=True,
+            verification_mode="no_checks"
         )
 
         split_train = 0.8
@@ -72,8 +73,8 @@ class yodas:
         manifest_dir.parent.mkdir(parents=True, exist_ok=True)
 
         idx = 0
-        for sample in enumerate(tqdm(dataset)):
-            text = sample.get('text', '').strip()
+        for sample in tqdm(dataset):
+            text = sample['text'].strip()
 
             if self.is_synthetic_heuristic(text):
                 continue
@@ -98,7 +99,7 @@ class yodas:
         sf.write(str(audio_filepath), audio_data, self.conf.sampling_rate)
         duration = len(audio_data) / self.conf.sampling_rate
 
-        text = sample.get('text', '')
+        text = sample['text']
 
         manifest_entry = {
             'audio_filepath': str(audio_filepath),
