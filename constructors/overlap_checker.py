@@ -4,11 +4,18 @@ import re
 from collections import defaultdict
 from pathlib import Path
 from sklearn.feature_extraction.text import TfidfVectorizer
-
+from config.parser import Parser
 class ScalableFuzzyOverlapChecker:
     def __init__(self, language: str = 'hungarian', base_dataset_path: str = 'datasets', threshold: float = 0.85):
+        self.conf = Parser()
+        self.conf.get_args()
+
         self.language = language
-        self.base_dir = os.path.join(os.path.expanduser('~'), base_dataset_path, self.language)
+        self.base_dir = os.path.join(
+            os.path.expanduser('~'),
+            self.conf.dataset_path,
+            self.conf.language
+        )
         self.threshold = threshold
 
         self.target_utterances = []  # Our "Gold Standard" test sets
