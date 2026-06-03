@@ -35,7 +35,7 @@ class ScalableFuzzyOverlapChecker:
         for split_file in os.listdir(dataset_path):
             manifest_path = Path(os.path.join(self.base_dir, dataset_name, 'manifests', split_file))
 
-            print(f"Loading {dataset_name} ({split})...")
+            print(f"Loading {dataset_name} ({split_file})...")
             count = 0
 
             with open(manifest_path, 'r', encoding='utf-8') as f:
