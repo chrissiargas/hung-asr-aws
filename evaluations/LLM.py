@@ -67,6 +67,7 @@ def calculate_perplexity(model, tokenizer, transcripts, device):
     ppl = torch.exp(torch.stack(nlls).sum() / total_length)
     return ppl.item()
 
+access_token = "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"
 def main(datasets: List[str], models: List[str]):
     local_rank, device = init_gpu()
 
@@ -83,6 +84,8 @@ def main(datasets: List[str], models: List[str]):
     corpus_texts = {}
 
     for dataset in datasets:
+        corpus_texts[dataset] = {}
+
         dataset_path = os.path.join(base_dir, dataset, 'manifests')
         for split_file in os.listdir(dataset_path):
             split = split_file.split('.')[0].split('_')[-1]
@@ -94,13 +97,13 @@ def main(datasets: List[str], models: List[str]):
             with open(manifest_path, 'r', encoding='utf-8') as f:
                 corpus_texts[dataset][split] = [json.loads(line).get('text', '') for line in f]
 
-    print(corpus_texts)
-
     results = {}
     for model_id in models:
         print(f"\n>> Loading Model: {model_id}")
         try:
-            tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
+            tokenizer = AutoTokenizer.from_pretrained(model_id, 
+            trust_remote_code=True,
+            token=access_token)
 
             bnb_config = BitsAndBytesConfig(
                 load_in_4bit=True,
@@ -115,6 +118,7 @@ def main(datasets: List[str], models: List[str]):
                 torch_dtype=torch.bfloat16,
                 quantization_config=bnb_config,
                 attn_implementation='sdpa',
+                token=access_token
             )
 
             model.eval()
@@ -153,8 +157,7 @@ import argparse
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpus', type=str, default='0,1,2,3', help='GPUs to be used')
-    parser.add_argument('--datasets', nargs='+', type=str,
-                        default=['common_voice', 'fleurs', 'hparl', 'tedx', 'logotypographia'], help='datasets')
+    parser.add_argument('--datasets', nargs='+', type=str, default=['common_voice'])
     parser.add_argument('--models', nargs='+', type=str, default=['elte-nlp/Racka-4B'])
     args, unknown = parser.parse_known_args()
 
