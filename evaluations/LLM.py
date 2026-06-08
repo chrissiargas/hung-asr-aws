@@ -1,3 +1,17 @@
+import warnings
+warnings.filterwarnings("ignore")
+
+import os
+import sys
+from os.path import dirname
+
+sys.path.insert(0, dirname(dirname(os.path.abspath(__file__))))
+from speechLM_utils.environment import set_environment
+
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+os.environ["PYTORCH_ALLOC_CONF"] = "expandable_segments:True"
+set_environment()
+
 import gc
 import torch
 import os
@@ -54,6 +68,8 @@ def calculate_perplexity(model, tokenizer, transcripts, device):
     return ppl.item()
 
 def main(datasets: List[str], models: List[str]):
+    local_rank, device = init_gpu()
+
     conf = Parser()
     conf.get_args()
 
@@ -133,6 +149,14 @@ def main(datasets: List[str], models: List[str]):
             print(f" -> Error evaluating {model_id}: {e}")
 
 
-if __name__ == '__main__':
-    local_rank, device = init_gpu()
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--gpus', type=str, default='0,1,2,3', help='GPUs to be used')
+
+    args, unknown = parser.parse_known_args()
+
+    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpus
+
+    train(args.exp)
 

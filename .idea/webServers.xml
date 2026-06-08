@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="fb75d51f-0808-4bf2-b5a3-5b6b50c38786" name="AWS server" url="https://kubeflow.lai-ml.com/notebook/tts/hungasr1/?folder=/home/jovyan">
+        <fileTransfer rootFolder="/home/jovyan/hung-asr-master" accessType="SFTP" host="jump.lai-ml.com" port="2222" sshConfigId="ddeedbed-449b-4c5e-947a-dad68e7bb707" sshConfig="c.siargkas@jump.lai-ml.com:2222 key" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" isUseRsync="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
