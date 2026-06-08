@@ -17,7 +17,7 @@ class dataocean_tts:
         self.conf = Parser()
         self.conf.get_args()
 
-        self.load_paths = os.path.join(os.path.expanduser('~'),
+        self.load_dir = os.path.join(os.path.expanduser('~'),
                                       self.conf.dataset_path,
                                       self.conf.language,
                                       'dataocean_tts')
@@ -57,33 +57,34 @@ class dataocean_tts:
         manifest_dir.parent.mkdir(parents=True, exist_ok=True)
 
         with open(manifest_dir, 'a', encoding='utf-8') as manifest_f:
-            for load_path in os.listdir(self.load_paths):
+            for load_path in os.listdir(self.load_dir):
+                if 'batch' in load_path:
+                    manifest_load_dir = os.path.join(self.load_dir, load_path, "corpus_text.txt")
+                    clips_load_dir = os.path.join(self.load_dir, load_path, "wavs")
+                    text_mapping = self.load_transcripts(manifest_load_dir)
 
-                manifest_load_dir = os.path.join(load_path, "corpus_text.txt")
-                clips_load_dir = os.path.join(load_path, "wavs")
-                text_mapping = self.load_transcripts(manifest_load_dir)
+                    total_processed = 0
+                    for wav_file in tqdm(os.listdir(clips_load_dir), desc="Converting & Formatting Audio"):
+                        file_id = os.path.splitext(os.path.basename(wav_file))[0]
+                        transcript = text_mapping.get(file_id)
+                        wav_path = os.path.join(clips_load_dir, wav_file)
 
-                total_processed = 0
-                for wav_path in tqdm(os.listdir(clips_load_dir), desc="Converting & Formatting Audio"):
-                    file_id = os.path.splitext(os.path.basename(wav_path))[0]
+                        audio_data, _ = librosa.load(wav_path, sr=self.conf.sampling_rate)
 
-                    transcript = text_mapping.get(file_id)
+                        target_filename = f'{total_processed:06d}.wav'
+                        target_filepath = os.path.join(audio_dir, target_filename)
+                        sf.write(str(target_filepath), audio_data, self.conf.sampling_rate)
+                        duration = len(audio_data) / self.conf.sampling_rate
 
-                    audio_data, _ = librosa.load(wav_path, sr=self.conf.sampling_rate)
+                        manifest_entry = {
+                            'audio_filepath': str(target_filepath),
+                            'audio_source': str(load_path),
+                            'duration': duration,
+                            'text': transcript,
+                        }
 
-                    target_filename = f'{total_processed:06d}.wav'
-                    target_filepath = os.path.join(audio_dir, target_filename)
-                    sf.write(str(target_filepath), audio_data, self.conf.sampling_rate)
-                    duration = len(audio_data) / self.conf.sampling_rate
-
-                    manifest_entry = {
-                        'audio_filepath': str(target_filepath),
-                        'duration': duration,
-                        'text': transcript
-                    }
-
-                    manifest_f.write(json.dumps(manifest_entry, ensure_ascii=False) + '\n')
-                    total_processed += 1
+                        manifest_f.write(json.dumps(manifest_entry, ensure_ascii=False) + '\n')
+                        total_processed += 1
 
 if __name__ == '__main__':
     extractor = dataocean_tts()

@@ -5,7 +5,6 @@ from collections import defaultdict
 from pathlib import Path
 from sklearn.feature_extraction.text import TfidfVectorizer
 from config.parser import Parser
-
 class ScalableFuzzyOverlapChecker:
     def __init__(self, language: str = 'hungarian', base_dataset_path: str = 'datasets', threshold: float = 0.85):
         self.conf = Parser()
@@ -48,6 +47,7 @@ class ScalableFuzzyOverlapChecker:
                     if len(clean) > 15:
                         entry = {
                             'dataset': dataset_name,
+                            'split': split_file.split('.')[0].split('_')[-1],
                             'filepath': data.get('audio_filepath', ''),
                             'clean_text': clean,
                             'raw_text': raw_text
@@ -77,7 +77,7 @@ class ScalableFuzzyOverlapChecker:
 
         print(f"\nCommencing High-Speed Fuzzy Search (Threshold: {self.threshold * 100}%)...")
 
-        source_len = len(source_matrix)
+        source_len = source_matrix.shape[0]
         overlaps_found = []
 
         for start_idx in range(0, source_len, chunk_size):
@@ -87,8 +87,8 @@ class ScalableFuzzyOverlapChecker:
             similarity_coo = similarity_sparse.tocoo()
             mask = similarity_coo.data >= self.threshold
 
-            source_indices = similarity_coo.row[mask] + start_idx
-            target_indices = similarity_coo.col[mask]
+            source_indices = similarity_coo.col[mask] + start_idx
+            target_indices = similarity_coo.row[mask]
             scores = similarity_coo.data[mask]
 
             overlaps_found.extend([
@@ -115,9 +115,6 @@ class ScalableFuzzyOverlapChecker:
 
 if __name__ == '__main__':
     checker = ScalableFuzzyOverlapChecker(language='hungarian', threshold=0.85)
-    checker.load_manifest(dataset_name='fleurs', is_test_set=True)
-    checker.load_manifest(dataset_name='common_voice', is_test_set=True)
-    checker.load_manifest(dataset_name='voxpopuli', is_test_set=True)
-
+    checker.load_manifest(dataset_name='speech_massive', is_test_set=True)
     overlaps = checker.compare('yodas')
 

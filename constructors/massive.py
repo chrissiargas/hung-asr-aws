@@ -68,14 +68,15 @@ class speech_massive:
                     load_path,
                     self.language,
                     split=orig_split,
-                    trust_remote_code=True
+                    trust_remote_code=True,
+                    token='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'
                 )
 
                 manifest_entries = [self.extract_samples(sample, audio_dir, manifest_dir, idx_offset + idx)
                                     for idx, sample in enumerate(tqdm(dataset))]
                 idx_offset += len(dataset)
 
-                return manifest_entries
+        return manifest_entries
 
     def extract_samples(self, sample, audio_dir: str, manifest_dir: str, idx: int):
         audio_data = sample['audio']['array']
