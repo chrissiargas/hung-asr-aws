@@ -43,28 +43,17 @@ def init_gpu():
     return local_rank, device
 
 
-def calculate_perplexity(model, tokenizer, transcripts, device):
+def calculate_perplexity(outputs, inputs_ids, device):
     nlls = []
     total_length = 0
 
-    print(f"Evaluating {len(transcripts)} transcripts...")
+    for input_ids, output in tqdm(zip(inputs_ids, outputs)):
+        
+        neg_log_likelihood = (output.loss * input_ids.size(1)).item()
+        nlls.append(neg_log_likelihood)
+        total_length += input_ids.size(1)
 
-    with torch.no_grad():
-        for text in tqdm(transcripts):
-            inputs = tokenizer(text, return_tensors="pt").to(device)
-            input_ids = inputs.input_ids
-
-            if input_ids.size(1) == 0:
-                continue
-
-            target_ids = input_ids.clone()
-
-            outputs = model(input_ids, labels=target_ids)
-            neg_log_likelihood = outputs.loss * input_ids.size(1)
-            nlls.append(neg_log_likelihood)
-            total_length += input_ids.size(1)
-
-    ppl = torch.exp(torch.stack(nlls).sum() / total_length)
+    ppl = math.exp(sum(nlls) / total_length)
     return ppl.item()
 
 access_token = "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"
@@ -127,8 +116,14 @@ def main(datasets: List[str], models: List[str]):
                 print(f"Evaluating on {ds_label}...")
                 for split, texts in split_texts.items():
                     print(f"  -> Split: {split}")
+                    print(f"Evaluating {len(texts)} transcripts...")
 
-                    ppl = calculate_perplexity(model, tokenizer, texts, device)
+                    inputs = tokenizer(texts, return_tensors="pt", truncation=True, padding=True).to(device)
+                    inputs_ids = inputs.input_ids
+                    targets_ids = inputs_ids.clone()
+                    outputs = model(inputs_ids, labels=targets_ids)
+
+                    ppl = calculate_perplexity(outputs, inputs_ids, device) 
                     results[model_id][ds_label] = ppl
                     print(f" -> Perplexity (PPL): {ppl:.2f}")
 
