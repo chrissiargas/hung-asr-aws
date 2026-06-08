@@ -7,6 +7,9 @@ from pathlib import Path
 import json
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers import BitsAndBytesConfig
+import evaluate
+perplexity_metric = evaluate.load("perplexity", module_type="metric")
+from tqdm import tqdm
 
 def init_gpu():
     gc.collect()
@@ -24,6 +27,31 @@ def init_gpu():
         print("Running in standard mode (DataParallel or Single GPU)")
 
     return local_rank, device
+
+
+def calculate_perplexity(model, tokenizer, transcripts, device):
+    nlls = []
+    total_length = 0
+
+    print(f"Evaluating {len(transcripts)} transcripts...")
+
+    with torch.no_grad():
+        for text in tqdm(transcripts):
+            inputs = tokenizer(text, return_tensors="pt").to(device)
+            input_ids = inputs.input_ids
+
+            if input_ids.size(1) == 0:
+                continue
+
+            target_ids = input_ids.clone()
+
+            outputs = model(input_ids, labels=target_ids)
+            neg_log_likelihood = outputs.loss * input_ids.size(1)
+            nlls.append(neg_log_likelihood)
+            total_length += input_ids.size(1)
+
+    ppl = torch.exp(torch.stack(nlls).sum() / total_length)
+    return ppl.item()
 
 def main(datasets: List[str], models: List[str]):
     conf = Parser()
@@ -50,6 +78,8 @@ def main(datasets: List[str], models: List[str]):
             with open(manifest_path, 'r', encoding='utf-8') as f:
                 corpus_texts[dataset][split] = [json.loads(line).get('text', '') for line in f]
 
+    print(corpus_texts)
+
     results = {}
     for model_id in models:
         print(f"\n>> Loading Model: {model_id}")
@@ -66,10 +96,12 @@ def main(datasets: List[str], models: List[str]):
             model = AutoModelForCausalLM.from_pretrained(
                 model_id,
                 trust_remote_code=True,
-                torch_dtype=torch.float32,
+                torch_dtype=torch.bfloat16,
                 quantization_config=bnb_config,
                 attn_implementation='sdpa',
             )
+
+            model.eval()
 
             for ds_label, split_texts in corpus_texts.items():
                 print(f"Evaluating on {ds_label}...")
@@ -79,6 +111,18 @@ def main(datasets: List[str], models: List[str]):
                     ppl = calculate_perplexity(model, tokenizer, texts, device)
                     results[model_id][ds_label] = ppl
                     print(f" -> Perplexity (PPL): {ppl:.2f}")
+
+            # Quick Generative Sanity Check
+            print("\n--- Generative Sanity Check ---")
+            sample_prompt = "Kérlek, írd le a beszédfelismerés fontosságát:"
+            inputs = tokenizer(sample_prompt, return_tensors="pt").to(device)
+
+            outputs = model.generate(
+                **inputs,
+                max_new_tokens=50,
+                pad_token_id=tokenizer.pad_token_id
+            )
+            print(tokenizer.decode(outputs[0], skip_special_tokens=True))
 
             # Aggressively free memory before loading the next model
             del model
