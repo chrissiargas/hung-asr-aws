@@ -148,15 +148,17 @@ def main(datasets: List[str], models: List[str]):
         except Exception as e:
             print(f" -> Error evaluating {model_id}: {e}")
 
-
+import argparse
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpus', type=str, default='0,1,2,3', help='GPUs to be used')
-
+    parser.add_argument('--datasets', nargs='+', type=str,
+                        default=['common_voice', 'fleurs', 'hparl', 'tedx', 'logotypographia'], help='datasets')
+    parser.add_argument('--models', nargs='+', type=str, default=['elte-nlp/Racka-4B'])
     args, unknown = parser.parse_known_args()
 
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpus
 
-    train(args.exp)
+    main(args.datasets, args.models)
 
