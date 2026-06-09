@@ -1,7 +1,7 @@
 data_args:
   tmpdir: "tmp"
-  hf_cache: "cache/huggingface"
-  dataset_path: "cache/datasets"
+  hf_cache: "asr-shared/csiargka/cache/huggingface"
+  dataset_path: "asr-shared/csiargka/cache/datasets"
   language: 'hungarian'
   sampling_rate: 16000
   other_to_train: True
@@ -13,11 +13,11 @@ main_args:
     - css10
     - hparl
   split_type: 'default'
-  results_path: "cache/results"
-  checkpoint_path: "cache/checkpoints"
+  results_path: "asr-shared/csiargka/cache/results"
+  checkpoint_path: "asr-shared/csiargka/cache/checkpoints"
 
 dual_fuse_args:
-  checkpoint_path: "cache/checkpoints"
+  checkpoint_path: "asr-shared/csiargka/cache/checkpoints"
    ## Data Configurations
   interleave_temperature: 1.2
   micro_data: False
