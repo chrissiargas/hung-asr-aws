@@ -21,7 +21,8 @@ class dataocean_asr_657:
         self.load_dir = os.path.join(os.path.expanduser('~'),
                                     'asr-data-segr',
                                     '5th_lang',
-                                    'King-ASR-657'
+                                    'DataOcean',
+                                    'King-ASR-657',
                                     'DATA')
 
         self.target_path = os.path.join(
