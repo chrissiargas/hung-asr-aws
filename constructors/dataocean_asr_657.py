@@ -75,6 +75,7 @@ class dataocean_asr_657:
                         clips_load_dir = os.path.join(clips_path, subject_clip_folder, f'SESSION0')
                         text_mapping = self.load_transcripts(manifest_load_dir)
 
+                        print('\nCHANNEL:', channel, 'SUBJECT:', subject_id, 'CLIPS:', len(os.listdir(clips_load_dir)))
                         for wav_file in tqdm(os.listdir(clips_load_dir), desc="Converting & Formatting Audio"):
                             file_id = os.path.splitext(os.path.basename(wav_file))[0]
                             transcript = text_mapping.get(file_id)
