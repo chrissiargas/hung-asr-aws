@@ -88,7 +88,9 @@ class dataocean_asr_659:
                         audio_slice = audio_data[start_sample:end_sample]
 
                         if duration != len(audio_data) / self.conf.sampling_rate:
-                            print('what the fuck')
+                            print(duration)
+                            print(len(audio_data) / self.conf.sampling_rate)
+                            print()
 
                         target_filename = f'{total_processed:06d}.wav'
                         target_filepath = os.path.join(audio_dir, target_filename)
