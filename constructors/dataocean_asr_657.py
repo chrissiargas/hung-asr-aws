@@ -19,10 +19,10 @@ class dataocean_asr_657:
         self.conf.get_args()
 
         self.load_dir = os.path.join(os.path.expanduser('~'),
-                                      self.conf.dataset_path,
-                                      self.conf.language,
-                                      'dataocean_asr_657',
-                                      'DATA')
+                                    'asr-data-segr',
+                                    '5th_lang',
+                                    'King-ASR-657'
+                                    'DATA')
 
         self.target_path = os.path.join(
             os.path.expanduser('~'),
