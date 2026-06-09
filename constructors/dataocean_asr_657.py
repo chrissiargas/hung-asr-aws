@@ -39,7 +39,9 @@ class dataocean_asr_657:
             for line in f:
                 line = line.strip()
                 parts = line.split('\t')
-                if len(parts) >= 2:
+                if len(parts) == 1:
+                    continue
+                elif len(parts) == 2:
                     file_id = parts[0].strip()
                     transcript = parts[1].strip()
                     text_map[file_id] = transcript
