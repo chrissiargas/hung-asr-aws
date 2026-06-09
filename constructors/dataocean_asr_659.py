@@ -79,18 +79,13 @@ class dataocean_asr_659:
 
                         current_start = interval.minTime
                         current_end = interval.maxTime
-                        duration = current_end - current_start
 
                         merged_text = " ".join(raw_text)
 
                         start_sample = int(current_start * self.conf.sampling_rate)
                         end_sample = int(current_end * self.conf.sampling_rate)
                         audio_slice = audio_data[start_sample:end_sample]
-
-                        if duration != len(audio_slice) / self.conf.sampling_rate:
-                            print(duration)
-                            print(len(audio_slice) / self.conf.sampling_rate)
-                            print()
+                        duration = len(audio_slice) / self.conf.sampling_rate
 
                         target_filename = f'{total_processed:06d}.wav'
                         target_filepath = os.path.join(audio_dir, target_filename)
