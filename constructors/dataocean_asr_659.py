@@ -57,13 +57,13 @@ class dataocean_asr_659:
                    continue
 
                 for wav_file in os.listdir(batch_clip_path):
-                    
+
                     wav_path = os.path.join(batch_clip_path, wav_file)
                     audio_data, _ = librosa.load(wav_path, sr=self.conf.sampling_rate)
 
                     wav_file_name = os.path.splitext(os.path.basename(wav_file))[0]
                     session_id = wav_file_name[-2:]
-                    subject_id = wav_file_name.replace('HU-HU_', '').replace(session_id, '')
+                    subject_id = wav_file_name.replace('HU-HU_U', '').replace(f'_{session_id}', '')
 
                     manifest_file = os.path.join(manifests_path, f"HU-HU_U{subject_id}_{session_id}.TextGrid")
 
