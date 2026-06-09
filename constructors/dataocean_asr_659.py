@@ -53,7 +53,11 @@ class dataocean_asr_659:
 
             for batch_clip_folder in os.listdir(clips_path):
                 batch_clip_path = os.path.join(clips_path, batch_clip_folder)
+                if os.path.isfile(batch_clip_path):
+                   continue
+
                 for wav_file in os.listdir(batch_clip_path):
+                    
                     wav_path = os.path.join(batch_clip_path, wav_file)
                     audio_data, _ = librosa.load(wav_path, sr=self.conf.sampling_rate)
 
