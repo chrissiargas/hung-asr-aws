@@ -147,8 +147,8 @@ if __name__ == '__main__':
     B.split_for_train()
 
     df = pd.read_json(os.path.join(B.conf.dataset_path, 'train.json'), lines=True)
-    fleurs = df[df['dataset'] == 'common_voice']
-    print(fleurs)
+    common_voice = df[df['dataset'] == 'common_voice']
+    print(common_voice)
 
 
 

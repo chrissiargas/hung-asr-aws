@@ -19,7 +19,7 @@ from transformers import (
     WhisperForConditionalGeneration
 )
 from transformers import pipeline
-from training.data import get_data
+from preprocessing.prepare import get_data
 
 from config.parser import Parser
 from preprocessing.irregularities import bad_folder
@@ -30,11 +30,13 @@ import os
 from preprocessing.prepare import concatenate
 import numpy as np
 from tqdm import tqdm
-from preprocessing.parallel import parallelize_process
+from preprocessing.parallel import parallelize_process, concat_dataframes
 from evaluations.metrics import get_metrics
 
 def gpu_evaluate(data, gpu_id, args):
     data = Dataset.from_dict(data)
+
+    gen_kwargs = {"language": "hungarian", "task": "transcribe"}
 
     pipe = pipeline(
         "automatic-speech-recognition",
@@ -54,7 +56,7 @@ def gpu_evaluate(data, gpu_id, args):
                 audio_data["array"] = np.array(audio_data["array"], dtype=np.float32)
             yield audio_data
 
-    for out in tqdm(pipe(yield_data(), batch_size=8, generate_kwargs=args['generate_kwargs']), position=gpu_id,
+    for out in tqdm(pipe(yield_data(), batch_size=8, generate_kwargs=gen_kwargs), position=gpu_id,
                     total=len(data), desc=f"GPU {gpu_id}"):
         predictions.append(out['text'].strip())
 
@@ -78,15 +80,24 @@ def get_results_path(conf, args, dataset: str):
 
     return results_path
 
+def get_bad_folder_path(conf, args, dataset: str):
+    bad_folder_path = os.path.join(os.path.expanduser('~'),
+                                   conf.dataset_path,
+                                   conf.language,
+                                   'bad_folder')
+
+    return bad_folder_path
+
 def evaluate(args, dataset: str, set: str = 'test', device: Optional[str] = None):
     conf = Parser()
     conf.get_args()
 
-    args['res_folder'] = get_results_path(args, dataset)
+    args['res_folder'] = get_results_path(conf, args, dataset)
+    bad_folder = get_bad_folder_path(conf, args, dataset)
 
     split_manager = splitter()
-    data = split_manager.split(dataset)
-    test_data = get_data(data[set], bad_folder)
+    data = split_manager.split(datasets=[dataset])
+    test_data = get_data(data[set], bad_folder, has_duration=True)
     test_data = concatenate(test_data)
 
     print(f"Evaluating on {dataset} ({len(test_data)} samples)...")
@@ -94,19 +105,26 @@ def evaluate(args, dataset: str, set: str = 'test', device: Optional[str] = None
     torch.multiprocessing.set_start_method('spawn', force=True)
     parallelize_process(test_data, gpu_evaluate, gpus=[0,1,2,3], info=args)
 
+    print(f"Merging GPU prediction files for {dataset}...")
+    base_filename = os.path.join(args['res_folder'], "predictions")
 
+    concat_dataframes(base_filename, remove=True)
+
+    print(f"✅ Final merged predictions saved to: {base_filename}.csv")
 
 import argparse
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpus', type=str, default='0,1,2,3', help='GPUs to be used')
-    parser.add_argument('--datasets', nargs='+', type=str, default=['common_voice', 'fleurs', 'dataocean_asr_657', 'dataocean_asr_659', 'massive', 'voxpopuli', 'yodas'], help='datasets')
+    parser.add_argument('--datasets', nargs='+', type=str, default=['common_voice', 'fleurs', 'massive', 'voxpopuli', 'yodas'], help='datasets')
     parser.add_argument('--model_type', type=str, default='whisper')
-    parser.add_argument('--model_name', type=str, default='sarpba/whisper-hu-large-v3-turbo-finetuned')
+    parser.add_argument('--model_name', type=str, default='Trendency/whisper-large-v3-hu')
 
     args, unknown = parser.parse_known_args()
 
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpus
+
+    args_dict = vars(args)
 
     for dataset in args.datasets:
         local_rank, device = init_gpu()
