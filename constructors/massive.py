@@ -31,7 +31,7 @@ class speech_massive:
             self.language = 'hu-HU'
 
 
-    def load_massive_subset(self, split: str, how: str):
+    def load_massive_subset(self, split: str, how: str = ''):
         if split == 'test':
             load_paths = ['FBK-MT/Speech-MASSIVE-test']
             set_splits = [['test']]
@@ -45,6 +45,9 @@ class speech_massive:
             elif how == 'train_test':
                 load_paths = ['FBK-MT/Speech-MASSIVE', 'FBK-MT/Speech-MASSIVE-test']
                 set_splits = [['train_115'], ['test']]
+            else:
+                load_paths = ['FBK-MT/Speech-MASSIVE']
+                set_splits = [['train_115']]
         if split == 'validation':
             load_paths = ['FBK-MT/Speech-MASSIVE']
             set_splits = [['validation']]
@@ -103,5 +106,7 @@ class speech_massive:
 
 if __name__ == '__main__':
     extractor = speech_massive()
-    _ = extractor.load_massive_subset('train', how='all')
+    _ = extractor.load_massive_subset('train')
+    _ = extractor.load_massive_subset('validation')
+    _ = extractor.load_massive_subset('test')
 

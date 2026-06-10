@@ -49,7 +49,7 @@ def check_length(data, info, bad_folder):
     min_thres = 2
     max_thres = None
 
-    text_lens = np.array([len(normalize(entry['text'], with_signs=False)) for entry in data])
+    text_lens = np.array([len(normalize(entry['text'])) for entry in data])
 
     if max_thres:
         bad_indices = np.where((text_lens < min_thres) | (text_lens > max_thres))[0]
@@ -60,7 +60,7 @@ def check_length(data, info, bad_folder):
 
     bad_files['filepath'] = bad_files.bad_index.map(lambda x: data[x]['audio_filepath'])
     bad_files['text'] = bad_files.bad_index.map(lambda x: data[x]['text'])
-    bad_files['normalized'] = bad_files.bad_index.map(lambda x: normalize(data[x]['text'], with_signs=False))
+    bad_files['normalized'] = bad_files.bad_index.map(lambda x: normalize(data[x]['text']))
     bad_files['length'] = bad_files.bad_index.map(lambda x: text_lens[x])
 
     dataset = info['dataset']
@@ -73,7 +73,7 @@ def check_ratio(data, info, bad_folder):
     min_thres = 2
     durations = [entry['duration'] for entry in data]
 
-    text_lens = [len(normalize(entry['text'], with_signs=False)) for entry in data]
+    text_lens = [len(normalize(entry['text'])) for entry in data]
     ratios = np.array(text_lens) / np.array(durations)
 
     bad_indices = np.where((ratios < min_thres) | (ratios > max_thres))[0]
@@ -81,7 +81,7 @@ def check_ratio(data, info, bad_folder):
 
     bad_files['filepath'] = bad_files.bad_index.map(lambda x: data[x]['audio_filepath'])
     bad_files['text'] = bad_files.bad_index.map(lambda x: data[x]['text'])
-    bad_files['normalized'] = bad_files.bad_index.map(lambda x: normalize(data[x]['text'], with_signs=False))
+    bad_files['normalized'] = bad_files.bad_index.map(lambda x: normalize(data[x]['text']))
     bad_files['length'] = bad_files.bad_index.map(lambda x: text_lens[x])
     bad_files['duration'] = bad_files.bad_index.map(lambda x: durations[x])
     bad_files['ratio'] = bad_files.bad_index.map(lambda x: ratios[x])
@@ -229,7 +229,7 @@ if '__main__' == __name__:
     conf = Parser()
     conf.get_args()
 
-    datasets = ['common_voice', 'fleurs', 'dataocean_asr_657', 'dataocean_asr_659', 'massive', 'voxpopuli', 'yodas']
+    datasets = ['common_voice', 'fleurs', 'massive', 'voxpopuli', 'yodas', 'dataocean_asr_657', 'dataocean_asr_659']
     splits = ['train', 'validation', 'test']
 
     bad_folder = os.path.join(os.path.expanduser('~'),
@@ -241,6 +241,8 @@ if '__main__' == __name__:
 
     for dataset in datasets:
         for split in splits:
+            print(f'Filtering data for {dataset}/{split}')
+
             info = {
                 'dataset': dataset,
                 'split': split,
@@ -250,7 +252,7 @@ if '__main__' == __name__:
 
             manifest_folder = os.path.join(os.path.expanduser('~'), conf.dataset_path, conf.language, dataset, 'manifests')
 
-            file = os.path.join(manifest_folder, f'greek_{split}.json')
+            file = os.path.join(manifest_folder, f'{conf.language}_{split}.json')
             if not os.path.exists(file):
                 print(f"No such split {split} for {dataset}")
                 continue
@@ -258,10 +260,15 @@ if '__main__' == __name__:
             with open(file, 'r', encoding='utf-8') as f:
                 data = [json.loads(line) for line in f]
 
+            print('checking duration anomalies')
             check_duration(data, info, bad_folder)
+            print('checking length anomalies')
             check_length(data, info, bad_folder)
+            print('checking ratio anomalies')
             check_ratio(data, info, bad_folder)
+            print('checking text anomalies')
             check_text(data, info, bad_folder)
+            print()
 
         # torch.multiprocessing.set_start_method('spawn', force=True)
         # parallelize_process(data, check_silence_, gpus=[0,1,2,3], info=info)
