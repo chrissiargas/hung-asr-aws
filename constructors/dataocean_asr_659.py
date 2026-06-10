@@ -38,7 +38,9 @@ class dataocean_asr_659:
         manifest_dir = Path(os.path.join(self.target_path, 'manifests', f"{self.conf.language}_{split}.json"))
 
         if audio_dir.exists():
+            print(f"Found existing directory. Deleting old files from network storage (please wait)...")
             shutil.rmtree(audio_dir)
+            print("Deletion complete!")
 
         if manifest_dir.exists():
             os.remove(manifest_dir)
