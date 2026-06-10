@@ -67,7 +67,7 @@ def make_data_module(dataset_names,
 def get_typed_data(dataset, audio_name: str,
                    text_name: str, has_duration: bool = False,
                    randomize: bool = False, seed: int = 42,
-                   normalized: bool = True, norm_mono: bool = False):
+                   normalized: bool = True):
 
     if has_duration:
         hf_data = {
@@ -93,7 +93,7 @@ def get_typed_data(dataset, audio_name: str,
 
     if normalized:
         hf_data = hf_data.map(
-            lambda x: {text_name: [normalize(t, norm_mono=norm_mono) for t in x[text_name]]},
+            lambda x: {text_name: [normalize(t) for t in x[text_name]]},
             batched=True,
             num_proc=4
         )

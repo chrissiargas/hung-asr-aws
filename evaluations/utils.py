@@ -382,18 +382,17 @@ def plot_wer_distribution(info: Dict):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_type', type=str, default='dual_fusion')
+    parser.add_argument('--model_type', type=str, default='whisper')
     parser.add_argument('--datasets', nargs='+', type=str,
-                        default=['common_voice', 'fleurs', 'hparl', 'tedx', 'logotypographia'], help='datasets')
+                        default=['common_voice', 'fleurs', 'dataocean_asr_657', 'dataocean_asr_659', 'massive', 'voxpopuli', 'yodas'], help='datasets')
     parser.add_argument('--train_datasets', nargs='+', type=str,
-                        default=['common_voice', 'fleurs', 'hparl', 'tedx', 'logotypographia'],
-                        help='datasets of the trained models')
-    parser.add_argument('--checkpoint_folder', type=str, default='dual_fusion_checkpoints')
-    parser.add_argument('--model_name', type=str, default=None)
-    parser.add_argument('--speech_encoder_id', type=str, default='openai/whisper-large-v3')
-    parser.add_argument('--language_model_id', type=str, default='ilsp/Llama-Krikri-8B-Instruct')
-    parser.add_argument('--machine', type=str, default='kronos')
-    parser.add_argument('--datetime', type=str, default='')
+                        default=None, help='datasets of the trained models')
+    parser.add_argument('--checkpoint_folder', type=str, default=None)
+    parser.add_argument('--model_name', type=str, default='sarpba/whisper-hu-large-v3-turbo-finetuned')
+    parser.add_argument('--speech_encoder_id', type=str, default=None)
+    parser.add_argument('--language_model_id', type=str, default=None)
+    parser.add_argument('--machine', type=str, default=None)
+    parser.add_argument('--datetime', type=str, default=None)
     parser.add_argument('--turn', type=str, default=None)
 
     args, unknown = parser.parse_known_args()
@@ -401,14 +400,11 @@ if __name__ == "__main__":
 
     base_info = {
         'model_type': args.model_type,
-        'res_folder': None,
         'train_dataset': args.train_datasets,
-        's_': False,
         'checkpoint_folder': args.checkpoint_folder,
         'model_name': args.model_name,
         'speech_encoder_id': args.speech_encoder_id,
         'language_model_id': args.language_model_id,
-        'bit4': True,
         'machine': args.machine,
         'datetime': args.datetime,
         'turn': args.turn

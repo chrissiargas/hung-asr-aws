@@ -1,7 +1,7 @@
 import re
 import unicodedata
 
-def normalize(text, ss: bool = False, s_: bool = False, with_signs: bool = True, norm_mono: bool = False):
+def normalize(text):
     if not text:
         return ''
 

@@ -169,7 +169,10 @@ def pipe_test_(data, gpu_id, info):
 
     references = [t.strip() for t in data["reference"]]
 
-    res_samples, _ = get_metrics(predictions, references)
+    indices = data['index']
+    durations = data['duration']
+
+    res_samples, _ = get_metrics(predictions, references, indices, durations)
 
     samples_path = os.path.join(info['res_folder'], info['dataset'],  f"predictions_{gpu_id}.csv")
     res_samples.to_csv(samples_path)
@@ -180,7 +183,9 @@ def pipe_test(dataset_names, info):
     conf = Parser()
     conf.get_args()
 
-    split = splitter()
+    split_manager = splitter(splitting=False, validation=False)
+    manifests = split_manager.split(datasets=dataset_names)
+
     data = split.split(datasets=dataset_names)
     test_sets = get_data(data['test'])
     test = concatenate(test_sets)

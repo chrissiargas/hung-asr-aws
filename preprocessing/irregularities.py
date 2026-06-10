@@ -168,6 +168,9 @@ def get_issue(x, patterns):
     if not text:
         return 'empty_text'
 
+    if not patterns['hungarian'].search(text):
+        return 'without_hungarian_characters'
+
     elif patterns['acoustic'].search(text):
        return 'acoustic_tag'
 
@@ -181,6 +184,11 @@ def get_issue(x, patterns):
 
         if hungarian_ratio < 0.7:
             return "foreign_text"
+
+    invalid_match = patterns['invalid_chars'].search(text)
+    if invalid_match:
+        bad_char = invalid_match.group(0)
+        return f"invalid_character_detected_'{bad_char}'"
 
     return 'none'
 
@@ -197,6 +205,7 @@ def check_text(data, info, bad_folder):
         'speaker': re.compile(r'^[a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ_]+\s*\d*:\s'),
         'digits': re.compile(r'\d+'),
         'hungarian': re.compile(r'[a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ]'),
+        'invalid_chars': re.compile(r'[^a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ0-9\s\.,;!\?\'"«»„”\-]')
     }
 
     issues = []
@@ -220,7 +229,7 @@ if '__main__' == __name__:
     conf = Parser()
     conf.get_args()
 
-    datasets = ['common_voice', 'fleurs', 'hparl', 'logotypographia', 'tedx', 'stoma']
+    datasets = ['common_voice', 'fleurs', 'dataocean_asr_657', 'dataocean_asr_659', 'massive', 'voxpopuli', 'yodas']
     splits = ['train', 'validation', 'test']
 
     bad_folder = os.path.join(os.path.expanduser('~'),
@@ -242,12 +251,17 @@ if '__main__' == __name__:
             manifest_folder = os.path.join(os.path.expanduser('~'), conf.dataset_path, conf.language, dataset, 'manifests')
 
             file = os.path.join(manifest_folder, f'greek_{split}.json')
+            if not os.path.exists(file):
+                print(f"No such split {split} for {dataset}")
+                continue
+
             with open(file, 'r', encoding='utf-8') as f:
                 data = [json.loads(line) for line in f]
 
             check_duration(data, info, bad_folder)
             check_length(data, info, bad_folder)
             check_ratio(data, info, bad_folder)
+            check_text(data, info, bad_folder)
 
         # torch.multiprocessing.set_start_method('spawn', force=True)
         # parallelize_process(data, check_silence_, gpus=[0,1,2,3], info=info)
