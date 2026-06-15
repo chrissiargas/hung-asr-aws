@@ -23,7 +23,7 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 def check_duration(data, info, bad_folder):
     min_thres = 1
-    max_thres = 60
+    max_thres = 30
 
     durations = np.array([entry['duration'] for entry in data])
 
@@ -168,6 +168,11 @@ def get_issue(x, patterns):
 
     text = text.strip()
 
+    invalid_match = patterns['invalid_chars'].search(text)
+    if invalid_match:
+        bad_char = invalid_match.group(0)
+        return f"invalid_character_detected_'{bad_char}'"
+
     if not patterns['hungarian'].search(text):
         return 'without_hungarian_characters'
 
@@ -176,19 +181,6 @@ def get_issue(x, patterns):
 
     elif patterns['speaker'].search(text):
         return 'speaker_tag'
-
-    clean_text = re.sub(r'[\s\.,;!\?\'"«»\-]', '', text)
-    if len(clean_text) > 0:
-        hungarian_chars = patterns['hungarian'].findall(clean_text)
-        hungarian_ratio = len(hungarian_chars) / len(clean_text)
-
-        if hungarian_ratio < 0.7:
-            return "foreign_text"
-
-    invalid_match = patterns['invalid_chars'].search(text)
-    if invalid_match:
-        bad_char = invalid_match.group(0)
-        return f"invalid_character_detected_'{bad_char}'"
 
     return 'none'
 
