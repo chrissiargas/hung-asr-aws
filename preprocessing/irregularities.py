@@ -3,8 +3,6 @@ import torch
 import numpy as np
 from pathspec import patterns
 from tqdm import tqdm
-from cleanlab import Datalab
-from transformers import WhisperModel, WhisperFeatureExtractor, WhisperProcessor, WhisperForConditionalGeneration
 import librosa
 import os
 from config.parser import Parser
@@ -163,10 +161,12 @@ def check_silence_(data, gpu_id, info):
     return path
 
 def get_issue(x, patterns):
-    text = x['text'].strip()
-
-    if not text:
+    text = x['text']
+    
+    if text is None:
         return 'empty_text'
+
+    text = text.strip()
 
     if not patterns['hungarian'].search(text):
         return 'without_hungarian_characters'
@@ -225,12 +225,10 @@ def check_text(data, info, bad_folder):
 
     bad_files.to_csv(os.path.join(bad_folder, f"bad_by_text_{dataset}_{split}.csv"))
 
-if '__main__' == __name__:
+def run_check(datasets, splits):
     conf = Parser()
     conf.get_args()
-
-    datasets = ['common_voice', 'fleurs', 'massive', 'voxpopuli', 'yodas', 'dataocean_asr_657', 'dataocean_asr_659']
-    splits = ['train', 'validation', 'test']
+    print('LOaded config file')
 
     bad_folder = os.path.join(os.path.expanduser('~'),
                               conf.dataset_path,
@@ -270,9 +268,17 @@ if '__main__' == __name__:
             check_text(data, info, bad_folder)
             print()
 
-        # torch.multiprocessing.set_start_method('spawn', force=True)
-        # parallelize_process(data, check_silence_, gpus=[0,1,2,3], info=info)
-        # concat_dataframes(os.path.join(BAD_FOLDER, f"bad_by_{task}_{dataset}_{split}"))
-        #
+import argparse
+if '__main__' == __name__:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--datasets', nargs='+', type=str, default=['common_voice', 'fleurs', 'massive', 'voxpopuli', 'yodas'], help='datasets')
+    parser.add_argument('--splits', nargs='+', type=str, default=['train', 'validation', 'test'], help='datasets')
+    args, unknown = parser.parse_known_args()
+
+    args_dict = vars(args)
+    datasets = args_dict['datasets']
+    splits = args_dict['splits']
+
+    run_check(datasets, splits)
 
 
