@@ -1,17 +1,21 @@
 import re
 import unicodedata
 
-def normalize(text):
-    if not text:
-        return ''
-
-    text = text.lower()
-
+def normalize_symbols(text):
     text = text.replace('«', '"').replace('»', '"')
     text = text.replace('“', '"').replace('”', '"')
     text = text.replace('‘', "'").replace('’', "'")
     text = text.replace('—', '-').replace('–', '-')
     text = text.replace('…', '...')
+
+    return text
+
+def normalize(text):
+    if not text:
+        return ''
+
+    text = text.lower()
+    text = normalize_symbols(text)
 
     # 2. Remove speaker tags at the beginning (e.g. ομιλητής 1: ")
     text = re.sub(r'^\s*[\w\s\.\-]{1,30}:\s*', '', text)

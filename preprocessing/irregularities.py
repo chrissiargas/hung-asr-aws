@@ -10,7 +10,7 @@ import pandas as pd
 from pathlib import Path
 import torchaudio
 import re
-from preprocessing.normalize import normalize
+from preprocessing.normalize import normalize, normalize_symbols
 from preprocessing.parallel import parallelize_process
 from typing import Dict, List
 
@@ -41,7 +41,7 @@ def check_duration(data, info, bad_folder):
     dataset = info['dataset']
     split = info['split']
 
-    bad_files.to_csv(os.path.join(bad_folder, f"bad_by_duration_{dataset}_{split}.csv"))
+    bad_files.to_csv(os.path.join(bad_folder, dataset, split, f"bad_by_duration.csv"))
 
 def check_length(data, info, bad_folder):
     min_thres = 2
@@ -64,7 +64,7 @@ def check_length(data, info, bad_folder):
     dataset = info['dataset']
     split = info['split']
 
-    bad_files.to_csv(os.path.join(bad_folder, f"bad_by_length_{dataset}_{split}.csv"))
+    bad_files.to_csv(os.path.join(bad_folder, dataset, split, f"bad_by_length.csv"))
 
 def check_ratio(data, info, bad_folder):
     max_thres = 30
@@ -87,7 +87,7 @@ def check_ratio(data, info, bad_folder):
     dataset = info['dataset']
     split = info['split']
 
-    bad_files.to_csv(os.path.join(bad_folder, f"bad_by_ratio_{dataset}_{split}.csv"))
+    bad_files.to_csv(os.path.join(bad_folder, dataset, split, f"bad_by_ratio.csv"))
 
 def get_silence(x, device, model, get_model_timestamps):
     path = x['audio_filepath']
@@ -166,7 +166,12 @@ def get_issue(x, patterns):
     if text is None:
         return 'empty_text'
 
-    text = text.strip()
+    text = normalize_symbols(text.strip())
+
+    invalid_match = patterns['invalid_chars'].search(text)
+    if invalid_match:
+        bad_char = invalid_match.group(0)
+        return f"invalid character detected: '{bad_char}'"
 
     if not patterns['hungarian'].search(text):
         return 'without_hungarian_characters'
@@ -176,19 +181,6 @@ def get_issue(x, patterns):
 
     elif patterns['speaker'].search(text):
         return 'speaker_tag'
-
-    clean_text = re.sub(r'[\s\.,;!\?\'"«»\-]', '', text)
-    if len(clean_text) > 0:
-        hungarian_chars = patterns['hungarian'].findall(clean_text)
-        hungarian_ratio = len(hungarian_chars) / len(clean_text)
-
-        if hungarian_ratio < 0.7:
-            return "foreign_text"
-
-    invalid_match = patterns['invalid_chars'].search(text)
-    if invalid_match:
-        bad_char = invalid_match.group(0)
-        return f"invalid_character_detected_'{bad_char}'"
 
     return 'none'
 
@@ -205,7 +197,7 @@ def check_text(data, info, bad_folder):
         'speaker': re.compile(r'^[a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ_]+\s*\d*:\s'),
         'digits': re.compile(r'\d+'),
         'hungarian': re.compile(r'[a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ]'),
-        'invalid_chars': re.compile(r'[^a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ0-9\s\.,;!\?\'"«»„”\-]')
+        'invalid_chars': re.compile(r'[^a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ0-9\s\.,:;!\?\'"«»„”\-]')
     }
 
     issues = []
@@ -223,7 +215,7 @@ def check_text(data, info, bad_folder):
     dataset = info['dataset']
     split = info['split']
 
-    bad_files.to_csv(os.path.join(bad_folder, f"bad_by_text_{dataset}_{split}.csv"))
+    bad_files.to_csv(os.path.join(bad_folder, dataset, split, f"bad_by_text.csv"))
 
 def run_check(datasets, splits):
     conf = Parser()
@@ -258,6 +250,9 @@ def run_check(datasets, splits):
             with open(file, 'r', encoding='utf-8') as f:
                 data = [json.loads(line) for line in f]
 
+            to_folder = Path(os.path.join(bad_folder, dataset, split))
+            to_folder.mkdir(parents=True, exist_ok=True)
+
             print('checking duration anomalies')
             check_duration(data, info, bad_folder)
             print('checking length anomalies')
@@ -271,7 +266,7 @@ def run_check(datasets, splits):
 import argparse
 if '__main__' == __name__:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--datasets', nargs='+', type=str, default=['common_voice', 'fleurs', 'massive', 'voxpopuli', 'yodas'], help='datasets')
+    parser.add_argument('--datasets', nargs='+', type=str, default=['common_voice', 'fleurs', 'speech_massive', 'voxpopuli', 'yodas', 'dataocean_asr_657'], help='datasets')
     parser.add_argument('--splits', nargs='+', type=str, default=['train', 'validation', 'test'], help='datasets')
     args, unknown = parser.parse_known_args()
 

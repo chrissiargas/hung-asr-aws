@@ -64,9 +64,12 @@ def make_data_module(dataset_names,
 
     return dataset
 
-def get_typed_data(dataset, audio_name: str,
-                   text_name: str, has_duration: bool = False,
-                   randomize: bool = False, seed: int = 42,
+def get_typed_data(dataset,
+                   audio_name: str,
+                   text_name: str, 
+                   has_duration: bool = False,
+                   randomize: bool = False, 
+                   seed: int = 42,
                    normalized: bool = True):
 
     if has_duration:
@@ -164,8 +167,7 @@ def get_data(paths, bad_folder: str, process: bool = True,
                                      has_duration,
                                      randomize,
                                      seed,
-                                     normalized,
-                                     norm_mono)
+                                     normalized)
 
         else:
             hf_data = dataset
