@@ -6,7 +6,6 @@ from collections import Counter
 import pandas as pd
 import re
 
-
 def check_full_dataocean_657(manifest_path, source_path):
     print("=" * 60)
     print(" 🚀 VECTORIZED DATAOCEAN EXHAUSTION AUDIT ")
@@ -156,15 +155,13 @@ def check_full_dataocean_659(manifest_path, source_path):
 
         return incomplete_pairs
 
-
-# Have to run first: find /home/jovyan/asr-data-segr/5th_lang/DataOcean/King-ASR-65{}/DATA
-# -type f -iname "*.wav" > /home/jovyan/asr-shared/csiargka/cache/datasets/hungarian/dataocean_asr_65{}/all_wav_files.txt
+# Have to run first: find /home/jovyan/asr-data-segr/5th_lang/DataOcean/King-ASR-65{}/DATA -type f -iname "*.wav" > /home/jovyan/asr-shared/csiargka/cache/datasets/hungarian/dataocean_asr_65{}/all_wav_files.txt
 
 if __name__ == '__main__':
     part = '9'
     MANIFEST_PATH = f'/home/jovyan/asr-shared/csiargka/cache/datasets/hungarian/dataocean_asr_65{part}/manifests/hungarian_train.json'
     ORIGINAL_DATA_DIR = f'/home/jovyan/asr-shared/csiargka/cache/datasets/hungarian/dataocean_asr_65{part}/all_wav_files.txt'
-
+    
     if part == '7':
         check_full_dataocean_657(MANIFEST_PATH, ORIGINAL_DATA_DIR)
     elif part == '9':

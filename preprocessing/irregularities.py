@@ -21,7 +21,6 @@ EMBED_MODEL = "openai/whisper-tiny"
 OUTPUT_REPORT = "cleanlab_report"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-
 def check_duration(data, info, bad_folder):
     min_thres = 1
     max_thres = 60
@@ -43,7 +42,6 @@ def check_duration(data, info, bad_folder):
     split = info['split']
 
     bad_files.to_csv(os.path.join(bad_folder, dataset, split, f"bad_by_duration.csv"))
-
 
 def check_length(data, info, bad_folder):
     min_thres = 2
@@ -68,7 +66,6 @@ def check_length(data, info, bad_folder):
 
     bad_files.to_csv(os.path.join(bad_folder, dataset, split, f"bad_by_length.csv"))
 
-
 def check_ratio(data, info, bad_folder):
     max_thres = 30
     min_thres = 2
@@ -92,7 +89,6 @@ def check_ratio(data, info, bad_folder):
 
     bad_files.to_csv(os.path.join(bad_folder, dataset, split, f"bad_by_ratio.csv"))
 
-
 def get_silence(x, device, model, get_model_timestamps):
     path = x['audio_filepath']
 
@@ -110,7 +106,6 @@ def get_silence(x, device, model, get_model_timestamps):
 
     except Exception as e:
         print(f"Error processing {path}: {e}")
-
 
 def check_silence_(data, gpu_id, info):
     device = torch.device(f"cuda:{gpu_id}")
@@ -165,10 +160,9 @@ def check_silence_(data, gpu_id, info):
 
     return path
 
-
 def get_issue(x, patterns):
     text = x['text']
-
+    
     if text is None:
         return 'empty_text'
 
@@ -183,13 +177,12 @@ def get_issue(x, patterns):
         return 'without_hungarian_characters'
 
     elif patterns['acoustic'].search(text):
-        return 'acoustic_tag'
+       return 'acoustic_tag'
 
     elif patterns['speaker'].search(text):
         return 'speaker_tag'
 
     return 'none'
-
 
 def check_text(data, info, bad_folder):
     progress_bar = tqdm(
@@ -224,7 +217,6 @@ def check_text(data, info, bad_folder):
 
     bad_files.to_csv(os.path.join(bad_folder, dataset, split, f"bad_by_text.csv"))
 
-
 def run_check(datasets, splits):
     conf = Parser()
     conf.get_args()
@@ -248,8 +240,7 @@ def run_check(datasets, splits):
                 'threshold': 0.1
             }
 
-            manifest_folder = os.path.join(os.path.expanduser('~'), conf.dataset_path, conf.language, dataset,
-                                           'manifests')
+            manifest_folder = os.path.join(os.path.expanduser('~'), conf.dataset_path, conf.language, dataset, 'manifests')
 
             file = os.path.join(manifest_folder, f'{conf.language}_{split}.json')
             if not os.path.exists(file):
@@ -272,14 +263,10 @@ def run_check(datasets, splits):
             check_text(data, info, bad_folder)
             print()
 
-
 import argparse
-
 if '__main__' == __name__:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--datasets', nargs='+', type=str,
-                        default=['common_voice', 'fleurs', 'speech_massive', 'voxpopuli', 'yodas', 'dataocean_asr_657'],
-                        help='datasets')
+    parser.add_argument('--datasets', nargs='+', type=str, default=['common_voice', 'fleurs', 'speech_massive', 'voxpopuli', 'yodas', 'dataocean_asr_657'], help='datasets')
     parser.add_argument('--splits', nargs='+', type=str, default=['train', 'validation', 'test'], help='datasets')
     args, unknown = parser.parse_known_args()
 

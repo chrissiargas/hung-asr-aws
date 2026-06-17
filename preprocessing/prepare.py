@@ -66,9 +66,9 @@ def make_data_module(dataset_names,
 
 def get_typed_data(dataset,
                    audio_name: str,
-                   text_name: str,
+                   text_name: str, 
                    has_duration: bool = False,
-                   randomize: bool = False,
+                   randomize: bool = False, 
                    seed: int = 42,
                    normalized: bool = True):
 
