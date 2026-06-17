@@ -116,7 +116,7 @@ def get_data(paths, bad_folder: str, process: bool = True,
             bad_filepaths = set()
 
             for filter in filters:
-                blacklist = os.path.join(bad_folder, f"bad_by_{filter}_{name}_{split}.csv")
+                blacklist = os.path.join(bad_folder, name, split, f"bad_by_{filter}.csv")
                 if os.path.exists(blacklist):
                     with open(blacklist, 'r', encoding='utf-8') as cf:
                         reader = csv.DictReader(cf)

@@ -2,7 +2,6 @@ import gc
 import torch
 import os
 import wandb
-from speechLM_utils.training_info import Info
 from config.parser import Parser
 from speechLM_utils.checkpoint import get_checkpoint
 import json
@@ -14,7 +13,12 @@ import socket
 def get_tags(args: Dict, datasets: List[str]):
     tags = []
     tags.append(socket.gethostname())
-    tags.append(','.join(datasets))
+
+    ds_string = ','.join(datasets)
+    if len(ds_string) > 64:
+        tags.append(ds_string[:61] + '...')
+    else:
+        tags.append(ds_string)
 
     ## Regularization & Augmentation Configurations
     if args['blank_training']:
@@ -93,15 +97,19 @@ def init_info(speech_encoder_id, language_model_id, datasets, machine=None, date
     model_name = (speech_encoder_id.split('/')[1] + '_' + language_model_id.split('/')[1])
 
     info = {
-        'checkpoint_folder': None,  # add in training
+        'checkpoint_folder': 'dual_fusion_checkpoints',
         'model_name': model_name,
-        'train_dataset': datasets,  # add in training
+        'train_dataset': datasets, 
         'interleave': interleave,
         'speech_encoder_id': speech_encoder_id,
         'language_model_id': language_model_id,
         'machine': machine,
         'datetime': datetime,
-        'iters': iters
+        'iters': iters,
+        'do_compute': True,
+        'compute_wer_cer': True,
+        'N_samples_for_metrics': None
+
     }
 
     return info

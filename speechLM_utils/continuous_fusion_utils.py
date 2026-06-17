@@ -185,6 +185,17 @@ class InjectionLayer(nn.Module):
         self.prompt_audio = None
         self.prompt_audio_mask = None
 
+    def __getattr__(self, name):
+        try:
+            # First, try to get the attribute normally (from InjectionLayer itself)
+            return super().__getattr__(name)
+        except AttributeError:
+            # If it's missing (like 'attention_type'), pass the request down to the wrapped LM_layer.
+            # PyTorch stores registered sub-modules in the _modules dictionary.
+            if 'LM_layer' in self._modules:
+                return getattr(self.LM_layer, name)
+            raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+
     def forward(self, hidden_states, *args, **kwargs):
         lm_outputs = self.LM_layer(hidden_states, *args, **kwargs)
         lm_hidden_states = lm_outputs[0]

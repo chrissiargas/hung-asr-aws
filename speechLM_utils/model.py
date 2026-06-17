@@ -103,7 +103,7 @@ def get_model(args: Dict, info: Dict, device = 'cuda', exp: int = 0, attn_implem
         prompt_instruction=args['prompt_instruction'],
         prompt_verbatim=args['prompt_verbatim'],
         dtype=torch.float32,
-        bit4=info['bit4'],
+        bit4=True,
         attn_implementation=attn_implementation,
         device=device,
         exp=exp

@@ -29,6 +29,7 @@ from speechLM_utils.checkpoint import *
 from speechLM_utils.metrics import wrap_compute_metrics
 from speechLM_utils.utils import init_gpu, init_info, init, init_wandb
 from distutils.util import strtobool
+import json
 
 # Load metrics once
 cer_metric = evaluate.load("cer")
@@ -170,7 +171,7 @@ def setup(info, restart: bool = False, device: str = 'cuda', local_rank: int = -
 
     print('='*60)
     print('Experiment Arguments')
-    print(args)
+    print(json.dumps(args.__dict__, indent=4, default=str))
     print('=' * 60)
 
     dataset = make_data_module(DATASETS,
@@ -219,7 +220,7 @@ if __name__ == "__main__":
     parser.add_argument('--exp', type=int, default=0, help='Path to config file')
     parser.add_argument('--gpus', type=str, default='0,1,2,3', help='GPUs to be used')
     parser.add_argument('--datasets', nargs='+', type=str,
-                        default=['common_voice', 'fleurs', 'massive', 'voxpopuli', 'yodas', 'dataocean_asr_657', 'dataocean_asr_659'], help='datasets')
+                        default=['common_voice', 'fleurs', 'speech_massive', 'voxpopuli', 'yodas', 'dataocean_asr_657', 'dataocean_asr_659'], help='datasets')
     parser.add_argument('--iters', type=int, default=800, help='validation samples per dataset')
     parser.add_argument('--restart', default=True, help='Restart from the beginning', type=lambda x: bool(strtobool(x)))
     parser.add_argument('--machine', type=str, default=None, help='machine name of model to load')
@@ -229,6 +230,7 @@ if __name__ == "__main__":
     parser.add_argument('--attn_implementation', type=str, default='sdpa', help='attention implementation type')
     parser.add_argument('--speech_encoder_id', type=str, default='openai/whisper-large-v3', help='speech encoder id')
     parser.add_argument('--language_model_id', type=str, default='elte-nlp/Racka-4B', help='language model id')
+    parser.add_argument('--note', type=str, default='', help='note about this experiment')
 
     args, unknown = parser.parse_known_args()
 

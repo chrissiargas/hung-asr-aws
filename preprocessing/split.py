@@ -16,7 +16,7 @@ class splitter:
 
         self.seed = 42
 
-    def perform_speaker_split(self, manifest_folder: str, manifest_file: str, dataset: str, test_split: float):
+    def perform_speaker_split(self, manifest_folder: str, manifest_file: str, dataset: str, test_split: float = 0):
         print(f"[{dataset}] No pre-existing splits found. Performing Speaker-Disjoint Split on the fly...")
 
         data = pd.read_json(manifest_file, lines=True)
@@ -77,7 +77,7 @@ class splitter:
                         entry['split'] = split
                         g.write(json.dumps(entry) + '\n')
 
-    def split(self, validation: bool = True, merging: bool = False, datasets: Optional[List] = None, test_split: float = 0.2):
+    def split(self, validation: bool = True, merging: bool = False, datasets: Optional[List] = None, test_split: float = 0):
         manifests = {
             'train': {},
             'validation': {},
@@ -103,8 +103,14 @@ class splitter:
                                     manifests[split][dataset] = manifest_file
 
                     else:
-                        manifest_file = os.path.join(manifest_folder, f'{self.conf.language}.json')
-                        manifests['train'][dataset] = manifest_file
+                        if splits == 3:
+                            for split in ['train', 'validation', 'test']:
+                                manifest_file = os.path.join(manifest_folder, f'{self.conf.language}_{split}.json')
+                                if os.path.exists(manifest_file):
+                                    manifests[split][dataset] = manifest_file
+                        else:
+                            manifest_file = os.path.join(manifest_folder, f'{self.conf.language}.json')
+                            manifests['train'][dataset] = manifest_file
 
                 else:
                     for split in ['train', 'validation', 'test']:

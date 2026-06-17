@@ -23,7 +23,7 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 def check_duration(data, info, bad_folder):
     min_thres = 1
-    max_thres = 60
+    max_thres = 30
 
     durations = np.array([entry['duration'] for entry in data])
 
@@ -266,7 +266,7 @@ def run_check(datasets, splits):
 import argparse
 if '__main__' == __name__:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--datasets', nargs='+', type=str, default=['common_voice', 'fleurs', 'speech_massive', 'voxpopuli', 'yodas', 'dataocean_asr_657'], help='datasets')
+    parser.add_argument('--datasets', nargs='+', type=str, default=['dataocean_asr_657', 'dataocean_asr_659'], help='datasets')
     parser.add_argument('--splits', nargs='+', type=str, default=['train', 'validation', 'test'], help='datasets')
     args, unknown = parser.parse_known_args()
 

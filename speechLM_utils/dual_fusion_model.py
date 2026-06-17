@@ -187,7 +187,10 @@ class DualFusionModel(nn.Module):
         else:
             bnb_config = None
 
-        lm_config = AutoConfig.from_pretrained(language_model_id)
+        lm_config = AutoConfig.from_pretrained(language_model_id,
+                                                token=access_token,
+                                                trust_remote_code=True)
+
         language_project_dim = lm_config.hidden_size
 
         self.processor = WhisperProcessor.from_pretrained(speech_encoder_model_id,

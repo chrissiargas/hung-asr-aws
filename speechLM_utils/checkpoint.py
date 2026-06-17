@@ -51,7 +51,7 @@ def get_checkpoint(checkpoints_path: str, info: Dict, restart: bool = False):
         machine = info['machine']
     else:
         machine = socket.gethostname()
-
+    
     checkpoint_path = os.path.join(os.path.expanduser('~'),
                                    checkpoints_path,
                                    info['checkpoint_folder'],
