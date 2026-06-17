@@ -12,6 +12,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.environ["PYTORCH_ALLOC_CONF"] = "expandable_segments:True"
 set_environment()
 
+import pandas as pd
 import torch
 from datasets import Dataset
 from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
@@ -82,7 +83,7 @@ def gpu_evaluate(data, gpu_id, args):
 
     indices = data['index']
     durations = data['duration']
-    res_samples, _ = get_metrics(predictions, references, indices, durations)
+    res_samples, _ = get_metrics(predictions, references, indices, durations, verbose=False)
 
     samples_path = os.path.join(args['res_folder'], f"predictions_{gpu_id}.csv")
     res_samples.to_csv(samples_path)
@@ -111,6 +112,19 @@ def get_bad_folder_path(conf, dataset: str, split: str):
 
     return bad_folder_path
 
+def get_total_metrics(base_filename: str):
+    merged_df = pd.read_csv(f"{base_filename}.csv")
+
+    predictions = merged_df['prediction'].fillna("").astype(str).tolist()
+    references = merged_df['reference'].fillna("").astype(str).tolist()
+    indices = merged_df['index'].tolist()
+    durations = merged_df['duration'].tolist()
+
+    res_samples, total_results = get_metrics(predictions, references, indices, durations)
+
+    res_samples.to_csv(f"{base_filename}.csv", index=False)
+    total_results.to_csv(f"{base_filename}_total_metrics.csv", index=False)
+
 def evaluate(args, dataset: str, split: str = 'test'):
     conf = Parser()
     conf.get_args()
@@ -119,7 +133,7 @@ def evaluate(args, dataset: str, split: str = 'test'):
     bad_folder = get_bad_folder_path(conf, dataset, split)
 
     split_manager = splitter()
-    data = split_manager.split(datasets=[dataset], split_k=0)
+    data = split_manager.split(datasets=[dataset], test_split=args['test_split'])
     evaluation_data = get_data(data[split], bad_folder, has_duration=True)
     evaluation_data = concatenate(evaluation_data)
 
@@ -132,8 +146,10 @@ def evaluate(args, dataset: str, split: str = 'test'):
     base_filename = os.path.join(args['res_folder'], "predictions")
 
     concat_dataframes(base_filename, remove=True)
-
     print(f"✅ Final merged predictions saved to: {base_filename}.csv")
+
+    get_total_metrics(base_filename)
+    print(f"✅ Unified metrics saved to: {base_filename}_total_metrics.csv\n")
 
 import argparse
 if __name__ == "__main__":
@@ -145,6 +161,7 @@ if __name__ == "__main__":
     parser.add_argument('--splits', nargs='+', type=str, default=['train', 'validation', 'test'], help='split sets')
     parser.add_argument('--model_type', type=str, default='whisper')
     parser.add_argument('--model_name', type=str, default='Trendency/whisper-large-v3-hu')
+    parser.add_argument('--test_split', type=float, default=0, help='test split percentage')
 
     args, unknown = parser.parse_known_args()
 

@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from typing import Dict, Optional, List
 import random
+import numpy as np
 
 class splitter:
     def __init__(self, splitting: bool = True, validation: bool = True, exp: int = 0):
@@ -15,58 +16,41 @@ class splitter:
 
         self.seed = 42
 
-    def perform_speaker_split(self, manifest_folder: str, manifest_file: str, dataset: str, split_k: float):
+    def perform_speaker_split(self, manifest_folder: str, manifest_file: str, dataset: str, test_split: float):
         print(f"[{dataset}] No pre-existing splits found. Performing Speaker-Disjoint Split on the fly...")
 
-        data = []
-        with open(manifest_file, 'r', encoding='utf-8') as f:
-            for line in f:
-                data.append(json.loads(line.strip()))
+        data = pd.read_json(manifest_file, lines=True)
+        speaker_stats = data.groupby('subject', as_index=False)['duration'].sum()
 
-        speaker_groups = {}
-        speaker_durations = {}
-        total_duration = 0
+        speaker_stats['cum_duration'] = speaker_stats['duration'].cumsum()
+        total_duration = speaker_stats['duration'].sum()
 
-        for entry in data:
-            speaker_id = entry.get('subject')
-            duration = entry.get('duration')
+        train_threshold = (1. - 2. * test_split) * total_duration
+        val_threshold = train_threshold + (test_split * total_duration)
 
-            if speaker_id not in speaker_groups:
-                speaker_groups[speaker_id] = []
-                speaker_durations[speaker_id] = 0
+        conditions = [
+            speaker_stats['cum_duration'] <= train_threshold,
+            (speaker_stats['cum_duration'] > train_threshold) & (speaker_stats['cum_duration'] <= val_threshold)
+        ]
+        choices = ['train', 'validation']
+        speaker_stats['split'] = np.select(conditions, choices, default='test')
 
-            speaker_groups[speaker_id].append(entry)
-            speaker_durations[speaker_id] += duration
-            total_duration += duration
+        splits_dict = speaker_stats.groupby('split')['subject'].apply(list).to_dict()
 
-        random.seed(self.seed)
-        speakers = list(speaker_groups.keys())
-        random.shuffle(speakers)
+        print(f"Train Subjects: {splits_dict.get('train', [])}\n"
+              f"Validation Subjects: {splits_dict.get('validation', [])}\n"
+              f"Test Subjects: {splits_dict.get('test', [])}\n")
 
-        splits = {'train': [], 'validation': [], 'test': []}
-        current_durations = {'train': 0.0, 'validation': 0.0, 'test': 0.0}
-
-        train_duration = split_k * total_duration
-        val_duration = (1 - split_k / 2) * total_duration
-
-        for speaker in speakers:
-            if current_durations['train'] < train_duration:
-                splits['train'].append(speaker)
-                current_durations['train'] += speaker_durations[speaker]
-            elif current_durations['validation'] < val_duration:
-                splits['validation'].append(speaker)
-                current_durations['validation'] += speaker_durations[speaker]
-            else:
-                splits['test'].append(speaker)
-                current_durations['test'] += speaker_durations[speaker]
+        data = data.merge(speaker_stats[['subject', 'split']], on='subject', how='left')
 
         generated_paths = {}
-        for split, entries in splits.items():
-            output_path = os.path.join(manifest_folder, f'{self.conf.language}_{split}.json')
-            with open(output_path, 'w', encoding='utf-8') as f:
-                for entry in entries:
-                    f.write(json.dumps(entry, ensure_ascii=False) + '\n')
-            generated_paths[split] = output_path
+        for split_name in ['train', 'validation', 'test']:
+            split_data = data[data['split'] == split_name].drop(columns=['split'])
+            print(f"{split_name} samples: {len(split_data)}")
+
+            output_path = os.path.join(manifest_folder, f'{self.conf.language}_{split_name}.json')
+            split_data.to_json(output_path, orient='records', lines=True, force_ascii=False)
+            generated_paths[split_name] = output_path
 
         print(f"[{dataset}] Successfully generated splits.")
         return generated_paths
@@ -93,7 +77,7 @@ class splitter:
                         entry['split'] = split
                         g.write(json.dumps(entry) + '\n')
 
-    def split(self, validation: bool = True, merging: bool = False, datasets: Optional[List] = None, split_k: float = 0.8):
+    def split(self, validation: bool = True, merging: bool = False, datasets: Optional[List] = None, test_split: float = 0.2):
         manifests = {
             'train': {},
             'validation': {},
@@ -107,11 +91,11 @@ class splitter:
                 manifest_folder = os.path.join(os.path.expanduser('~'), self.conf.dataset_path, self.conf.language, dataset, 'manifests')
                 splits = len(os.listdir(manifest_folder))
 
-                if splits == 1:
-                    if split_k > 0:
-                        manifest_file = os.path.join(manifest_folder, f'{self.conf.language}_train.json')
+                if 'dataocean' in dataset:
+                    if test_split > 0:
+                        manifest_file = os.path.join(manifest_folder, f'{self.conf.language}.json')
                         if os.path.exists(manifest_file):
-                            self.perform_speaker_split(manifest_folder, manifest_file, dataset, split_k)
+                            self.perform_speaker_split(manifest_folder, manifest_file, dataset, test_split)
 
                             for split in ['train', 'validation', 'test']:
                                 manifest_file = os.path.join(manifest_folder, f'{self.conf.language}_{split}.json')
@@ -119,16 +103,14 @@ class splitter:
                                     manifests[split][dataset] = manifest_file
 
                     else:
-                        manifest_file = os.path.join(manifest_folder, f'{self.conf.language}_train.json')
+                        manifest_file = os.path.join(manifest_folder, f'{self.conf.language}.json')
                         manifests['train'][dataset] = manifest_file
 
-                elif splits == 3:
+                else:
                     for split in ['train', 'validation', 'test']:
                         manifest_file = os.path.join(manifest_folder, f'{self.conf.language}_{split}.json')
                         if os.path.exists(manifest_file):
                             manifests[split][dataset] = manifest_file
-                elif splits == 2:
-                    raise TypeError("There are only 2 splits: ", os.listdir(manifest_folder))
 
         if not validation:
             manifests['train'].update(manifests['validation'])

@@ -2,7 +2,7 @@ import json
 import os
 from tqdm import tqdm
 from config.parser import Parser
-from datasets import load_dataset
+from datasets import load_dataset, concatenate_datasets
 from pathlib import Path
 import soundfile as sf
 import warnings
@@ -30,13 +30,14 @@ class yodas:
         elif self.conf.language.lower() == 'hungarian':
             self.subset = 'Hungarian'
 
-        self.dataset = load_dataset(
+        raw_dataset = load_dataset(
             self.load_path,
             self.subset,
-            split='asr_only',
             trust_remote_code=True,
             verification_mode="no_checks"
         )
+
+        self.dataset = concatenate_datasets(list(raw_dataset.values()))
 
         split_train = 0.8
         split_val = 0.1

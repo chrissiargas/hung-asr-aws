@@ -114,6 +114,8 @@ class dataocean_asr_659:
                 batch_clip_path = os.path.join(clips_path, batch_clip_folder)
                 if os.path.isfile(batch_clip_path):
                     continue
+                if batch_clip_folder == 'C1':
+                    break
 
                 for wav_file in os.listdir(batch_clip_path):
                     wav_file_name = os.path.splitext(os.path.basename(wav_file))[0]

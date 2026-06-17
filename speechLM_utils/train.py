@@ -219,9 +219,8 @@ if __name__ == "__main__":
     parser.add_argument('--exp', type=int, default=0, help='Path to config file')
     parser.add_argument('--gpus', type=str, default='0,1,2,3', help='GPUs to be used')
     parser.add_argument('--datasets', nargs='+', type=str,
-                        default=['common_voice', 'fleurs', 'hparl', 'tedx', 'logotypographia'], help='datasets')
+                        default=['common_voice', 'fleurs', 'massive', 'voxpopuli', 'yodas', 'dataocean_asr_657', 'dataocean_asr_659'], help='datasets')
     parser.add_argument('--iters', type=int, default=800, help='validation samples per dataset')
-    parser.add_argument('--note', type=str, default='', help='note about this experiment')
     parser.add_argument('--restart', default=True, help='Restart from the beginning', type=lambda x: bool(strtobool(x)))
     parser.add_argument('--machine', type=str, default=None, help='machine name of model to load')
     parser.add_argument('--datetime', type=str, default=None, help='datetime of model to load')

@@ -10,7 +10,16 @@ def normalize_symbols(text):
 
     return text
 
-def normalize(text):
+def remove_signs(text):
+    try:
+        text = re.sub(r'[^\w\s]', ' ', text)
+        text = re.sub(r'\s+', ' ', text)
+    except:
+        print(text)
+
+    return text.strip()
+
+def normalize(text, with_signs=True):
     if not text:
         return ''
 
@@ -29,7 +38,10 @@ def normalize(text):
     # Collapse multiple spaces into a single space and strip edges
     text = re.sub(r'\s+', ' ', text).strip()
 
-    text = re.sub(r'([^\w\s])\1*', r' \g<0> ', text)
+    if with_signs:
+        text = re.sub(r'([^\w\s])\1*', r' \g<0> ', text)
+    else:
+        text = re.sub(r'[^\w\s]', ' ', text)
 
     text = re.sub(r'\s+', ' ', text)
 
@@ -37,5 +49,5 @@ def normalize(text):
 
 if __name__ == "__main__":
     sentence = 'Έχω ένα μικρό... Ελεφαντάκι!'
-    print(normalize(sentence, with_signs=False))
-    print(normalize(sentence, with_signs=True))
+    print(sentence)
+    print(normalize(sentence))
