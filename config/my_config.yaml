@@ -7,11 +7,15 @@ data_args:
   other_to_train: True
 
 main_args:
+  #'common_voice', 'fleurs', 'massive', 'voxpopuli', 'yodas', 'dataocean_asr_657', 'dataocean_asr_659'
   datasets:
     - common_voice
     - fleurs
-    - css10
-    - hparl
+    - massive
+    - voxpopuli
+    - yodas
+    - dataocean_asr_657
+    - dataocean_asr_659
   split_type: 'default'
   results_path: "/home/jovyan/asr-shared/csiargka/cache/results"
   checkpoint_path: "/home/jovyan/asr-shared/csiargka/cache/checkpoints"
@@ -40,7 +44,7 @@ dual_fuse_args:
   static_injection_layers: False
   downsample_L: 5
   injection_downsample: 'conv1d'
-  injection_layers: [10, 20, 30]
+  injection_layers: [15, 25, 35]
   pyramid_layers: False
   downsamplers: 'injection_common' # common, injection_common, different
   causal_fusion: False
@@ -68,7 +72,7 @@ dual_fuse_args:
   second_stage_epochs: 20
   ## Prompt Configurations
   prompt_persona: none
-  prompt_instruction: "\nΜετάγραψε το προηγούμενο ηχητικό απόσπασμα σε ελληνικό κείμενο με απόλυτη ακρίβεια."
+  prompt_instruction: "\nÍrd át a megelőző hanganyagot magyar szöveggé abszolút pontossággal."
   prompt_verbatim: False
   training_args: {
     # --- PERFORMANCE OPTIMIZATIONS ---

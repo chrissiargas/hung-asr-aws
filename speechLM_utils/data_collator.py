@@ -4,17 +4,32 @@ import torch
 from diffusers.pipelines.audioldm2.modeling_audioldm2 import add_special_tokens
 from transformers import WhisperProcessor, AutoTokenizer, WhisperTokenizer
 
-GREEK_CHARS = "αβγδεζηθικλμνξοπρστυφχψωςάέήίόύώϊϋΐΰ"
+HU_CHARS = "aábcdeéfghiíjklmnoóöőpqrstuúüűvwxyz"
 EN_CHARS = "abcdefghijklmnopqrstuvwxyz"
 PUNCT = " '.,!?;:-"
 NUMBERS = "0123456789"
-ALL_CHARS = ["<pad>", "<unk>", "<blank>"] + list(GREEK_CHARS + EN_CHARS + PUNCT + NUMBERS)
+UNIQUE_CHARS = list(dict.fromkeys(HU_CHARS + EN_CHARS))
+ALL_CHARS = ["<pad>", "<unk>", "<blank>"] + UNIQUE_CHARS + list(PUNCT + NUMBERS)
 
 CHAR2ID = {c: i for i, c in enumerate(ALL_CHARS)}
 BLANK_IDX = CHAR2ID["<blank>"]
 PAD_IDX = CHAR2ID["<pad>"]
 UNK_IDX = CHAR2ID["<unk>"]
 NUM_CLASSES = len(ALL_CHARS)
+
+PROMPT_CLEAN = "Te egy professzionális magyar beszédfelismerő rendszer vagy. Írd le pontosan, tiszta magyar helyesírással a hallott beszédet."
+PROMPT_VERBATIM = "Készíts szó szerinti átiratot, megtartva a töltelékszavakat, megakadásokat és a befejezetlen mondatokat is."
+PROMPT_FORMAL = "Hivatalos parlamenti felszólalás. Készíts pontos, formális átiratot, a felesleges köszöntések nélkül."
+
+DATASET_PROMPT_MAP = {
+    'common_voice': PROMPT_CLEAN,
+    'fleurs': PROMPT_CLEAN,
+    'massive': PROMPT_CLEAN,
+    'yodas': PROMPT_CLEAN,
+    'voxpopuli': PROMPT_FORMAL,
+    'dataocean_asr_657': PROMPT_VERBATIM,
+    'dataocean_asr_659': PROMPT_VERBATIM
+}
 
 def compute_length(batch):
     return {"length": len(batch["audio"]["array"])}
@@ -82,9 +97,7 @@ class DataCollator(object):
             transcriptions = [x["reference"] + self.language_tokenizer.eos_token for x in instances]
 
         if self.prompt_verbatim:
-            tags = ["Κατά λέξη μεταγραφή: "
-                    if x.get('dataset_name', '') in ['common_voice', 'fleurs', 'logotypographia']
-                    else "Κανονικοποιημένη μεταγραφή: " for x in instances]
+            tags = list(map(lambda x: DATASET_PROMPT_MAP.get(x.get('dataset_name'), PROMPT_CLEAN), instances))
 
             tag_tokens = self.language_tokenizer(
                 tags,

@@ -94,7 +94,7 @@ def two_stage_train(dataset, args, training_args, info, checkpoint_path, checkpo
 
 def train_model(dataset, args, training_args, info, checkpoint_path, checkpoint_dir, writer, device, load: bool = False,
                 exp: int = 0):
-    model, tokenizer = get_model(MODEL_TYPE, args, info, device, exp, ATTN_IMPL)
+    model, tokenizer = get_model(args, info, device, exp, ATTN_IMPL)
 
     if load:
         model, max_step = load_weights(model, checkpoint_path, args, device)
@@ -165,10 +165,13 @@ def train_model(dataset, args, training_args, info, checkpoint_path, checkpoint_
     return checkpoint_path
 
 
-def setup(model_type, info, restart: bool = False, device: str = 'cuda', local_rank: int = -1, exp: int = 0):
-    conf, args, training_args, bad_folder, date, checkpoint_path, checkpoint_dir, writer = init(model_type, info,
-                                                                                                restart, exp)
+def setup(info, restart: bool = False, device: str = 'cuda', local_rank: int = -1, exp: int = 0):
+    conf, args, training_args, bad_folder, date, checkpoint_path, checkpoint_dir, writer = init(info, restart, exp)
+
+    print('='*60)
+    print('Experiment Arguments')
     print(args)
+    print('=' * 60)
 
     dataset = make_data_module(DATASETS,
                                bad_folder,
@@ -179,10 +182,9 @@ def setup(model_type, info, restart: bool = False, device: str = 'cuda', local_r
                                do_interleave=info['interleave'],
                                temperature=args.interleave_temperature,
                                randomize=args.randomize,
-                               norm_mono=args.norm_mono,
                                exp=exp)
 
-    init_wandb(local_rank, args, date, MODEL_TYPE, DATASETS, NOTE)
+    init_wandb(local_rank, args, date, info['model_name'], DATASETS, NOTE)
 
     if args.two_stage:
         two_stage_train(dataset, args, training_args, info, checkpoint_path, checkpoint_dir, writer, device, exp=exp)
@@ -193,10 +195,10 @@ def setup(model_type, info, restart: bool = False, device: str = 'cuda', local_r
 def train(exp: int = 0):
     local_rank, device = init_gpu()
 
-    info = init_info(MODEL_TYPE, DATASETS, MACHINE, DATETIME, INTERLEAVE, ITERS)
+    info = init_info(SPEECH_ENCODER_ID, LANGUAGE_MODEL_ID, DATASETS, MACHINE, DATETIME, INTERLEAVE, ITERS)
 
     try:
-        setup(MODEL_TYPE, info, restart=RESTART, device=device, local_rank=local_rank, exp=exp)
+        setup(info, restart=RESTART, device=device, local_rank=local_rank, exp=exp)
 
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -208,8 +210,6 @@ def train(exp: int = 0):
         gc.collect()
         torch.cuda.empty_cache()
 
-
-MODEL_TYPE = 'dual_fusion'
 FILTERS = ['duration', 'ratio']
 
 import argparse
@@ -227,10 +227,14 @@ if __name__ == "__main__":
     parser.add_argument('--skip_stage1', default=False, help='skip stage 1 training', type=lambda x: bool(strtobool(x)))
     parser.add_argument('--interleave', default=True, help='interleave data', type=lambda x: bool(strtobool(x)))
     parser.add_argument('--attn_implementation', type=str, default='sdpa', help='attention implementation type')
+    parser.add_argument('--speech_encoder_id', type=str, default='openai/whisper-large-v3', help='speech encoder id')
+    parser.add_argument('--language_model_id', type=str, default='elte-nlp/Racka-4B', help='language model id')
 
     args, unknown = parser.parse_known_args()
 
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpus
+    SPEECH_ENCODER_ID = args.speech_encoder_id
+    LANGUAGE_MODEL_ID = args.language_model_id
     DATASETS = args.datasets
     ITERS = args.iters
     NOTE = args.note
@@ -242,6 +246,8 @@ if __name__ == "__main__":
     ATTN_IMPL = args.attn_implementation
 
     print('EXPERIMENT SETUP: ')
+    print('speech encoder id: ', SPEECH_ENCODER_ID)
+    print('language model id: ', LANGUAGE_MODEL_ID)
     print('datasets: ', DATASETS)
     print('iters: ', ITERS)
     print('restart: ', RESTART)

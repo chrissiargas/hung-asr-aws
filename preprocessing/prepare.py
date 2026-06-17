@@ -17,7 +17,6 @@ def make_data_module(dataset_names,
                      eval_samples: Optional[int] = None,
                      do_interleave: bool = True,
                      temperature: float = 1.0,
-                     norm_mono: bool = False,
                      randomize: bool = False,
                      seed: int = 42,
                      exp: int = 0):
@@ -32,7 +31,6 @@ def make_data_module(dataset_names,
                           iters=train_samples if micro_data else None,
                           randomize=randomize,
                           has_duration=True,
-                          norm_mono=norm_mono,
                           seed=seed)
 
     val_sets = get_data(data['validation'],
@@ -42,7 +40,6 @@ def make_data_module(dataset_names,
                         iters=eval_samples,
                         randomize=randomize,
                         has_duration=True,
-                        norm_mono=norm_mono,
                         seed=seed)
 
     if do_interleave and len(train_sets) > 1:

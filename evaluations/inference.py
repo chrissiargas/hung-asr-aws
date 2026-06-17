@@ -160,7 +160,7 @@ if __name__ == "__main__":
     parser.add_argument('--datasets', nargs='+', type=str, default=['common_voice', 'fleurs', 'massive', 'voxpopuli', 'yodas'], help='datasets')
     parser.add_argument('--splits', nargs='+', type=str, default=['train', 'validation', 'test'], help='split sets')
     parser.add_argument('--model_type', type=str, default='whisper')
-    parser.add_argument('--model_name', type=str, default='Trendency/whisper-large-v3-hu')
+    parser.add_argument('--model_name', type=str, default='openai/whisper-large-v3')
     parser.add_argument('--test_split', type=float, default=0, help='test split percentage')
 
     args, unknown = parser.parse_known_args()

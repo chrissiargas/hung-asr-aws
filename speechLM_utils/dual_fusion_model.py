@@ -191,7 +191,7 @@ class DualFusionModel(nn.Module):
         language_project_dim = lm_config.hidden_size
 
         self.processor = WhisperProcessor.from_pretrained(speech_encoder_model_id,
-                                                          language='el',
+                                                          language='hu',
                                                           task='transcribe',
                                                           predict_timestamps=False)
         if self.spec_augment:
@@ -244,8 +244,8 @@ class DualFusionModel(nn.Module):
             token=access_token
         )
 
-        if self.language_tokenizer.pad_token is None:
-            self.language_tokenizer.pad_token = self.language_tokenizer.eos_token
+        if self.language_tokenizer.pad_token_id is None:
+            self.language_tokenizer.pad_token_id = self.language_tokenizer.eos_token_id
 
         if self.predict_duration:
             num_bins = int(self.max_duration / self.duration_resolution) + 1

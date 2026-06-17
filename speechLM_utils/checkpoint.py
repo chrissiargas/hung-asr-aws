@@ -35,16 +35,15 @@ def get_last_checkpoint(checkpoint_dir):
     return None, False
 
 def get_last_name(info: Dict, restart: bool):
-    lora = 'LoRA_1'
     dataset = info['train_dataset']
     date = '' if info['datetime'] is None else info['datetime']
 
     if restart:
         date = datetime.now().strftime("%b%d_%H-%M")
 
-    return f'{lora}_{dataset}@{date}', date
+    return f'{dataset}@{date}', date
 
-def get_checkpoint(checkpoints_path: str, info: Dict, model_name: str, restart: bool = False):
+def get_checkpoint(checkpoints_path: str, info: Dict, restart: bool = False):
     load = not restart
     last_name, date = get_last_name(info, restart)
 
@@ -57,7 +56,7 @@ def get_checkpoint(checkpoints_path: str, info: Dict, model_name: str, restart: 
                                    checkpoints_path,
                                    info['checkpoint_folder'],
                                    machine,
-                                   model_name,
+                                   info['model_name'],
                                    last_name)
 
     os.makedirs(checkpoint_path, exist_ok=True)

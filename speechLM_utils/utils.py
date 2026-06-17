@@ -89,41 +89,33 @@ def init_gpu():
     return local_rank, device
 
 
-def init_info(model_type, datasets, machine=None, datetime=None, interleave=True, iters=800):
-    info = Info[model_type]
-    info['checkpoint_folder'] = f'{model_type}_checkpoints'
-    info['train_dataset'] = datasets
-    info['machine'] = machine
-    info['datetime'] = datetime
-    info['interleave'] = interleave
-    info['iters'] = iters
+def init_info(speech_encoder_id, language_model_id, datasets, machine=None, datetime=None, interleave=True, iters=800):
+    model_name = (speech_encoder_id.split('/')[1] + '_' + language_model_id.split('/')[1])
+
+    info = {
+        'checkpoint_folder': None,  # add in training
+        'model_name': model_name,
+        'train_dataset': datasets,  # add in training
+        'interleave': interleave,
+        'speech_encoder_id': speech_encoder_id,
+        'language_model_id': language_model_id,
+        'machine': machine,
+        'datetime': datetime,
+        'iters': iters
+    }
 
     return info
 
 
-def init(model_type, info, restart=True, exp: int = 0):
+def init(info, restart=True, exp: int = 0):
     conf = Parser()
     conf.get_args(exp)
 
-    if model_type == 'continuous_fusion':
-        args = conf.cont_fuse_args
-        training_args = args.training_args
-    elif model_type == 'slam_asr':
-        args = conf.slam_args
-        training_args = args.training_args
-    elif model_type == 'dual_fusion':
-        args = conf.dual_fuse_args
-        training_args = args.training_args
+    args = conf.dual_fuse_args
+    training_args = args.training_args
 
-    if info['model_name'] is None:
-        model_name = (info['speech_encoder_id'].split('/')[1] + '_' +
-                      info['language_model_id'].split('/')[1])
-    else:
-        model_name = info['model_name']
-
-    info['model_name'] = model_name
-
-    checkpoint_path, checkpoint_dir, writer, date, loaded_args = get_checkpoint(args.checkpoint_path, info, model_name,
+    checkpoint_path, checkpoint_dir, writer, date, loaded_args = get_checkpoint(args.checkpoint_path,
+                                                                                info,
                                                                                 restart)
 
     if loaded_args is not None:
@@ -151,27 +143,31 @@ def init(model_type, info, restart=True, exp: int = 0):
 def resume_wandb(local_rank, info):
     if local_rank in [-1, 0]:
         api = wandb.Api()
-        runs = api.runs("chrissiargas-innoetics/Greek-ASR",
+        runs = api.runs("chrissiargas-innoetics/Hungarian-ASR",
                         filters={"display_name": info['datetime']})
 
         if len(runs) > 0:
             run_id = runs[0].id
             print(f"Found existing W&B run '{info['datetime']}' with ID {run_id}. Resuming...")
-            wandb.init(project="Greek-ASR", entity="chrissiargas-innoetics", id=run_id, resume="must")
+            wandb.init(project="Hungarian-ASR",
+                       entity="chrissiargas-innoetics",
+                       id=run_id, resume="must")
         else:
             print(f"Could not find existing run '{info['datetime']}'. Starting a new evaluation run...")
-            wandb.init(project="Greek-ASR", entity="chrissiargas-innoetics", name=f"{info['datetime']}_EVAL",
+            wandb.init(project="Hungarian-ASR",
+                       entity="chrissiargas-innoetics",
+                       name=f"{info['datetime']}_EVAL",
                        group=info['model_type'])
 
 
-def init_wandb(local_rank, args, date, model_type, datasets, note):
+def init_wandb(local_rank, args, date, model_name, datasets, note):
     tags = get_tags(args, datasets)
     if local_rank in [-1, 0]:
         wandb.init(
             entity="chrissiargas-innoetics",
-            project="Greek-ASR",
+            project="Hungarian-ASR",
             name=date,
-            group=model_type,
+            group=model_name,
             config=args.__dict__,
             tags=tags,
             notes=note,
