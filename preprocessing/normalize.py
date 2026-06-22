@@ -5,6 +5,7 @@ def normalize_symbols(text):
     text = text.replace('«', '"').replace('»', '"')
     text = text.replace('“', '"').replace('”', '"')
     text = text.replace('‘', "'").replace('’', "'")
+    text = text.replace('„', '"').replace('”', '"')
     text = text.replace('—', '-').replace('–', '-')
     text = text.replace('…', '...')
 
@@ -29,11 +30,17 @@ def normalize(text, with_signs=True):
     # 2. Remove speaker tags at the beginning (e.g. ομιλητής 1: ")
     text = re.sub(r'^\s*[\w\s\.\-]{1,30}:\s*', '', text)
 
+    # Remove entire foreign language blocks
+    text = re.sub(r'<lang:[^>]+>.*?</lang:[^>]+>', ' ', text)
+
+    # Remove cutoff words (e.g., "valami~")
+    text = re.sub(r'\b\w+~', ' ', text)
+
     # Remove acoustic tags like <spoken_noise>, <unk>
     text = re.sub(r'<[^>]+>', ' ', text)
 
     # Remove transcriber notes in parentheses or brackets e.g., (Χειροκροτήματα)
-    text = re.sub(r'\[.*?\]|\(.*?\)', ' ', text)
+    text = re.sub(r'\[.*?\]|\(\(.*?\)\)|\(.*?\)', ' ', text)
 
     # Collapse multiple spaces into a single space and strip edges
     text = re.sub(r'\s+', ' ', text).strip()
