@@ -5,6 +5,7 @@ from pathlib import Path
 from collections import Counter
 import pandas as pd
 import re
+import subprocess
 
 def check_full_dataocean_657(manifest_path, source_path):
     print("=" * 60)
@@ -211,12 +212,46 @@ def check_full_datatang_part1(manifest_path, source_path):
 
     return set()
 
-if __name__ == '__main__':
-    part = '9'
-    MANIFEST_PATH = f'/home/jovyan/asr-shared/csiargka/cache/datasets/hungarian/dataocean_asr_65{part}/manifests/hungarian_train.json'
-    ORIGINAL_DATA_DIR = f'/home/jovyan/asr-shared/csiargka/cache/datasets/hungarian/dataocean_asr_65{part}/all_wav_files.txt'
+def generate_wav_cache_shell(input_folder: str, output_file: str, is_datatang_part1: bool = False, is_datatang_part2: bool = False):
+    if is_datatang_part1:
+        command = (
+            'find /home/jovyan/asr-data-segr/5th_lang/DataTang/data/category '
+            '-type f -iname "*.wav" ! -iname "G*" > '
+            f'{output_file}'
+        )
+    elif is_datatang_part2:
+        command = (
+            'find /home/jovyan/asr-data-segr/5th_lang/DataTang/data/category '
+            '-type f -iname "*.wav" & -iname "G*" > '
+            f'{output_file}'
+        )
+    else:
+        command = (
+            f'find /home/jovyan/asr-data-segr/5th_lang/{input_folder}'
+            f'-type f -iname "*.wav" > {output_file}'
+        )
+
+    print(f"🚀 Executing shell command:\n{command}")
     
-    if part == '7':
+    # Run the command
+    subprocess.run(command, shell=True, check=True)
+    print("✅ Cache generation complete!")
+    
+if __name__ == '__main__':
+    create_txt = True
+    dataset_name = 'datatang_asr_1'
+    MANIFEST_PATH = f'/home/jovyan/asr-shared/csiargka/cache/datasets/hungarian/{dataset_name}/manifests/hungarian_train.json'
+    ORIGINAL_DATA_DIR = f'/home/jovyan/asr-shared/csiargka/cache/datasets/hungarian/{dataset_name}/all_wav_files.txt'
+    
+    if dataset_name == 'dataocean_asr_657':
+        if create_txt:
+            generate_wav_cache_shell('/home/jovyan/asr-data-segr/5th_lang/DataOcean/King-ASR-657/DATA', ORIGINAL_DATA_DIR)
         check_full_dataocean_657(MANIFEST_PATH, ORIGINAL_DATA_DIR)
-    elif part == '9':
+    elif dataset_name == 'dataocean_asr_659':
+        if create_txt:
+            generate_wav_cache_shell('/home/jovyan/asr-data-segr/5th_lang/DataOcean/King-ASR-659/DATA', ORIGINAL_DATA_DIR)
         check_full_dataocean_659(MANIFEST_PATH, ORIGINAL_DATA_DIR)
+    elif dataset_name == 'datatang_asr_1':
+        if create_txt:
+            generate_wav_cache_shell('/home/jovyan/asr-data-segr/5th_lang/DataTang/data/category', ORIGINAL_DATA_DIR, is_datatang_part1 = True)
+        check_full_datatang_part1(MANIFEST_PATH, ORIGINAL_DATA_DIR)

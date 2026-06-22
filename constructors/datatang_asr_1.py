@@ -10,8 +10,9 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 import librosa
 import shutil
+from preprocessing.full import check_full_datatang_part1
 
-class datatang_asr:
+class datatang_asr_part1:
     def __init__(self):
         self.conf = Parser()
         self.conf.get_args()
@@ -52,7 +53,7 @@ class datatang_asr:
 
         total_processed = 0
         if not remove:
-            incomplete = check_full_datatang(manifest_dir, source_file)
+            incomplete = check_full_datatang_part1(manifest_dir, source_file)
 
             if len(incomplete) == 0:
                 print("✅ Dataset is 100% complete! No further processing needed.")
@@ -101,15 +102,15 @@ class datatang_asr:
 
         with open(manifest_dir, 'a', encoding='utf-8') as manifest_f:
             print("\n🚀 Beginning Part 1 Processing: Segmenting long-form audio...")
-            part1_txts = glob.glob(os.path.join(self.load_dir, 'data', 'category', '*.txt'))
+            part1_txts = glob.glob(os.path.join(self.load_dir, '*.txt'))
 
-            for txt_file in tqdm(part1_txts, desc="Processing Part 1"):
+            for txt_file in part1_txts:
                 big_utt_id = os.path.basename(txt_file).replace('.txt', '')
 
                 if big_utt_id.startswith('G'):
                     continue
 
-                wav_path = os.path.join(self.load_dir, 'data', 'category', f'{big_utt_id}.wav')
+                wav_path = os.path.join(self.load_dir, f'{big_utt_id}.wav')
 
                 if not os.path.exists(wav_path):
                     print(f"⚠️ Missing corresponding audio for {txt_file}")
@@ -132,13 +133,20 @@ class datatang_asr:
                     parts = line.split('\t')
 
                     if len(parts) < 4:
+                        print(f'⚠️ Missing parts for {line}')
                         continue
 
                     current_start, current_end, speaker, raw_text = parts[0], parts[1], parts[2], parts[3]
                     raw_text = raw_text.strip()
+
                     if raw_text in ['<sil>', 'sp', 'sil', '[no-speech]', '[N]', ''] or not raw_text:
+                        print(f'Silence Instance: {big_utt_id} - {raw_text}')
                         continue
                         
+                    try:
+                        current_start, current_end = float(current_start), float(current_end)
+                    except ValueError:
+                        continue
 
                     start_sample = int(current_start * self.conf.sampling_rate)
                     end_sample = int(current_end * self.conf.sampling_rate)
@@ -160,3 +168,9 @@ class datatang_asr:
 
                     manifest_f.write(json.dumps(manifest_entry, ensure_ascii=False) + '\n')
                     total_processed += 1
+
+
+
+if __name__ == '__main__':
+    extractor = datatang_asr_part1()
+    extractor.load_datatang_subset('train', remove=True)
