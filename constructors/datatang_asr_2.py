@@ -1,7 +1,6 @@
 import json
 import os
 import glob
-import re
 from tqdm import tqdm
 from config.parser import Parser
 from pathlib import Path
@@ -12,9 +11,8 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 import librosa
 import shutil
 
-# Assuming you will add check_full_datatang_part2 to your full.py
+# Assuming you added check_full_datatang_part2 to your full.py
 from preprocessing.full import check_full_datatang_part2
-
 
 class datatang_asr_part2:
     def __init__(self):
@@ -106,41 +104,43 @@ class datatang_asr_part2:
                 total_processed = max_id + 1
 
         with open(manifest_dir, 'a', encoding='utf-8') as manifest_f:
-            print("\n🚀 Beginning Part 2 Processing: 1-to-1 utterance mapping...")
-
-            part2_txts = glob.glob(os.path.join(self.load_dir, 'G*.txt'))
+            print("\n🚀 Beginning Part 2 Processing: Nested 1-to-1 utterance mapping...")
+            
+            # Explicitly target the text files inside their subfolders (e.g., G00001/G00001S0001.txt)
+            part2_txts = glob.glob(os.path.join(self.load_dir, 'G*', 'G*.txt'))
 
             for txt_file in tqdm(part2_txts, desc="Processing Part 2 Files"):
-                big_utt_id = os.path.basename(txt_file).replace('.txt', '')
-                wav_path = os.path.join(self.load_dir, f'{big_utt_id}.wav')
+                
+                # The .wav file is sitting right next to the .txt file
+                wav_path = os.path.splitext(txt_file)[0] + '.wav'
 
                 if not os.path.exists(wav_path):
-                    print(f"⚠️ Missing corresponding audio for {txt_file}")
+                    print(f"⚠️ Missing corresponding audio for {os.path.basename(txt_file)}")
                     continue
 
                 if not remove:
                     if os.path.normpath(wav_path) not in incomplete:
                         continue
 
+                # Isolate the speaker ID from the filename (e.g., "G00001S0001" -> "G00001")
+                big_utt_id = os.path.basename(txt_file).replace('.txt', '')
+                speaker = big_utt_id.split('S')[0]
+
+                # Read text directly using utf-8-sig to clear any potential BOM artifacts
                 with open(txt_file, "r", encoding="utf-8-sig") as f:
                     raw_text = f.read().strip()
-
-                speaker = "unknown"
-                match = re.match(r'^\\s*(.*)$', raw_text, re.IGNORECASE | re.DOTALL)
-
-                if match:
-                    speaker = match.group(1).strip()
-                    raw_text = match.group(2).strip()
 
                 if raw_text in ['<sil>', 'sp', 'sil', '[no-speech]', '[N]', ''] or not raw_text:
                     continue
 
+                # Load audio and determine duration
                 audio_data, sr = librosa.load(wav_path, sr=self.conf.sampling_rate)
                 duration = len(audio_data) / self.conf.sampling_rate
 
                 target_filename = f'{total_processed:06d}.wav'
                 target_filepath = os.path.join(audio_dir, target_filename)
-
+                
+                # Write the standard sample rate audio file
                 sf.write(str(target_filepath), audio_data, self.conf.sampling_rate)
 
                 manifest_entry = {
@@ -157,4 +157,4 @@ class datatang_asr_part2:
 
 if __name__ == '__main__':
     extractor = datatang_asr_part2()
-    extractor.load_datatang_subset('train')
+    extractor.load_datatang_subset('train', remove=True)

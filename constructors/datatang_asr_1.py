@@ -173,4 +173,4 @@ class datatang_asr_part1:
 
 if __name__ == '__main__':
     extractor = datatang_asr_part1()
-    extractor.load_datatang_subset('train', remove=True)
+    extractor.load_datatang_subset('train', remove=False)
