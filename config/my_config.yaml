@@ -31,7 +31,7 @@ dual_fuse_args:
   ## Regularization & Augmentation Configurations
   blank_training: False
   audio_dropout: 0.1
-  text_perturbation: False
+  text_perturbation: True
   text_dropout: 0.1
   spec_augment: True
   ## Input Injection Configurations
@@ -94,9 +94,9 @@ dual_fuse_args:
     'report_to': 'wandb',
     'logging_steps': 10,
     'save_strategy': 'steps',
-    'save_steps': 10,
+    'save_steps': 500,
     'eval_strategy': 'steps',
-    'eval_steps': 10,
+    'eval_steps': 500,
     'save_total_limit': 3,
     'eval_accumulation_steps': 4,
     'per_device_eval_batch_size': 4,
@@ -107,6 +107,7 @@ dual_fuse_args:
     'group_by_length': False,       # Prevent crash (missing input_ids)
     'predict_with_generate': True,  # REQUIRED to calculate WER/CER during eval
     'do_train': True,
+    'save_safetensors': False,
 
     # --- EARLY STOPPING SETTINGS ---
     'load_best_model_at_end': True,
