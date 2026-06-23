@@ -9,10 +9,16 @@ from transformers import GenerationConfig, Seq2SeqTrainingArguments
 from typing import Dict, List
 import socket
 
+def tags_to_str(tags: List[str]):
+    return '\n'.join(tags)
 
-def get_tags(args: Dict, datasets: List[str]):
+def get_tags(args: Dict, info: Dict, datasets: List[str]):
     tags = []
     tags.append(socket.gethostname())
+
+    tags.append(f"Speech Encoder: {info['speech_encoder_id']}")
+    tags.append(f"Language Model: {info['language_model_id']}")
+    tags.append(f"Interleave Factor: {info['interleave']}")
 
     ds_string = ','.join(datasets)
     if len(ds_string) > 64:
@@ -168,8 +174,10 @@ def resume_wandb(local_rank, info):
                        group=info['model_type'])
 
 
-def init_wandb(local_rank, args, date, model_name, datasets, note):
-    tags = get_tags(args, datasets)
+def init_wandb(local_rank, args, info, date, model_name, datasets):
+    tags = get_tags(args, info, datasets)
+    note = tags_to_str(tags)
+
     if local_rank in [-1, 0]:
         wandb.init(
             entity="chrissiargas-innoetics",

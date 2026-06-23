@@ -185,7 +185,7 @@ def setup(info, restart: bool = False, device: str = 'cuda', local_rank: int = -
                                randomize=args.randomize,
                                exp=exp)
 
-    init_wandb(local_rank, args, date, info['model_name'], DATASETS, NOTE)
+    init_wandb(local_rank, args, info, date, info['model_name'], DATASETS)
 
     if args.two_stage:
         two_stage_train(dataset, args, training_args, info, checkpoint_path, checkpoint_dir, writer, device, exp=exp)
@@ -230,7 +230,6 @@ if __name__ == "__main__":
     parser.add_argument('--attn_implementation', type=str, default='sdpa', help='attention implementation type')
     parser.add_argument('--speech_encoder_id', type=str, default='openai/whisper-large-v3', help='speech encoder id')
     parser.add_argument('--language_model_id', type=str, default='elte-nlp/Racka-4B', help='language model id')
-    parser.add_argument('--note', type=str, default='', help='note about this experiment')
 
     args, unknown = parser.parse_known_args()
 
@@ -239,7 +238,6 @@ if __name__ == "__main__":
     LANGUAGE_MODEL_ID = args.language_model_id
     DATASETS = args.datasets
     ITERS = args.iters
-    NOTE = args.note
     RESTART = args.restart
     MACHINE = args.machine
     DATETIME = args.datetime
