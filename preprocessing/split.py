@@ -91,7 +91,9 @@ class splitter:
                 manifest_folder = os.path.join(os.path.expanduser('~'), self.conf.dataset_path, self.conf.language, dataset, 'manifests')
                 splits = len(os.listdir(manifest_folder))
 
-                if 'dataocean' in dataset:
+                if ('dataocean' in dataset) or ('datatang' in dataset):
+                    print(f'Checking if {dataset} needs splitting...')
+                    
                     if test_split > 0:
                         manifest_file = os.path.join(manifest_folder, f'{self.conf.language}.json')
                         if os.path.exists(manifest_file):
@@ -101,9 +103,12 @@ class splitter:
                                 manifest_file = os.path.join(manifest_folder, f'{self.conf.language}_{split}.json')
                                 if os.path.exists(manifest_file):
                                     manifests[split][dataset] = manifest_file
+                        
+                        else:
+                            print(f'{manifest_file} Not Found!')
 
                     else:
-                        if splits == 3:
+                        if splits > 3:
                             for split in ['train', 'validation', 'test']:
                                 manifest_file = os.path.join(manifest_folder, f'{self.conf.language}_{split}.json')
                                 if os.path.exists(manifest_file):

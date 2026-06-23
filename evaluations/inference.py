@@ -33,7 +33,7 @@ def gpu_evaluate(data, gpu_id, args):
     data = Dataset.from_dict(data)
     
     torch_dtype = torch.float16
-    batch_size = 4
+    batch_size = 8
 
     model = AutoModelForSpeechSeq2Seq.from_pretrained(args['model_name'], torch_dtype=torch_dtype).to(f"cuda:{gpu_id}")
     processor = AutoProcessor.from_pretrained(args['model_name'])

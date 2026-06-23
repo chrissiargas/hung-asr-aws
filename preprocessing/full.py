@@ -220,10 +220,21 @@ def check_full_datatang_part2(manifest_path, source_path):
     print(f"Reading manifest: {manifest_path}...")
     try:
         json_lines = Path(manifest_path).read_text(encoding='utf-8').splitlines()
-        parsed_json = map(json.loads, json_lines)
-
-        audio_sources = map(lambda x: x.get('audio_source', ''), parsed_json)
-        valid_sources = filter(None, audio_sources)
+        
+        # Replaced the lazy map() with a resilient loop
+        valid_sources = []
+        for line in json_lines:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                entry = json.loads(line)
+                source = entry.get('audio_source', '')
+                if source:
+                    valid_sources.append(source)
+            except json.JSONDecodeError:
+                # Silently skip incomplete lines caused by interrupted previous runs
+                continue
 
         processed_files = set(map(os.path.normpath, valid_sources))
         print(f"✅ Loaded {len(processed_files)} processed base audio files from manifest.")
@@ -289,8 +300,8 @@ def generate_wav_cache_shell(input_folder: str, output_file: str, is_datatang_pa
 
     
 if __name__ == '__main__':
-    create_txt = True
-    dataset_name = 'datatang_asr_1'
+    create_txt = False
+    dataset_name = 'datatang_asr_2'
     MANIFEST_PATH = f'/home/jovyan/asr-shared/csiargka/cache/datasets/hungarian/{dataset_name}/manifests/hungarian_train.json'
     ORIGINAL_DATA_DIR = f'/home/jovyan/asr-shared/csiargka/cache/datasets/hungarian/{dataset_name}/all_wav_files.txt'
     

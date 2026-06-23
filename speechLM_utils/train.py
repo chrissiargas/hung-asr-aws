@@ -211,8 +211,6 @@ def train(exp: int = 0):
         gc.collect()
         torch.cuda.empty_cache()
 
-FILTERS = ['duration', 'ratio']
-
 import argparse
 
 if __name__ == "__main__":
@@ -230,6 +228,7 @@ if __name__ == "__main__":
     parser.add_argument('--attn_implementation', type=str, default='sdpa', help='attention implementation type')
     parser.add_argument('--speech_encoder_id', type=str, default='openai/whisper-large-v3', help='speech encoder id')
     parser.add_argument('--language_model_id', type=str, default='elte-nlp/Racka-4B', help='language model id')
+    parser.add_argument('--filters', type=str, nargs='+', default=['duration', 'ratio'])
 
     args, unknown = parser.parse_known_args()
 
@@ -244,11 +243,13 @@ if __name__ == "__main__":
     INTERLEAVE = args.interleave
     SKIP_STAGE1 = args.skip_stage1
     ATTN_IMPL = args.attn_implementation
+    FILTERS = args.filters
 
     print('EXPERIMENT SETUP: ')
     print('speech encoder id: ', SPEECH_ENCODER_ID)
     print('language model id: ', LANGUAGE_MODEL_ID)
     print('datasets: ', DATASETS)
+    print('filters: ', FILTERS)
     print('iters: ', ITERS)
     print('restart: ', RESTART)
     print('machine: ', MACHINE)

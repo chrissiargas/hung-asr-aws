@@ -220,7 +220,7 @@ def check_text(data, info, bad_folder):
 def run_check(datasets, splits):
     conf = Parser()
     conf.get_args()
-    print('LOaded config file')
+    print('Loaded config file')
 
     bad_folder = os.path.join(os.path.expanduser('~'),
                               conf.dataset_path,
