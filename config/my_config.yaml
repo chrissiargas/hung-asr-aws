@@ -50,6 +50,7 @@ dual_fuse_args:
   causal_fusion: False
   gated_cross_attention: False
   positional_info: False
+  layer_wise_fusion: False
   ## LoRA Configurations
   linguistic_lora: True
   acoustic_lora: False

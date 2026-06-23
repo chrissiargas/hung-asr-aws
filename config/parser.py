@@ -137,6 +137,7 @@ class Parser:
         self.dual_fuse_args.gated_cross_attention = args.dual_fuse_args['gated_cross_attention']
         self.dual_fuse_args.downsamplers = args.dual_fuse_args['downsamplers']
         self.dual_fuse_args.positional_info = args.dual_fuse_args['positional_info']
+        self.dual_fuse_args.layer_wise_fusion = args.dual_fuse_args['layer_wise_fusion']
 
         ## LoRA Configurations
         self.dual_fuse_args.linguistic_lora = args.dual_fuse_args['linguistic_lora']

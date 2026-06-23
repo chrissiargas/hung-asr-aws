@@ -110,6 +110,7 @@ class DualFusionModel(nn.Module):
                  downsamplers,
                  causal_fusion,
                  positional_info,
+                 layer_wise_fusion,
                  predict_duration,
                  duration_resolution,
                  max_duration,
@@ -157,6 +158,7 @@ class DualFusionModel(nn.Module):
         self.pyramid_layers = pyramid_layers
         self.gated = gated
         self.positional_info = positional_info
+        self.layer_wise_fusion = layer_wise_fusion
 
         self.lng_lora = lng_lora
         self.acoustic_lora = acoustic_lora
@@ -208,9 +210,16 @@ class DualFusionModel(nn.Module):
         self.audio_dim = int(self.speech_model.config.d_model)
         self.audio_len = 1500
 
+        self.num_whisper_layers = self.speech_model.config.encoder_layers + 1
+
         del self.speech_model
         gc.collect()
         torch.cuda.empty_cache()
+
+        if self.layer_wise_fusion:
+            self.layer_weights = nn.Parameter(
+                torch.zeros(self.n_injections, self.num_whisper_layers, device=self.device, dtype=self.dtype)
+            )
 
         if self.acoustic_lora:
             peft_config = LoraConfig(
@@ -396,6 +405,7 @@ class DualFusionModel(nn.Module):
         down_params = []
         adapter_params = []
         cross_attn_params = []
+        layer_weights_params = []
         ctc_params = []
         audio_params = []
         duration_params = []
@@ -405,6 +415,7 @@ class DualFusionModel(nn.Module):
             is_lora = "lora" in name
             is_down = ("input_downsampler" in name or "injection_downsampler" in name or 'injection_downsamplers' in name)
             is_cross_attn = "cross_attention_layer" in name
+            is_layer_weights = "layer_weights" in name
             is_adapter = "adapter" in name
             is_ctc_head = "ctc_predictor" in name
             is_audio_head = "audio_predictor" in name
@@ -420,6 +431,8 @@ class DualFusionModel(nn.Module):
                 adapter_params.append(param)
             elif is_cross_attn:
                 cross_attn_params.append(param)
+            if is_layer_weights:
+                layer_weights_params.append(param)
             elif is_ctc_head:
                 ctc_params.append(param)
             elif is_audio_head:
@@ -433,6 +446,7 @@ class DualFusionModel(nn.Module):
                 'downsamplers': down_params,
                 'adapter': adapter_params,
                 'cross_attn': cross_attn_params,
+                'layer_weights': layer_weights_params,
                 'ctc_head': ctc_params,
                 'audio_head': audio_params,
                 'duration_token_params': duration_params,
@@ -448,6 +462,7 @@ class DualFusionModel(nn.Module):
         injection_down_params = 0
         adapter_params = 0
         cross_attn_params = 0
+        layer_weight_params = 0
         frozen_whisper_params = 0
         frozen_llm_params = 0
         ctc_params = 0
@@ -461,6 +476,7 @@ class DualFusionModel(nn.Module):
             is_llm_lora = ("lora" in name and "language_model" in name)
             is_whisper_lora = ("lora" in name and ("speech_model" in name or "speech_encoder" in name or "speech_decoder" in name))
             is_cross_attn = "cross_attention_layer" in name
+            is_layer_weights = "layer_weights" in name
             is_input_down = "input_downsampler" in name
             is_injection_down = ("injection_downsampler" in name or 'injection_downsamplers' in name)
             is_adapter = "adapter" in name
@@ -475,6 +491,7 @@ class DualFusionModel(nn.Module):
                 if is_llm_lora: llm_lora_params += param.numel()
                 if is_whisper_lora: whisper_lora_params += param.numel()
                 if is_cross_attn: cross_attn_params += param.numel()
+                if is_layer_weights: layer_weight_params += param.numel()
                 if is_input_down: input_down_params += param.numel()
                 if is_injection_down: injection_down_params += param.numel()
                 if is_adapter: adapter_params += param.numel()
@@ -500,6 +517,7 @@ class DualFusionModel(nn.Module):
         print(f" > Adapter Params ({adapter_trainable}): {adapter_params:,}")
         print(f" > Injection Downsampler Params ({injection_trainable}): {injection_down_params:,}")
         print(f" > Cross Attention Params ({injection_trainable}): {cross_attn_params:,}")
+        print(f" > Layer Weights Params ({injection_trainable}): {layer_weight_params:,}")
         print(f" > CTC Head Params (Trainable): {ctc_params:,}")
         print(f" > Audio Head Params (Trainable): {audio_params:,}")
         print(f" > Duration Token Params (Trainable): {duration_params:,}")
@@ -510,6 +528,7 @@ class DualFusionModel(nn.Module):
         print("\n--- Module Parameters ---")
         encoder_params = 0
         cross_attn_params = 0
+        layer_weight_params = 0
         input_down_params = 0
         injection_down_params = 0
         adapter_params = 0
@@ -524,6 +543,10 @@ class DualFusionModel(nn.Module):
         for injection_layer in self.injection_layers:
             for param in injection_layer.cross_attention_layer.parameters():
                 cross_attn_params += param.numel()
+
+        if self.layer_wise_fusion:
+            for param in self.layer_weights.parameters():
+                layer_weight_params += param.numel()
 
         if self.include_adapter:
             for param in self.input_downsampler.parameters():
@@ -561,6 +584,7 @@ class DualFusionModel(nn.Module):
         print(f"Adapter Params: {adapter_params:,}")
         print(f"Injection Downsampler Params: {injection_down_params:,}")
         print(f"Cross-Attention Params: {cross_attn_params:,}")
+        print(f"Layer Weight Params: {layer_weight_params:,}")
         print(f"CTC Head Params: {ctc_params:,}")
         print(f"Audio Head Params: {audio_params:,}")
         print(f"Duration Params: {duration_params:,}")
@@ -716,6 +740,10 @@ class DualFusionModel(nn.Module):
         if self.n_injections == 0:
             return injection_audios, injection_masks
 
+        stacked_hidden_states = None
+        if self.layer_wise_fusion:
+            stacked_hidden_states = torch.stack(encoder_outputs.hidden_states, dim=0)
+
         if not self.pyramid_layers:
             if self.downsample_L == 1:
                 inj_audio_mask = self.calculate_mask(audio_masks, audio_embs)
@@ -731,7 +759,21 @@ class DualFusionModel(nn.Module):
                     inj_audio_mask = self.calculate_mask(audio_masks, injection_audio)
 
         for l, injection_layer in enumerate(self.injection_layers):
-            if self.pyramid_layers:
+            if self.layer_wise_fusion:
+                layer_alpha = F.softmax(self.layer_weights[l], dim=0).view(-1, 1, 1, 1)
+                audio_features = (stacked_hidden_states * layer_alpha).sum(dim=0)
+
+                if self.downsample_L > 1:
+                    if isinstance(self.injection_downsamplers[l], CIFireAdapter):
+                        injection_audio, inj_audio_mask, _ = self.injection_downsamplers[l](audio_features, audio_masks)
+                    else:
+                        injection_audio = self.injection_downsamplers[l](audio_features)
+                        inj_audio_mask = self.calculate_mask(audio_masks, injection_audio)
+                else:
+                    inj_audio_mask = self.calculate_mask(audio_masks, audio_features)
+                    injection_audio = audio_features
+
+            elif self.pyramid_layers:
                 if l == self.n_injections - 1:
                     audio_features = encoder_outputs.last_hidden_state
                 else:

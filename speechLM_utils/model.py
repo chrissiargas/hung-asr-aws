@@ -88,6 +88,7 @@ def get_model(args: Dict, info: Dict, device = 'cuda', exp: int = 0, attn_implem
         downsamplers=args['downsamplers'],
         causal_fusion=args['causal_fusion'],
         positional_info=args['positional_info'],
+        layer_wise_fusion=args['layer_wise_fusion'],
         predict_duration=args['predict_duration'],
         duration_resolution=args['duration_resolution'],
         max_duration=args['max_duration'],
