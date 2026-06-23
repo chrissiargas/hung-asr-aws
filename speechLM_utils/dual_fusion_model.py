@@ -545,8 +545,7 @@ class DualFusionModel(nn.Module):
                 cross_attn_params += param.numel()
 
         if self.layer_wise_fusion:
-            for param in self.layer_weights.parameters():
-                layer_weight_params += param.numel()
+            layer_weight_params += self.layer_weights.numel()
 
         if self.include_adapter:
             for param in self.input_downsampler.parameters():
@@ -764,10 +763,12 @@ class DualFusionModel(nn.Module):
                 audio_features = (stacked_hidden_states * layer_alpha).sum(dim=0)
 
                 if self.downsample_L > 1:
+                    ds = self.injection_downsamplers[l] if self.downsamplers == 'different' else self.injection_downsampler
+
                     if isinstance(self.injection_downsamplers[l], CIFireAdapter):
-                        injection_audio, inj_audio_mask, _ = self.injection_downsamplers[l](audio_features, audio_masks)
+                        injection_audio, inj_audio_mask, _ = ds(audio_features, audio_masks)
                     else:
-                        injection_audio = self.injection_downsamplers[l](audio_features)
+                        injection_audio = ds(audio_features)
                         inj_audio_mask = self.calculate_mask(audio_masks, injection_audio)
                 else:
                     inj_audio_mask = self.calculate_mask(audio_masks, audio_features)
