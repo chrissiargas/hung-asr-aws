@@ -34,6 +34,35 @@ class datatang_asr_part1:
             'datatang_asr_1'
         )
 
+    def assign_session(self):
+        manifest_dir = Path(os.path.join(self.target_path, 'manifests', f"{self.conf.language}.json"))
+        source_file = Path(os.path.join(self.target_path, 'all_wav_files.txt'))
+
+        incomplete = check_full_datatang_part1(manifest_dir, source_file)
+
+        if len(incomplete) == 0:
+            print("Dataset is 100% complete! Start assigning...")
+
+            temp_manifest = manifest_dir.with_suffix('.tmp')
+            with open(manifest_dir, 'r', encoding='utf-8') as f_in, \
+                open(temp_manifest, 'w', encoding='utf-8') as f_out:
+
+                for line in f_in:
+                    entry = json.loads(line)
+
+                    filepath = entry.get('audio_source', '')
+                    filename = os.path.basename(filepath)
+                    session = os.path.splitext(filename)[0]  # Extracts '001452' from '001452.wav'
+                    session_id = session.split('_')[0]
+                    entry['session'] = session_id
+                    f_out.write(json.dumps(entry, ensure_ascii=False) + '\n')
+
+            temp_manifest.replace(manifest_dir)
+            print("✅ Session IDs successfully appended to all lines!")
+
+        else:
+            print("⚠️ Cannot assign sessions: Dataset is incomplete.")
+
     def load_datatang_subset(self, split: str, remove: bool = False):
         audio_dir = Path(os.path.join(self.target_path, 'data', f'{self.conf.language}_{split}_clips'))
         manifest_dir = Path(os.path.join(self.target_path, 'manifests', f"{self.conf.language}_{split}.json"))
@@ -173,4 +202,4 @@ class datatang_asr_part1:
 
 if __name__ == '__main__':
     extractor = datatang_asr_part1()
-    extractor.load_datatang_subset('train', remove=False)
+    extractor.assign_session()
