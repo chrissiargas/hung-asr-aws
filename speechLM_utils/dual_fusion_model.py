@@ -96,8 +96,8 @@ class LayerWiseAttention(nn.Module):
     def forward(self, stacked_states: torch.Tensor):
         energy_scores = self.attention_mlp(stacked_states)
         energy_scores = energy_scores.squeeze(-1)
-        alpha_weights = F.softmax(energy_scores, dim=1).unsqueeze(-1)
-        fused_state = (stacked_states * alpha_weights).sum(dim=1)
+        alpha_weights = F.softmax(energy_scores, dim=0).unsqueeze(-1)
+        fused_state = (stacked_states * alpha_weights).sum(dim=0)
 
         return fused_state
 
@@ -582,10 +582,10 @@ class DualFusionModel(nn.Module):
 
         if self.layer_wise_fusion:
             if self.layer_weights_static:
-                layer_weight_params += self.layer_weights.numel()
+                layer_weight_params += self.layer_static.numel()
             else:
                 for ld in self.layer_dynamic:
-                    for param in ld:
+                    for param in ld.parameters():
                         layer_weight_params += param.numel()
 
         if self.include_adapter:

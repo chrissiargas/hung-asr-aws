@@ -41,8 +41,25 @@ def wrap_compute_metrics(tokenizer, dataset, writer, info):
 
         metrics = {}
         if info['compute_wer_cer']:
-            cer = cer_metric.compute(predictions=decoded_preds, references=decoded_labels)
-            wer = wer_metric.compute(predictions=decoded_preds, references=decoded_labels)
+            preds_arr = np.char.strip(np.array(decoded_preds))
+            labels_arr = np.char.strip(np.array(decoded_labels))
+            
+            empty_ref_mask = (labels_arr == "")
+            labels_arr[empty_ref_mask] = "<SIL>"
+
+            preds_arr[empty_ref_mask] = np.where(
+                preds_arr[empty_ref_mask] == "",
+                "<SIL>",
+                np.char.add("<SIL> ", preds_arr[empty_ref_mask])
+            )
+            
+            preds_arr = np.where(preds_arr == "", " ", preds_arr)
+
+            filtered_preds = preds_arr.tolist()
+            filtered_labels = labels_arr.tolist()
+
+            cer = cer_metric.compute(predictions=filtered_preds, references=filtered_labels)
+            wer = wer_metric.compute(predictions=filtered_preds, references=filtered_labels)
             metrics = {"cer": cer, "wer": wer}
 
         return metrics

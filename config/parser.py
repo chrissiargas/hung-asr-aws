@@ -138,7 +138,7 @@ class Parser:
         self.dual_fuse_args.downsamplers = args.dual_fuse_args['downsamplers']
         self.dual_fuse_args.positional_info = args.dual_fuse_args['positional_info']
         self.dual_fuse_args.layer_wise_fusion = args.dual_fuse_args['layer_wise_fusion']
-        self.dual_fuse_args.layer_weights_static = args.dual_fuse_args['layer_static_weights']
+        self.dual_fuse_args.layer_weights_static = args.dual_fuse_args['layer_weights_static']
 
         ## LoRA Configurations
         self.dual_fuse_args.linguistic_lora = args.dual_fuse_args['linguistic_lora']
