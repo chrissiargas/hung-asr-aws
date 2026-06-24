@@ -17,9 +17,9 @@ PAD_IDX = CHAR2ID["<pad>"]
 UNK_IDX = CHAR2ID["<unk>"]
 NUM_CLASSES = len(ALL_CHARS)
 
-PROMPT_CLEAN = "Te egy professzionális magyar beszédfelismerő rendszer vagy. Írd le pontosan, tiszta magyar helyesírással a hallott beszédet."
-PROMPT_VERBATIM = "Készíts szó szerinti átiratot, megtartva a töltelékszavakat, megakadásokat és a befejezetlen mondatokat is."
-PROMPT_FORMAL = "Hivatalos parlamenti felszólalás. Készíts pontos, formális átiratot, a felesleges köszöntések nélkül."
+PROMPT_CLEAN = "Tiszta, pontos magyar átirat."
+PROMPT_VERBATIM = "Teljes, szó szerinti átirat."
+PROMPT_FORMAL = "Szigorúan formális, hivatalos átirat."
 
 DATASET_PROMPT_MAP = {
     'common_voice': PROMPT_CLEAN,
