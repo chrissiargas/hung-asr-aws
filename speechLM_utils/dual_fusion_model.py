@@ -292,8 +292,13 @@ class DualFusionModel(nn.Module):
             token=access_token
         )
 
-        if self.language_tokenizer.pad_token_id is None:
-            self.language_tokenizer.pad_token_id = self.language_tokenizer.eos_token_id
+        if 'Racka' in language_model_id:
+            if self.language_tokenizer.pad_token_id is None:
+                self.language_tokenizer.pad_token_id = self.language_tokenizer.eos_token_id
+
+        if 'PULI':
+            if self.language_tokenizer.pad_token is None:
+                self.language_tokenizer.pad_token = self.language_tokenizer.eos_token
 
         if self.predict_duration:
             num_bins = int(self.max_duration / self.duration_resolution) + 1
