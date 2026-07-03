@@ -64,10 +64,10 @@ class PredictionProgressCallback(TrainerCallback):
             self.prediction_bar.close()
             self.prediction_bar = None
 
-def load_model(model_type, args, info, checkpoint_path, checkpoint_dir=None, device='cuda'):
+def load_model(args, info, checkpoint_path, checkpoint_dir=None, device='cuda'):
     print(f"Initializing model...")
 
-    model, tokenizer = get_model(model_type, args, info, device)
+    model, tokenizer = get_model(args, info, device)
 
     if checkpoint_dir is None:
         max_step = get_max_step(checkpoint_path)
@@ -131,14 +131,14 @@ def debug_predictions(predictions, references, generated_ids, label_ids, tokeniz
         print(ref_len)
 
 
-def get_eval_metrics(data, model_type, conf, args, info, checkpoint_path, checkpoint_dir, device = 'cuda'):
+def evaluate(data, conf, args, info, checkpoint_path, checkpoint_dir, device = 'cuda'):
     training_args = conf.eval_args.training_args
     training_args['report_to'] = "none"
     training_args['generation_config'] = GenerationConfig(**training_args['generation_config'])
     training_args['disable_tqdm'] = True
     training_args = Seq2SeqTrainingArguments(**training_args)
 
-    model = load_model(model_type, args, info, checkpoint_path, checkpoint_dir, device)
+    model = load_model(args, info, checkpoint_path, checkpoint_dir, device)
     tokenizer = model.language_tokenizer
 
     collator = DataCollator(processor=model.processor,
@@ -201,53 +201,71 @@ def get_eval_metrics(data, model_type, conf, args, info, checkpoint_path, checkp
 
     return samples_path, total_path
 
-def get_results_path(conf, info, data_folder: bool = True):
+def get_results_path(conf, info, dataset, split='test', data_folder: bool = True):
     results_path = os.path.join(os.path.expanduser('~'),
                                 conf.results_path,
-                                info['model_type'],
+                                'dual_fusion_checkpoints',
                                 info['machine'],
                                 info['model_name'],
                                 info['datetime'],
                                 str(info['turn']))
 
     if data_folder:
-        results_path = os.path.join(results_path, info['test_dataset'])
+        results_path = os.path.join(results_path, dataset, split)
 
     os.makedirs(results_path, exist_ok=True)
 
     return results_path
 
-def evaluate(info, set='test', device='cuda', iters = None):
-    conf, args, _, bad_folder, _, checkpoint_path, checkpoint_dir, _ = init(info['model_type'], info, restart=False)
+def get_bad_folder_path(conf, dataset: str, split: str):
+    bad_folder_path = os.path.join(os.path.expanduser('~'),
+                                   conf.dataset_path,
+                                   conf.language,
+                                   'bad_folder',
+                                   dataset,
+                                   split)
 
-    res_folder = get_results_path(conf, info)
-    info['res_folder'] = res_folder
+    return bad_folder_path
 
-    if type(info['test_dataset']) is not list:
-        dataset_names = [info['test_dataset']]
+def evaluate(info, dataset, split='test', device='cuda', iters = None):
+    conf, args, _, bad_folder, _, checkpoint_path, checkpoint_dir, _ = init(info, restart=False)
+
+    res_folder = get_results_path(conf, info, dataset, split)
+    bad_folder = get_bad_folder_path(conf, dataset, split)
+
+    if dataset is not list:
+        dataset_names = [dataset]
     else:
-        dataset_names = info['test_dataset']
+        dataset_names = dataset
 
-    split = splitter()
-    data = split.split(datasets=dataset_names)
-    data_set = get_data(data[set], bad_folder, iters=iters, normalized=False, has_duration=True, filters=FILTERS, split=set)
-    data_set = concatenate(data_set)
+    split_manager = splitter()
+    data = split_manager.split(datasets=dataset_names)
+    evaluation_data = get_data(data[split], bad_folder, iters=iters, normalized=False, has_duration=True, filters=FILTERS, split=split)
+    evaluation_data = concatenate(evaluation_data)
 
-    print(f"Evaluating on {dataset_names} ({len(data_set)} samples)...")
-    get_eval_metrics(data_set, info['model_type'], conf, args, info, checkpoint_path, checkpoint_dir, device)
+    print(f"Evaluating on {dataset_names} ({len(evaluation_data)} samples)...")
+    get_eval_metrics(evaluation_data, conf, args, info, checkpoint_path, checkpoint_dir, device)
 
 FILTERS = ['duration', 'length']
 
 if __name__ == "__main__":
+    all_datasets = ['common_voice',
+                    'fleurs',
+                    'speech_massive',
+                    'voxpopuli',
+                    'yodas',
+                    'dataocean_asr_657',
+                    'dataocean_asr_659',
+                    'datatang_asr_1',
+                    'datatang_asr_2']
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpus', type=str, default='0,1,2,3', help='GPUs to be used')
-    parser.add_argument('--datasets', nargs='+', type=str, default=['common_voice', 'fleurs', 'hparl', 'tedx', 'logotypographia'], help='datasets')
-    parser.add_argument('--model_type', type=str, default='dual_fusion')
-    parser.add_argument('--train_datasets', nargs='+', type=str, default=['common_voice', 'fleurs', 'hparl', 'tedx', 'logotypographia'], help='datasets of the trained models')
+    parser.add_argument('--datasets', nargs='+', type=str, default=all_datasets, help='datasets')
+    parser.add_argument('--train_datasets', nargs='+', type=str, default=all_datasets, help='datasets of the trained models')
     parser.add_argument('--checkpoint_folder', type=str, default='dual_fusion_checkpoints')
-    parser.add_argument('--model_name', type=str, default=None)
     parser.add_argument('--speech_encoder_id', type=str, default='openai/whisper-large-v3')
-    parser.add_argument('--language_model_id', type=str, default='ilsp/Llama-Krikri-8B-Instruct')
+    parser.add_argument('--language_model_id', type=str, default='elte-nlp/Racka-4B')
     parser.add_argument('--machine', type=str, default='kronos')
     parser.add_argument('--datetime', type=str, default=None)
     parser.add_argument('--turn', type=str, default=None)
@@ -256,14 +274,13 @@ if __name__ == "__main__":
 
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpus
     DATASETS = args.datasets
+    model_name = (args.speech_encoder_id.split('/')[1] + '_' + args.language_model_id.split('/')[1])
 
-    base_info = {
-        'model_type': args.model_type,
+    args_dict = {
         'res_folder': None,
         'train_dataset': args.train_datasets,
-        's_': False,
         'checkpoint_folder': args.checkpoint_folder,
-        'model_name': args.model_name,
+        'model_name': model_name,
         'speech_encoder_id': args.speech_encoder_id,
         'language_model_id': args.language_model_id,
         'bit4': True,
@@ -272,37 +289,35 @@ if __name__ == "__main__":
         'turn': args.turn
     }
 
-    if base_info['datetime'] is None:
+    if args_dict['datetime'] is None:
         checkpoints_path = os.path.join(os.path.expanduser('~'),
                                         'cache',
                                         'checkpoints',
-                                        base_info['model_type'],
-                                        base_info['machine'],
-                                        base_info['model_name'])
+                                        'dual_fusion_checkpoints',
+                                        args_dict['machine'],
+                                        args_dict['model_name'])
 
         for datetime_folder in os.listdir(checkpoints_path):
-            base_info['datetime'] = datetime_folder.split('@')[-1]
+            args_dict['datetime'] = datetime_folder.split('@')[-1]
             turns = os.listdir(os.path.join(checkpoints_path, datetime_folder))
-            base_info['turn'] = turns[0].replace('checkpoint-', '')
+            args_dict['turn'] = turns[0].replace('checkpoint-', '')
 
             print('\n')
             print('---------------------------------------------------------')
-            print(base_info['machine'])
-            print(base_info['datetime'])
-            print(base_info['turn'])
+            print(args_dict['machine'])
+            print(args_dict['datetime'])
+            print(args_dict['turn'])
             print('---------------------------------------------------------')
 
             local_rank, device = init_gpu()
-            resume_wandb(local_rank, base_info)
+            resume_wandb(local_rank, args_dict)
 
             try:
                 for dataset in DATASETS:
-                    base_info['test_dataset'] = dataset
+                    args_dict['test_dataset'] = dataset
 
-                    evaluate(base_info,
-                             set='test',
-                             device=device,
-                             iters=None)
+                    evaluate(args_dict,
+                             device=device)
 
                 wandb.finish()
 
@@ -312,16 +327,14 @@ if __name__ == "__main__":
 
     else:
         local_rank, device = init_gpu()
-        resume_wandb(local_rank, base_info)
+        resume_wandb(local_rank, args_dict)
 
         try:
             for dataset in DATASETS:
-                base_info['test_dataset'] = dataset
+                args_dict['test_dataset'] = dataset
 
-                evaluate(base_info,
-                         set='test',
-                         device=device,
-                         iters=None)
+                evaluate(args_dict,
+                         device=device)
 
             wandb.finish()
 
