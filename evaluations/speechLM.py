@@ -131,7 +131,7 @@ def debug_predictions(predictions, references, generated_ids, label_ids, tokeniz
         print(ref_len)
 
 
-def evaluate(data, conf, args, info, checkpoint_path, checkpoint_dir, device = 'cuda'):
+def evaluate_model(data, conf, args, info, checkpoint_path, checkpoint_dir, device = 'cuda'):
     training_args = conf.eval_args.training_args
     training_args['report_to'] = "none"
     training_args['generation_config'] = GenerationConfig(**training_args['generation_config'])
@@ -230,10 +230,10 @@ def get_bad_folder_path(conf, dataset: str, split: str):
 def evaluate(info, dataset, split='test', device='cuda', iters = None):
     conf, args, _, bad_folder, _, checkpoint_path, checkpoint_dir, _ = init(info, restart=False)
 
-    res_folder = get_results_path(conf, info, dataset, split)
+    info['res_folder'] = get_results_path(conf, info, dataset, split)
     bad_folder = get_bad_folder_path(conf, dataset, split)
 
-    if dataset is not list:
+    if not isinstance(dataset, list):
         dataset_names = [dataset]
     else:
         dataset_names = dataset
@@ -244,7 +244,7 @@ def evaluate(info, dataset, split='test', device='cuda', iters = None):
     evaluation_data = concatenate(evaluation_data)
 
     print(f"Evaluating on {dataset_names} ({len(evaluation_data)} samples)...")
-    get_eval_metrics(evaluation_data, conf, args, info, checkpoint_path, checkpoint_dir, device)
+    evaluate_model(evaluation_data, conf, args, info, checkpoint_path, checkpoint_dir, device)
 
 FILTERS = ['duration', 'length']
 
