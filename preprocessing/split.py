@@ -20,28 +20,38 @@ class splitter:
         print(f"[{dataset}] No pre-existing splits found. Performing Speaker-Disjoint Split on the fly...")
 
         data = pd.read_json(manifest_file, lines=True)
-        speaker_stats = data.groupby('subject', as_index=False)['duration'].sum()
 
-        speaker_stats['cum_duration'] = speaker_stats['duration'].cumsum()
-        total_duration = speaker_stats['duration'].sum()
+        if 'subject' in data.columns and not data['subject'].isnull().all():
+            group_col = 'subject'
+        elif 'session' in data.columns:
+            group_col = 'session'
+        else:
+            raise ValueError(f"[{dataset}] Error: Neither 'subject' nor 'session' found in the manifest!")
+
+        print(f"[{dataset}] Grouping data by: '{group_col}'")
+
+        group_stats = data.groupby(group_col, as_index=False)['duration'].sum()
+
+        group_stats['cum_duration'] = group_stats['duration'].cumsum()
+        total_duration = group_stats['duration'].sum()
 
         train_threshold = (1. - 2. * test_split) * total_duration
         val_threshold = train_threshold + (test_split * total_duration)
 
         conditions = [
-            speaker_stats['cum_duration'] <= train_threshold,
-            (speaker_stats['cum_duration'] > train_threshold) & (speaker_stats['cum_duration'] <= val_threshold)
+            group_stats['cum_duration'] <= train_threshold,
+            (group_stats['cum_duration'] > train_threshold) & (group_stats['cum_duration'] <= val_threshold)
         ]
         choices = ['train', 'validation']
-        speaker_stats['split'] = np.select(conditions, choices, default='test')
+        group_stats['split'] = np.select(conditions, choices, default='test')
 
-        splits_dict = speaker_stats.groupby('split')['subject'].apply(list).to_dict()
+        splits_dict = group_stats.groupby('split')[group_col].apply(list).to_dict()
 
         print(f"Train Subjects: {splits_dict.get('train', [])}\n"
               f"Validation Subjects: {splits_dict.get('validation', [])}\n"
               f"Test Subjects: {splits_dict.get('test', [])}\n")
 
-        data = data.merge(speaker_stats[['subject', 'split']], on='subject', how='left')
+        data = data.merge(group_stats[[group_col, 'split']], on=group_col, how='left')
 
         generated_paths = {}
         for split_name in ['train', 'validation', 'test']:

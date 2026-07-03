@@ -49,6 +49,7 @@ class datatang_asr_part1:
 
                 for line in f_in:
                     entry = json.loads(line)
+                    entry.pop('subject', None)
 
                     filepath = entry.get('audio_source', '')
                     filename = os.path.basename(filepath)
