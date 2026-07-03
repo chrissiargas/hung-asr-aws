@@ -181,7 +181,7 @@ def evaluate_model(data, conf, args, info, checkpoint_path, checkpoint_dir, devi
 
     print(f"Computing metrics...")
 
-    res_samples, res_total = get_metrics(predictions, references, indices, durations, with_total_metrics=True)
+    res_samples, res_total = get_metrics(predictions, references, indices, durations, verbose=False)
 
     samples_path = os.path.join(info['res_folder'], "predictions.csv")
     total_path = os.path.join(info['res_folder'], "results.csv")
@@ -221,14 +221,12 @@ def get_bad_folder_path(conf, dataset: str, split: str):
     bad_folder_path = os.path.join(os.path.expanduser('~'),
                                    conf.dataset_path,
                                    conf.language,
-                                   'bad_folder',
-                                   dataset,
-                                   split)
+                                   'bad_folder')
 
     return bad_folder_path
 
 def evaluate(info, dataset, split='test', device='cuda', iters = None):
-    conf, args, _, bad_folder, _, checkpoint_path, checkpoint_dir, _ = init(info, restart=False)
+    conf, args, _, _, checkpoint_path, checkpoint_dir, _ = init(info, restart=False)
 
     info['res_folder'] = get_results_path(conf, info, dataset, split)
     bad_folder = get_bad_folder_path(conf, dataset, split)
@@ -331,10 +329,7 @@ if __name__ == "__main__":
 
         try:
             for dataset in DATASETS:
-                args_dict['test_dataset'] = dataset
-
-                evaluate(args_dict,
-                         device=device)
+                evaluate(args_dict, dataset, device=device)
 
             wandb.finish()
 

@@ -146,12 +146,7 @@ def init(info, restart=True, exp: int = 0):
     training_args['generation_config'] = GenerationConfig(**training_args['generation_config'])
     training_args = Seq2SeqTrainingArguments(**training_args)
 
-    bad_folder = os.path.join(os.path.expanduser('~'),
-                              conf.dataset_path,
-                              conf.language,
-                              'bad_folder')
-
-    return conf, args, training_args, bad_folder, date, checkpoint_path, checkpoint_dir, writer
+    return conf, args, training_args, date, checkpoint_path, checkpoint_dir, writer
 
 
 def resume_wandb(local_rank, info):

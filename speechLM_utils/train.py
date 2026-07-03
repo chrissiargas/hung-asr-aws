@@ -165,9 +165,18 @@ def train_model(dataset, args, training_args, info, checkpoint_path, checkpoint_
 
     return checkpoint_path
 
+def get_bad_folder_path(conf):
+    bad_folder_path = os.path.join(os.path.expanduser('~'),
+                                   conf.dataset_path,
+                                   conf.language,
+                                   'bad_folder')
+
+    return bad_folder_path
 
 def setup(info, restart: bool = False, device: str = 'cuda', local_rank: int = -1, exp: int = 0):
-    conf, args, training_args, bad_folder, date, checkpoint_path, checkpoint_dir, writer = init(info, restart, exp)
+    conf, args, training_args, date, checkpoint_path, checkpoint_dir, writer = init(info, restart, exp)
+
+    bad_folder = get_bad_folder_path(conf)
 
     print('='*60)
     print('Experiment Arguments')
