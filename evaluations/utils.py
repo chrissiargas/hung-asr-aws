@@ -385,6 +385,40 @@ def plot_wer_distribution(info: Dict):
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()
 
+def examine_worst_predictions(info: Dict, top_n=10, sort_metric='n_wer'):
+    conf = Parser()
+    conf.get_args()
+    local_info = info.copy()
+    dataset_name = info['dataset']
+
+    results_folder = get_results_path(conf, local_info)
+    predictions_path = os.path.join(results_folder, 'predictions.csv')
+
+    if not os.path.exists(predictions_path):
+        print(f"No predictions found for {dataset_name} at {predictions_path}")
+        return
+
+    df = pd.read_csv(predictions_path)
+
+    # Prevent crash if WER column is somehow missing or empty
+    if sort_metric not in df.columns or df.empty:
+        return
+
+    worst_errors = df.sort_values(by=sort_metric, ascending=False).head(top_n)
+    
+    print(f"🚀 Top {top_n} Worst Predictions (Sorted by '{sort_metric}' descending)\n" + "="*70)
+    
+    for _, row in worst_errors.iterrows():
+        print(f"🔹 Index: {row['index']} | Duration: {row['duration']}s")
+        print(f"   Reference:  {row['reference']}")
+        print(f"   Prediction: {row['prediction']}")
+        if 'wer' in sort_metric:
+            print(f"   Metrics:    n_WER: {row['n_wer']:.2f} | WER: {row['wer']:.2f}")
+        elif 'cer' in sort_metric:
+            print(f"   Metrics:    n_CER: {row['n_cer']:.2f} | CER: {row['cer']:.2f}")
+            
+        print(f"   Breakdown:  Substitutions: {row['substitutions']} | Insertions: {row['insertions']} | Deletions: {row['deletions']}")
+        print("-" * 70)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -402,11 +436,12 @@ if __name__ == "__main__":
                 'model_type': args.model_type,
                 'model_name': args.model_name,
                 'dataset': dataset,
-                'split': split,
-
+                'split': split
             }
-
+            
+            examine_worst_predictions(base_info, top_n=100, sort_metric='cer')
             plot_wer_distribution(base_info)
             plot_length_correlation(base_info)
             plot_wer_vs_duration(base_info)
             plot_sid_stacked_bar(base_info)
+            
