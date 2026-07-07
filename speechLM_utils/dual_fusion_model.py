@@ -247,7 +247,7 @@ class DualFusionModel(nn.Module):
                     torch.zeros(self.n_injections, self.num_whisper_layers, device=self.device, dtype=self.dtype)
                 )
             else:
-                self.layer_dynamic = []
+                self.layer_dynamic = nn.ModuleList()
                 for _ in range(self.n_injections):
                     self.layer_dynamic.append(
                         LayerWiseAttention(
@@ -814,7 +814,7 @@ class DualFusionModel(nn.Module):
                 if self.downsample_L > 1:
                     ds = self.injection_downsamplers[l] if self.downsamplers == 'different' else self.injection_downsampler
 
-                    if isinstance(self.injection_downsamplers[l], CIFireAdapter):
+                    if isinstance(ds, CIFireAdapter):
                         injection_audio, inj_audio_mask, _ = ds(audio_features, audio_masks)
                     else:
                         injection_audio = ds(audio_features)
