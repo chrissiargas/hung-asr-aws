@@ -170,7 +170,7 @@ def resume_wandb(local_rank, info):
                        group=info['model_type'])
 
 
-def init_wandb(local_rank, args, info, date, model_name, datasets):
+def init_wandb(local_rank, args, info, date, model_name, datasets, exp):
     tags = get_tags(args, info, datasets)
     note = tags_to_str(tags)
 
@@ -178,7 +178,7 @@ def init_wandb(local_rank, args, info, date, model_name, datasets):
         wandb.init(
             entity="chrissiargas-innoetics",
             project="Hungarian-ASR",
-            name=date,
+            name=f'{date}-Exp:{exp}',
             group=model_name,
             config=args.__dict__,
             tags=tags,

@@ -194,7 +194,7 @@ def setup(info, restart: bool = False, device: str = 'cuda', local_rank: int = -
                                randomize=args.randomize,
                                exp=exp)
 
-    init_wandb(local_rank, args, info, date, info['model_name'], DATASETS)
+    init_wandb(local_rank, args, info, date, info['model_name'], DATASETS, exp)
 
     if args.two_stage:
         two_stage_train(dataset, args, training_args, info, checkpoint_path, checkpoint_dir, writer, device, exp=exp)

@@ -136,10 +136,16 @@ def evaluate_model(data, conf, args, info, checkpoint_path, checkpoint_dir, devi
     training_args['report_to'] = "none"
     training_args['generation_config'] = GenerationConfig(**training_args['generation_config'])
     training_args['disable_tqdm'] = True
+
+    gen_config_obj = training_args.pop('generation_config', {})
     training_args = Seq2SeqTrainingArguments(**training_args)
 
     model = load_model(args, info, checkpoint_path, checkpoint_dir, device)
     tokenizer = model.language_tokenizer
+
+    gen_kwargs = gen_config_obj.to_dict() if hasattr(gen_config_obj, "to_dict") else gen_config_obj
+    model.language_model.generation_config.update(**gen_kwargs)
+    model.generation_config = model.language_model.generation_config
 
     collator = DataCollator(processor=model.processor,
                             language_tokenizer=tokenizer,
