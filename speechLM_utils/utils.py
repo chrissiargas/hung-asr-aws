@@ -133,7 +133,8 @@ def init(info, restart=True, exp: int = 0):
                                                                                 restart)
 
     if loaded_args is not None:
-        args = loaded_args
+        args.__dict__.update(loaded_args)
+        training_args = args.training_args
 
     else:
         config_file = os.path.join(checkpoint_path, 'config.json')
