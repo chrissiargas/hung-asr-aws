@@ -22,8 +22,6 @@ OUTPUT_REPORT = "cleanlab_report"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 def check_duration(data, info, bad_folder, min_thres = 1, max_thres = 30):
-    min_thres = 1
-    max_thres = 30
 
     durations = np.array([entry['duration'] for entry in data])
 
@@ -44,8 +42,6 @@ def check_duration(data, info, bad_folder, min_thres = 1, max_thres = 30):
     bad_files.to_csv(os.path.join(bad_folder, dataset, split, f"bad_by_duration.csv"))
 
 def check_length(data, info, bad_folder, min_thres = 6, max_thres = None):
-    min_thres = 6
-    max_thres = None
 
     text_lens = np.array([len(normalize(entry['text'], with_signs=False)) for entry in data])
 
@@ -67,8 +63,6 @@ def check_length(data, info, bad_folder, min_thres = 6, max_thres = None):
     bad_files.to_csv(os.path.join(bad_folder, dataset, split, f"bad_by_length.csv"))
 
 def check_ratio(data, info, bad_folder, min_thres = 2, max_thres = 30):
-    max_thres = 30
-    min_thres = 2
     durations = [entry['duration'] for entry in data]
 
     text_lens = [len(normalize(entry['text'])) for entry in data]
@@ -135,7 +129,7 @@ def check_text(data, info, bad_folder, foreign_max_threshold=0.4):
 
     issues = []
     for i, entry in enumerate(progress_bar):
-        issues.append(get_issue(entry, patterns))
+        issues.append(get_issue(entry, patterns, foreign_max_threshold))
 
     issues = np.array(issues)
     bad_indices = np.where(issues != 'none')[0]
