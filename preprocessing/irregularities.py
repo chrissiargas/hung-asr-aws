@@ -103,7 +103,7 @@ def get_issue(x, patterns, foreign_max_threshold=0.4):
     if not cleaned_text.strip():
         return 'empty_after_normalization'
 
-    invalid_match = patterns['invalid_chars'].search(text)
+    invalid_match = patterns['invalid_chars'].search(cleaned_text)
     if invalid_match:
         bad_char = invalid_match.group(0)
         return f"invalid character detected: '{bad_char}'"
@@ -123,7 +123,7 @@ def check_text(data, info, bad_folder, foreign_max_threshold=0.4):
 
     patterns = {
         'letters': re.compile(r'[a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ]'),
-        'invalid_chars': re.compile(r'[^a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ0-9\s\.,:;!\?\'"«»„”\-%\+€$\/]'),
+        'invalid_chars': re.compile(r'[^a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ0-9\s\.,:;!\?\'"«»„”\-%\+\*\/=€$#]'),
         'foreign_blocks': re.compile(r'<lang:[^>]+>(.*?)</lang:[^>]+>', re.IGNORECASE)
     }
 
