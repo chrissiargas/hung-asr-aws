@@ -123,7 +123,7 @@ def check_text(data, info, bad_folder, foreign_max_threshold=0.4):
 
     patterns = {
         'letters': re.compile(r'[a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ]'),
-        'invalid_chars': re.compile(r'[^a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ0-9\s\.,:;!\?\'"«»„”\-%\+€$]]'),
+        'invalid_chars': re.compile(r'[^a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ0-9\s\.,:;!\?\'"«»„”\-%\+€$\/]'),
         'foreign_blocks': re.compile(r'<lang:[^>]+>(.*?)</lang:[^>]+>', re.IGNORECASE)
     }
 
