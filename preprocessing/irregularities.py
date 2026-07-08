@@ -21,7 +21,7 @@ EMBED_MODEL = "openai/whisper-tiny"
 OUTPUT_REPORT = "cleanlab_report"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-def check_duration(data, info, bad_folder):
+def check_duration(data, info, bad_folder, min_thres = 1, max_thres = 30):
     min_thres = 1
     max_thres = 30
 
@@ -43,11 +43,11 @@ def check_duration(data, info, bad_folder):
 
     bad_files.to_csv(os.path.join(bad_folder, dataset, split, f"bad_by_duration.csv"))
 
-def check_length(data, info, bad_folder):
-    min_thres = 2
+def check_length(data, info, bad_folder, min_thres = 6, max_thres = None):
+    min_thres = 6
     max_thres = None
 
-    text_lens = np.array([len(normalize(entry['text'])) for entry in data])
+    text_lens = np.array([len(normalize(entry['text'], with_signs=False)) for entry in data])
 
     if max_thres:
         bad_indices = np.where((text_lens < min_thres) | (text_lens > max_thres))[0]
@@ -58,7 +58,7 @@ def check_length(data, info, bad_folder):
 
     bad_files['filepath'] = bad_files.bad_index.map(lambda x: data[x]['audio_filepath'])
     bad_files['text'] = bad_files.bad_index.map(lambda x: data[x]['text'])
-    bad_files['normalized'] = bad_files.bad_index.map(lambda x: normalize(data[x]['text']))
+    bad_files['normalized'] = bad_files.bad_index.map(lambda x: normalize(data[x]['text'], with_signs=False))
     bad_files['length'] = bad_files.bad_index.map(lambda x: text_lens[x])
 
     dataset = info['dataset']
@@ -66,7 +66,7 @@ def check_length(data, info, bad_folder):
 
     bad_files.to_csv(os.path.join(bad_folder, dataset, split, f"bad_by_length.csv"))
 
-def check_ratio(data, info, bad_folder):
+def check_ratio(data, info, bad_folder, min_thres = 2, max_thres = 30):
     max_thres = 30
     min_thres = 2
     durations = [entry['duration'] for entry in data]
@@ -89,102 +89,37 @@ def check_ratio(data, info, bad_folder):
 
     bad_files.to_csv(os.path.join(bad_folder, dataset, split, f"bad_by_ratio.csv"))
 
-def get_silence(x, device, model, get_model_timestamps):
-    path = x['audio_filepath']
-
-    try:
-        audio, sr = torchaudio.load(path)
-        audio_dev = audio.to(device)
-
-        speech_timestamps = get_model_timestamps(audio_dev, model, sampling_rate=16000)
-
-        total_speech_samples = sum([t['end'] - t['start'] for t in speech_timestamps])
-        total_samples = audio.shape[1]
-        speech_ratio = total_speech_samples / total_samples
-
-        return speech_ratio
-
-    except Exception as e:
-        print(f"Error processing {path}: {e}")
-
-def check_silence_(data, gpu_id, info):
-    device = torch.device(f"cuda:{gpu_id}")
-
-    vad_model, utils = torch.hub.load(
-        repo_or_dir='snakers4/silero-vad',
-        model='silero_vad',
-        force_reload=False,
-        onnx=False
-    )
-
-    vad_model.to(device)
-    (get_speech_timestamps, _, _, _, _) = utils
-
-    speech = []
-    ratios = []
-
-    progress_bar = tqdm(
-        data,
-        desc=f"GPU {gpu_id}",
-        position=gpu_id,
-        leave=True,
-        ncols=100,  # Fix width to ensure neat alignment
-        colour='green'  # Optional: makes it look nicer
-    )
-
-    for entry in progress_bar:
-        speech.append(get_silence(entry, device, vad_model, get_speech_timestamps))
-        if info['to_ratio']:
-            ratios.append(len(normalize(entry['text'], with_signs=False)) / entry['duration'])
-
-    speech = np.array(speech)
-    bad_indices = np.where(speech < info['threshold'])[0]
-
-    if info['to_ratio']:
-        ratios = np.array(ratios)
-        bad_indices = np.where(speech / ratios < info['threshold'])[0]
-
-    bad_files = pd.DataFrame(bad_indices, columns=['bad_index'])
-
-    bad_files['filepath'] = bad_files.bad_index.map(lambda x: data[x]['audio_filepath'])
-    bad_files['text'] = bad_files.bad_index.map(lambda x: data[x]['text'])
-    bad_files['duration'] = bad_files.bad_index.map(lambda x: data[x]['duration'])
-    bad_files['speech_ratio'] = bad_files.bad_index.map(lambda x: speech[x])
-    bad_files['text_ratio'] = bad_files.bad_index.map(lambda x: ratios[x])
-
-    dataset = info['dataset']
-    split = info['split']
-
-    path = os.path.join(BAD_FOLDER, f"bad_by_silence_{dataset}_{split}_{gpu_id}.csv")
-    bad_files.to_csv(path)
-
-    return path
-
-def get_issue(x, patterns):
+def get_issue(x, patterns, foreign_max_threshold=0.4):
     text = x['text']
     
     if text is None:
         return 'empty_text'
 
-    text = normalize_symbols(text.strip())
+    foreign_blocks = patterns['foreign_blocks'].findall(text)
+    if foreign_blocks:
+        total_raw_length = len(text.strip())
+        total_foreign_length = sum(len(block.strip()) for block in foreign_blocks)
+
+        foreign_ratio = total_foreign_length / total_raw_length
+        if foreign_ratio > foreign_max_threshold:
+            return f'too_much_foreign_text_{foreign_ratio:.2f}'
+
+    cleaned_text = normalize(text, with_signs=True)
+
+    if not cleaned_text.strip():
+        return 'empty_after_normalization'
 
     invalid_match = patterns['invalid_chars'].search(text)
     if invalid_match:
         bad_char = invalid_match.group(0)
         return f"invalid character detected: '{bad_char}'"
 
-    if not patterns['hungarian'].search(text):
-        return 'without_hungarian_characters'
-
-    elif patterns['acoustic'].search(text):
-       return 'acoustic_tag'
-
-    elif patterns['speaker'].search(text):
-        return 'speaker_tag'
+    if not patterns['letters'].search(cleaned_text):
+        return 'no_alphabetical_content'
 
     return 'none'
 
-def check_text(data, info, bad_folder):
+def check_text(data, info, bad_folder, foreign_max_threshold=0.4):
     progress_bar = tqdm(
         data,
         leave=True,
@@ -193,11 +128,9 @@ def check_text(data, info, bad_folder):
     )
 
     patterns = {
-        'acoustic': re.compile(r'[\[\(\<\{].*?[\]\)\>\}]'),
-        'speaker': re.compile(r'^[a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ_]+\s*\d*:\s'),
-        'digits': re.compile(r'\d+'),
-        'hungarian': re.compile(r'[a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ]'),
-        'invalid_chars': re.compile(r'[^a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ0-9\s\.,:;!\?\'"«»„”\-]')
+        'letters': re.compile(r'[a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ]'),
+        'invalid_chars': re.compile(r'[^a-zA-ZáéíóöőúüűÁÉÍÓÖŐÚÜŰ0-9\s\.,:;!\?\'"«»„”\-%\+€$]]'),
+        'foreign_blocks': re.compile(r'<lang:[^>]+>(.*?)</lang:[^>]+>', re.IGNORECASE)
     }
 
     issues = []
@@ -229,7 +162,30 @@ def run_check(datasets, splits):
 
     os.makedirs(bad_folder, exist_ok=True)
 
+    DEFAULT_THRESHOLDS = {
+        'duration': {'min_thres': 1, 'max_thres': 30},
+        'length': {'min_thres': 2, 'max_thres': None},
+        'ratio': {'min_thres': 2, 'max_thres': 30},
+        'text': {'foreign_max_threshold': 0.5}
+    }
+
+    # 2. Define Custom Thresholds for dataocean_asr_659
+    # (Modify these values to your specific requirements)
+    DATAOCEAN_659_THRESHOLDS = {
+        'duration': {'min_thres': 2, 'max_thres': 30},
+        'length': {'min_thres': 8, 'max_thres': None},
+        'ratio': {'min_thres': 1, 'max_thres': 25},
+        'text': {'foreign_max_threshold': 0.4}
+    }
+
+    # Map dataset names to their configurations
+    DATASET_CONFIGS = {
+        'dataocean_asr_659': DATAOCEAN_659_THRESHOLDS
+    }
+
     for dataset in datasets:
+        dataset_thresholds = DATASET_CONFIGS.get(dataset, DEFAULT_THRESHOLDS)
+
         for split in splits:
             print(f'Filtering data for {dataset}/{split}')
 
@@ -254,13 +210,13 @@ def run_check(datasets, splits):
             to_folder.mkdir(parents=True, exist_ok=True)
 
             print('checking duration anomalies')
-            check_duration(data, info, bad_folder)
-            print('checking length anomalies')
-            check_length(data, info, bad_folder)
+            check_duration(data, info, bad_folder, **dataset_thresholds['duration'])
+            print('checking length anomalies', )
+            check_length(data, info, bad_folder, **dataset_thresholds['length'])
             print('checking ratio anomalies')
-            check_ratio(data, info, bad_folder)
+            check_ratio(data, info, bad_folder, **dataset_thresholds['ratio'])
             print('checking text anomalies')
-            check_text(data, info, bad_folder)
+            check_text(data, info, bad_folder, **dataset_thresholds['text'])
             print()
 
 import argparse

@@ -36,6 +36,47 @@ from tqdm.auto import tqdm
 from speechLM_utils.utils import init_gpu, resume_wandb, init
 from speechLM_utils.model import get_max_step
 import argparse
+import csv
+
+class StreamingSeq2SeqTrainer(Seq2SeqTrainer):
+    def __init__(self, *args, streaming_save_path=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.streaming_save_path = streaming_save_path
+        self.is_main_process = int(os.environ.get("LOCAL_RANK", -1)) in [-1, 0]
+
+        if self.is_main_process and self.streaming_save_path:
+            os.makedirs(os.path.dirname(self.streaming_save_path), exist_ok=True)
+            with open(self.streaming_save_path, mode='w', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                writer.writerow(["index", "reference", "prediction", "duration"])
+
+    def prediction_step(self, model, inputs, prediction_loss_only, ignore_keys=None):
+        loss, generated_tokens, labels = super().prediction_step(
+            model, inputs, prediction_loss_only, ignore_keys=ignore_keys
+        )
+
+        if prediction_loss_only or generated_tokens is None:
+            return loss, generated_tokens, labels
+
+        if self.is_main_process and self.streaming_save_path:
+            gen_ids = generated_tokens.detach().cpu().numpy()
+            lbl_ids = labels.detach().cpu().numpy()
+
+            gen_ids = np.where(gen_ids != -100, gen_ids, self.tokenizer.pad_token_id)
+            preds = self.tokenizer.batch_decode(gen_ids, skip_special_tokens=True)
+
+            lbl_ids = np.where(lbl_ids != -100, lbl_ids, self.tokenizer.pad_token_id)
+            refs = self.tokenizer.batch_decode(lbl_ids, skip_special_tokens=True)
+
+            indices = inputs.get("index").cpu().numpy() if "index" in inputs else [None] * len(preds)
+            durations = inputs.get("duration").cpu().numpy() if "duration" in inputs else [None] * len(preds)
+
+            with open(self.streaming_save_path, mode='a', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                for idx, ref, pred, dur in zip(indices, refs, preds, durations):
+                    writer.writerow([idx, ref, pred, dur])
+
+        return loss, generated_tokens, labels
 
 class PredictionProgressCallback(TrainerCallback):
     def __init__(self):
@@ -154,14 +195,17 @@ def evaluate_model(data, conf, args, info, checkpoint_path, checkpoint_dir, devi
                             has_audio_lb_tokens=True,
                             has_duration_lb=args['predict_duration'],
                             to_chars=args['ctc'] or args['injection_downsample'] == 'cif',
-                            contain_index=False)
+                            contain_index=True)
 
-    trainer = Seq2SeqTrainer(
+    samples_path = os.path.join(info['res_folder'], "predictions.csv")
+
+    trainer = StreamingSeq2SeqTrainer(
         model=model,
         tokenizer=tokenizer,
         data_collator=collator,
         args=training_args,
-        callbacks=[PredictionProgressCallback()]
+        callbacks=[PredictionProgressCallback()],
+        streaming_save_path=samples_path
     )
 
     print(f"Starting inference on {len(data)} samples...")
@@ -189,7 +233,6 @@ def evaluate_model(data, conf, args, info, checkpoint_path, checkpoint_dir, devi
 
     res_samples, res_total = get_metrics(predictions, references, indices, durations, verbose=True)
 
-    samples_path = os.path.join(info['res_folder'], "predictions.csv")
     total_path = os.path.join(info['res_folder'], "results.csv")
 
     res_samples.to_csv(samples_path)

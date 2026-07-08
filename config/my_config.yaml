@@ -74,7 +74,7 @@ dual_fuse_args:
   second_stage_epochs: 20
   ## Prompt Configurations
   prompt_persona: none
-  prompt_instruction: "\nÍrd át a megelőző hanganyagot magyar szöveggé abszolút pontossággal."
+  prompt_instruction: "Kizárólag a hanganyag szöveges átiratát add vissza. Semmilyen más karaktert, fejlécet vagy jelet ne használj.\n\nÁtirat:"
   prompt_verbatim: True
   training_args: {
     # --- PERFORMANCE OPTIMIZATIONS ---
