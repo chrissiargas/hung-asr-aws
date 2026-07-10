@@ -33,15 +33,6 @@ def normalize(text, with_signs=True):
     text = unicodedata.normalize('NFC', text)
     text = normalize_symbols(text)
 
-    foreign_blocks = re.compile(r'<lang:[^>]+>(.*?)</lang:[^>]+>', re.IGNORECASE).findall(text)
-    if foreign_blocks:
-        total_raw_length = len(text.strip())
-        total_foreign_length = sum(len(block.strip()) for block in foreign_blocks)
-
-        foreign_ratio = total_foreign_length / total_raw_length
-        if foreign_ratio > 0.1:
-            print(f'too_much_foreign_text_{foreign_ratio:.2f}')
-
     # print(text)
 
     # 2. Remove speaker tags at the beginning (e.g. ομιλητής 1: ")
