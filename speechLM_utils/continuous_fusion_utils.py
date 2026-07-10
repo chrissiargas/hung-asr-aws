@@ -151,6 +151,7 @@ class CrossAttention(nn.Module):
             prm_audio_len = 0
 
         query = self.q_proj(self.layer_norm(hidden_states))
+        query = query.view(batch_size, text_len, self.num_heads, self.head_dim).transpose(1, 2)
 
         is_decoding = (text_len == 1)
 
@@ -165,7 +166,6 @@ class CrossAttention(nn.Module):
             key = self.k_proj(audio_features)
             value = self.v_proj(audio_features)
 
-            query = query.view(batch_size, text_len, self.num_heads, self.head_dim).transpose(1, 2)
             key = key.view(batch_size, inj_audio_len, self.num_heads, self.head_dim).transpose(1, 2)
             value = value.view(batch_size, inj_audio_len, self.num_heads, self.head_dim).transpose(1, 2)
 

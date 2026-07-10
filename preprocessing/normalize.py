@@ -89,4 +89,8 @@ def normalize(text, with_signs=True):
 if __name__ == "__main__":
     sentence = "Helen: ((Szia)) (! <lang:en>Hello, how are you?</lang:en> [Hogy] vagy? 132 ] el~ gr #ah # : #”"
     print(sentence)
-    print(normalize(sentence))
+    sentence_ = normalize(sentence)
+    print(sentence_)
+    sentence__ = normalize(sentence_)
+    print(sentence__)
+    print(sentence__ == sentence_)
