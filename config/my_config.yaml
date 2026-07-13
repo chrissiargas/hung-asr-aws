@@ -136,14 +136,11 @@ eval_args:
     'dataloader_pin_memory': True,
     'eval_strategy': 'no',
     'report_to': 'none',
-    'generation_max_length': 512,
     'generation_config': {
       'num_beams': 4,
       'do_sample': False,
-      'repetition_penalty': 1.15,
-      'length_penalty': 1.0,
-      'max_new_tokens': 512,
-      'use_cache': True,
+      'max_new_tokens': 100,
+      'use_cache': True
     }
   }
 
