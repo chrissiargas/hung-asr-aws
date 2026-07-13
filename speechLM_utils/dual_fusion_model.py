@@ -903,7 +903,7 @@ class DualFusionModel(nn.Module):
                 **kwargs):
 
         batch_size = audios.shape[0]
-z
+
         if self.training and self.blank_training:
             audios, labels, label_masks = apply_audio_dropout(audios, labels, label_masks, self.language_tokenizer,
                                                               dropout_prob = self.audio_dropout)
@@ -1093,12 +1093,12 @@ z
                 )
 
             finally:
-                pass
-                # for injection_layer in self.injection_layers:
-                #     injection_layer.injection_audio = None
-                #     injection_layer.injection_audio_mask = None
-                #     injection_layer.prompt_audio = None
-                #     injection_layer.prompt_audio_mask = None
+                for injection_layer in self.injection_layers:
+                    injection_layer.cross_attention_layer.clear_cache()
+                    injection_layer.injection_audio = None
+                    injection_layer.injection_audio_mask = None
+                    injection_layer.prompt_audio = None
+                    injection_layer.prompt_audio_mask = None
 
             return outputs
 
