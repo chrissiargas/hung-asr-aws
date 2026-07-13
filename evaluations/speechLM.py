@@ -37,6 +37,7 @@ from speechLM_utils.utils import init_gpu, resume_wandb, init
 from speechLM_utils.model import get_max_step
 import argparse
 import csv
+from preprocessing.normalize import normalize
 
 class StreamingSeq2SeqTrainer(Seq2SeqTrainer):
     def __init__(self, *args, streaming_save_path=None, **kwargs):
@@ -64,9 +65,11 @@ class StreamingSeq2SeqTrainer(Seq2SeqTrainer):
 
             gen_ids = np.where(gen_ids != -100, gen_ids, self.tokenizer.pad_token_id)
             preds = self.tokenizer.batch_decode(gen_ids, skip_special_tokens=True)
+            preds = normalize(preds, with_signs=True)
 
             lbl_ids = np.where(lbl_ids != -100, lbl_ids, self.tokenizer.pad_token_id)
             refs = self.tokenizer.batch_decode(lbl_ids, skip_special_tokens=True)
+            refs = normalize(refs, with_signs=True)
 
             indices = inputs.get("index").cpu().numpy() if "index" in inputs else [None] * len(preds)
             durations = inputs.get("duration").cpu().numpy() if "duration" in inputs else [None] * len(preds)
