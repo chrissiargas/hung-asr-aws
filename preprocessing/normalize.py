@@ -51,7 +51,7 @@ def normalize(text, with_signs=True):
     # print(text)
 
     # This safely deletes any stray (, ), <, >, [, or ] left in the string
-    text = re.sub(r'[()<>\[\]]', '', text)
+    text = re.sub(r'[()<>\[\]\"\']', '', text)
 
     # print(text)
 
@@ -78,7 +78,7 @@ def normalize(text, with_signs=True):
     return clean_whitespaces(text)
 
 if __name__ == "__main__":
-    sentence = "Helen: ((Szia)) (! <lang:en>Hello, how are you?</lang:en> [Hogy] vagy? 132 ] el~ gr #ah # : #”"
+    sentence = """" ez nem a búcsú . ez egy fejezet lezárása és egy új fejezet kezdete . """
     print(sentence)
     sentence_ = normalize(sentence)
     print(sentence_)
