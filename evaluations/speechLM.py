@@ -316,6 +316,7 @@ if __name__ == "__main__":
     parser.add_argument('--machine', type=str, default='kronos')
     parser.add_argument('--datetime', type=str, default=None)
     parser.add_argument('--turn', type=str, default=None)
+    parser.add_argument('--exp', type=int, default=0, help='Path to config file')
 
     args, unknown = parser.parse_known_args()
 
@@ -333,7 +334,8 @@ if __name__ == "__main__":
         'bit4': True,
         'machine': args.machine,
         'datetime': args.datetime,
-        'turn': args.turn
+        'turn': args.turn,
+        'exp': args.exp
     }
 
     if args_dict['datetime'] is None:
@@ -357,7 +359,7 @@ if __name__ == "__main__":
             print('---------------------------------------------------------')
 
             local_rank, device = init_gpu()
-            resume_wandb(local_rank, args_dict)
+            resume_wandb(local_rank, args_dict['datetime'], args_dict['model_name'], args_dict['exp'])
 
             try:
                 for dataset in DATASETS:
@@ -374,7 +376,7 @@ if __name__ == "__main__":
 
     else:
         local_rank, device = init_gpu()
-        resume_wandb(local_rank, args_dict)
+        resume_wandb(local_rank, args_dict['datetime'], args_dict['model_name'], args_dict['exp'])
 
         try:
             for dataset in DATASETS:

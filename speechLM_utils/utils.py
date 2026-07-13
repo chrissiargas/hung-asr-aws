@@ -150,24 +150,25 @@ def init(info, restart=True, exp: int = 0):
     return conf, args, training_args, date, checkpoint_path, checkpoint_dir, writer
 
 
-def resume_wandb(local_rank, info):
+def resume_wandb(local_rank, date, model_name, exp):
+    id = f'{date}-Exp:{exp}'
     if local_rank in [-1, 0]:
         api = wandb.Api()
         runs = api.runs("chrissiargas-innoetics/Hungarian-ASR",
-                        filters={"display_name": info['datetime']})
+                        filters={"display_name": id})
 
         if len(runs) > 0:
             run_id = runs[0].id
-            print(f"Found existing W&B run '{info['datetime']}' with ID {run_id}. Resuming...")
+            print(f"Found existing W&B run '{id}' with ID {run_id}. Resuming...")
             wandb.init(project="Hungarian-ASR",
                        entity="chrissiargas-innoetics",
                        id=run_id, resume="must")
         else:
-            print(f"Could not find existing run '{info['datetime']}'. Starting a new evaluation run...")
+            print(f"Could not find existing run '{id}'. Starting a new evaluation run...")
             wandb.init(project="Hungarian-ASR",
                        entity="chrissiargas-innoetics",
-                       name=f"{info['datetime']}_EVAL",
-                       group=info['model_type'])
+                       name=f"{id}_Eval",
+                       group=model_name)
 
 
 def init_wandb(local_rank, args, info, date, model_name, datasets, exp):
