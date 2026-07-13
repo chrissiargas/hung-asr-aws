@@ -142,6 +142,19 @@ class CrossAttention(nn.Module):
 
     def forward(self, hidden_states, audio_features, prompt_audio=None, inj_audio_mask=None, prm_audio_mask=None):
         batch_size, text_len, _ = hidden_states.shape
+        audio_batch_size = audio_features.shape[0]
+
+        if audio_batch_size != batch_size:
+            num_beams = batch_size // audio_batch_size
+            audio_features = audio_features.repeat_interleave(num_beams, dim=0)
+
+            if prompt_audio is not None:
+                prompt_audio = prompt_audio.repeat_interleave(num_beams, dim=0)
+            if inj_audio_mask is not None:
+                inj_audio_mask = inj_audio_mask.repeat_interleave(num_beams, dim=0)
+            if prm_audio_mask is not None:
+                prm_audio_mask = prm_audio_mask.repeat_interleave(num_beams, dim=0)
+
         inj_audio_len = audio_features.shape[1]
         prm_len = hidden_states.shape[1]
 

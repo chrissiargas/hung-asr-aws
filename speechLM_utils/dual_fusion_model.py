@@ -903,22 +903,7 @@ class DualFusionModel(nn.Module):
                 **kwargs):
 
         batch_size = audios.shape[0]
-
-        if audio_batch_size != batch_size:
-            # Calculate the expansion factor (e.g., num_beams)
-            num_beams = batch_size // audio_batch_size
-
-            # Expand all acoustic inputs using repeat_interleave
-            audio_features = audio_features.repeat_interleave(num_beams, dim=0)
-
-            if inj_audio_mask is not None:
-                inj_audio_mask = inj_audio_mask.repeat_interleave(num_beams, dim=0)
-            if prompt_audio is not None:
-                prompt_audio = prompt_audio.repeat_interleave(num_beams, dim=0)
-            if prm_audio_mask is not None:
-                prm_audio_mask = prm_audio_mask.repeat_interleave(num_beams, dim=0)
-        # -----------------------------------------------------------------
-
+z
         if self.training and self.blank_training:
             audios, labels, label_masks = apply_audio_dropout(audios, labels, label_masks, self.language_tokenizer,
                                                               dropout_prob = self.audio_dropout)
@@ -1108,12 +1093,12 @@ class DualFusionModel(nn.Module):
                 )
 
             finally:
-                for injection_layer in self.injection_layers:
-                    injection_layer.cross_attention_layer.clear_cache()
-                    injection_layer.injection_audio = None
-                    injection_layer.injection_audio_mask = None
-                    injection_layer.prompt_audio = None
-                    injection_layer.prompt_audio_mask = None
+                pass
+                # for injection_layer in self.injection_layers:
+                #     injection_layer.injection_audio = None
+                #     injection_layer.injection_audio_mask = None
+                #     injection_layer.prompt_audio = None
+                #     injection_layer.prompt_audio_mask = None
 
             return outputs
 
