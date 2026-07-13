@@ -1064,12 +1064,12 @@ class DualFusionModel(nn.Module):
                                                                          tag_tokens=tag_tokens,
                                                                          tag_masks=tag_masks)
 
-            dummy_token_id = 0
+            pad_token_id = self.language_tokenizer.pad_token_id
             input_ids = torch.ones(
                 (prompt_embed.shape[0], prompt_embed.shape[1]),
                 dtype=torch.long,
                 device=self.device
-            ) * dummy_token_id
+            ) * pad_token_id
 
             injection_audios, injection_masks = self.inject(encoder_outputs,
                                                             audio_embeddings,
