@@ -74,6 +74,15 @@ class CrossAttention(nn.Module):
         if self.positional_info:
             self.audio_pos_embed = SinusoidalPositionalEmbedding(d_model=audio_embed_dim, max_len=seq_len)
 
+        self.cached_key = None
+        self.cached_value = None
+        self.cached_mask = None
+
+    def clear_cache(self):
+        self.cached_key = None
+        self.cached_value = None
+        self.cached_mask = None
+
     def compute_mask(self, prm_len, prm_audio_len, inj_audio_len, device, dtype, prm_audio_mask=None,
                      inj_audio_mask=None, verbose: bool = False):
         min_val = torch.finfo(dtype).min
@@ -133,6 +142,20 @@ class CrossAttention(nn.Module):
 
     def forward(self, hidden_states, audio_features, prompt_audio=None, inj_audio_mask=None, prm_audio_mask=None):
         batch_size, text_len, _ = hidden_states.shape
+        audio_batch_size = audio_features.shape[0]
+
+        # FIX: Dynamically expand acoustic features during beam search generation
+        if audio_batch_size != batch_size:
+            num_beams = batch_size // audio_batch_size
+            audio_features = audio_features.repeat_interleave(num_beams, dim=0)
+
+            if prompt_audio is not None:
+                prompt_audio = prompt_audio.repeat_interleave(num_beams, dim=0)
+            if inj_audio_mask is not None:
+                inj_audio_mask = inj_audio_mask.repeat_interleave(num_beams, dim=0)
+            if prm_audio_mask is not None:
+                prm_audio_mask = prm_audio_mask.repeat_interleave(num_beams, dim=0)
+
         inj_audio_len = audio_features.shape[1]
         prm_len = hidden_states.shape[1]
 
@@ -142,20 +165,37 @@ class CrossAttention(nn.Module):
             prm_audio_len = 0
 
         query = self.q_proj(self.layer_norm(hidden_states))
-
-        if self.positional_info:
-            audio_features = self.audio_pos_embed(audio_features)
-
-        key = self.k_proj(audio_features)
-        value = self.v_proj(audio_features)
-
         query = query.view(batch_size, text_len, self.num_heads, self.head_dim).transpose(1, 2)
-        key = key.view(batch_size, inj_audio_len, self.num_heads, self.head_dim).transpose(1, 2)
-        value = value.view(batch_size, inj_audio_len, self.num_heads, self.head_dim).transpose(1, 2)
+
+        is_decoding = (text_len == 1)
+
+        if is_decoding and self.cached_key is not None:
+            key = self.cached_key
+            value = self.cached_value
+            mask = self.cached_mask
+        else:
+            if self.positional_info:
+                audio_features = self.audio_pos_embed(audio_features)
+
+            key = self.k_proj(audio_features)
+            value = self.v_proj(audio_features)
+
+            key = key.view(batch_size, inj_audio_len, self.num_heads, self.head_dim).transpose(1, 2)
+            value = value.view(batch_size, inj_audio_len, self.num_heads, self.head_dim).transpose(1, 2)
+
+            mask = self.compute_mask(prm_len, prm_audio_len,
+                                     inj_audio_len,
+                                     hidden_states.device,
+                                     hidden_states.dtype,
+                                     prm_audio_mask,
+                                     inj_audio_mask)
+
+            # Save to memory
+            self.cached_key = key
+            self.cached_value = value
+            self.cached_mask = mask
 
         scores = torch.matmul(query, key.transpose(-2, -1)) / (self.head_dim ** 0.5)
-        mask = self.compute_mask(prm_len, prm_audio_len, inj_audio_len, scores.device, scores.dtype, prm_audio_mask,
-                                 inj_audio_mask)
 
         scores = scores + mask
 
