@@ -178,7 +178,11 @@ def debug_predictions(predictions, references, generated_ids, label_ids, tokeniz
 def evaluate_model(data, conf, args, info, checkpoint_path, checkpoint_dir, device = 'cuda'):
     training_args = conf.eval_args.training_args
     training_args['report_to'] = "none"
-    training_args['generation_config'] = GenerationConfig(**training_args['generation_config'])
+    if info['gen_kwargs'] is None:
+        training_args['generation_config'] = GenerationConfig(**training_args['generation_config'])
+    else:
+        training_args['generation_config'] = info['gen_kwargs']
+
     training_args['disable_tqdm'] = True
 
     gen_config_obj = training_args.pop('generation_config', {})
@@ -324,6 +328,7 @@ if __name__ == "__main__":
     parser.add_argument('--turn', type=str, default=None)
     parser.add_argument('--exp', type=int, default=0, help='Path to config file')
     parser.add_argument('--name', type=str, default=None)
+    parser.add_argument('--gen_kwargs', type=json.loads, default=None)
 
     args, unknown = parser.parse_known_args()
 
@@ -343,7 +348,8 @@ if __name__ == "__main__":
         'datetime': args.datetime,
         'turn': args.turn,
         'exp': args.exp,
-        'name': args.name
+        'name': args.name,
+        'gen_kwargs': args.gen_kwargs
     }
 
     if args_dict['datetime'] is None:
