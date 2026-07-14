@@ -317,7 +317,7 @@ class DualFusionModel(nn.Module):
         self.pad_token_id = self.language_tokenizer.pad_token_id
         self.eos_token_id = self.language_tokenizer.eos_token_id
         self.bos_token_id = getattr(self.language_tokenizer, "bos_token_id", None)
-        self.skip_tokens = [t for t in [pad_token_id, eos_token_id, bos_token_id] if t is not None]
+        self.skip_tokens = [t for t in [self.pad_token_id, self.eos_token_id, self.bos_token_id] if t is not None]
         self.logits_processor = None
 
         if self.predict_duration:
