@@ -1201,5 +1201,40 @@ def main():
     print(f"BOS Token:  {bos_token} \t| ID: {bos_token_id}")
     print("=" * 50 + "\n")
 
+    # --- SETUP SIMULATION ---
+    vocab_size = 151645
+    eos_token_id = 151643
+    word_token_id = 1050  # Let's pretend this is the token for the word "demokrácia"
+
+    # Simulate that the model has already generated both the word and the EOS token in the past
+    input_ids = torch.tensor([[word_token_id, eos_token_id, word_token_id]])
+
+    # Simulate the raw output logits from the LLM (before any penalties)
+    # We set all logits to exactly 10.0 so the math is easy to see.
+    raw_scores = torch.ones(1, vocab_size) * 10.0
+
+    print(f"--- RAW UNPENALIZED SCORES ---")
+    print(f"Word Token Score: {raw_scores[0, word_token_id]:.4f}")
+    print(f"EOS Token Score:  {raw_scores[0, eos_token_id]:.4f}\n")
+
+    # --- TEST 1: STANDARD HUGGING FACE PENALTY ---
+    # With a penalty of 1.2, scores > 0 are divided by 1.2 (10.0 / 1.2 = 8.333)
+    standard_processor = RepetitionPenaltyLogitsProcessor(penalty=1.2)
+
+    # Note: processors modify tensors in place, so we clone raw_scores
+    standard_penalized_scores = standard_processor(input_ids, raw_scores.clone())
+
+    print(f"--- STANDARD PROCESSOR (penalty=1.2) ---")
+    print(f"Word Token Score: {standard_penalized_scores[0, word_token_id]:.4f} (Penalized!)")
+    print(f"EOS Token Score:  {standard_penalized_scores[0, eos_token_id]:.4f} (Penalized! Model avoids stopping.)\n")
+
+    # --- TEST 2: SAFE PROCESSOR ---
+    safe_processor = SafeRepetitionPenaltyLogitsProcessor(penalty=1.2, skip_token_ids=[eos_token_id])
+    safe_penalized_scores = safe_processor(input_ids, raw_scores.clone())
+
+    print(f"--- SAFE PROCESSOR (penalty=1.2, skip=[{eos_token_id}]) ---")
+    print(f"Word Token Score: {safe_penalized_scores[0, word_token_id]:.4f} (Penalized! Stops looping words.)")
+    print(f"EOS Token Score:  {safe_penalized_scores[0, eos_token_id]:.4f} (PROTECTED! Model can stop safely.)\n")
+
 if __name__ == "__main__":
     main()
