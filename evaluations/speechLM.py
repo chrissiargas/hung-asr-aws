@@ -254,13 +254,23 @@ def evaluate_model(data, conf, args, info, checkpoint_path, checkpoint_dir, devi
     return samples_path, total_path
 
 def get_results_path(conf, info, dataset, split='test', data_folder: bool = True):
-    results_path = os.path.join(os.path.expanduser('~'),
-                                conf.results_path,
-                                'dual_fusion_checkpoints',
-                                info['machine'],
-                                info['model_name'],
-                                info['datetime'],
-                                str(info['turn']))
+    if info['name'] is not None:
+        results_path = os.path.join(os.path.expanduser('~'),
+                                    conf.results_path,
+                                    'dual_fusion_checkpoints',
+                                    info['machine'],
+                                    info['model_name'],
+                                    info['datetime'],
+                                    str(info['turn']),
+                                    info['name'])
+    else:
+        results_path = os.path.join(os.path.expanduser('~'),
+                                    conf.results_path,
+                                    'dual_fusion_checkpoints',
+                                    info['machine'],
+                                    info['model_name'],
+                                    info['datetime'],
+                                    str(info['turn']))
 
     if data_folder:
         results_path = os.path.join(results_path, dataset, split)
@@ -320,6 +330,7 @@ if __name__ == "__main__":
     parser.add_argument('--datetime', type=str, default=None)
     parser.add_argument('--turn', type=str, default=None)
     parser.add_argument('--exp', type=int, default=0, help='Path to config file')
+    parser.add_argument('--name', type=str, default=None)
 
     args, unknown = parser.parse_known_args()
 
@@ -338,7 +349,8 @@ if __name__ == "__main__":
         'machine': args.machine,
         'datetime': args.datetime,
         'turn': args.turn,
-        'exp': args.exp
+        'exp': args.exp,
+        'name': args.name
     }
 
     if args_dict['datetime'] is None:
