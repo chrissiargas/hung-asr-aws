@@ -82,6 +82,20 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from transformers import LogitsProcessorList, RepetitionPenaltyLogitsProcessor
+
+class SafeRepetitionPenaltyLogitsProcessor(RepetitionPenaltyLogitsProcessor):
+    def __init__(self, penalty: float, skip_token_ids: list[int]):
+        super().__init__(penalty=penalty)
+        self.skip_token_ids = skip_token_ids
+
+    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:
+        original_scores = scores[:, self.skip_token_ids].clone()
+        scores = super().__call__(input_ids, scores)
+        scores[:, self.skip_token_ids] = original_scores
+
+        return scores
+
 class LayerWiseAttention(nn.Module):
     def __init__(self, num_layers: int, hidden_dim: int, bottleneck_dim: int = 256):
         super().__init__()
@@ -1105,3 +1119,72 @@ class DualFusionModel(nn.Module):
     @property
     def config(self):
         return self.language_model.config
+
+def main():
+    print("Initializing DualFusionModel for token verification...")
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
+
+    model = DualFusionModel(
+        speech_encoder_model_id="openai/whisper-large-v3",
+        language_model_id="elte-nlp/Racka-4B",
+        blank_training=False,
+        audio_dropout=0.1,
+        text_perturbation=True,
+        text_dropout=0.1,
+        spec_augment=True,
+        include_adapter=True,
+        input_downsample='reshape',
+        static_projector=False,
+        downsample_K=5,
+        hidden_dim=2048,
+        static_injection=False,
+        injection_layers=[15, 25, 35],
+        pyramid_layers=False,
+        gated=False,
+        downsample_L=5,
+        injection_downsample='conv1d',
+        downsamplers='injection_common',
+        causal_fusion=False,
+        positional_info=False,
+        layer_wise_fusion=False,
+        layer_weights_static=False,
+        predict_duration=False,
+        duration_resolution=0.1,
+        max_duration=30.0,
+        ctc=False,
+        audio_forecasting=False,
+        ctc_weight=0.4,
+        duration_weight=0.4,
+        audio_weight=0.4,
+        lng_lora=True,
+        acoustic_lora=False,
+        lora_params=["q_proj", "k_proj", "v_proj", "o_proj"],
+        prompt_persona="none",
+        prompt_instruction="Kizárólag a hanganyag szöveges átiratát add vissza. Semmilyen más karaktert, fejlécet vagy jelet ne használj.\n\nÁtirat:",
+        prompt_verbatim=True,
+        dtype=dtype,
+        bit4=True,  # Ensure bitsandbytes is installed if running locally
+        attn_implementation="sdpa",
+        device=device,
+        exp=0
+    )
+
+    tokenizer = model.language_tokenizer
+
+    print("\n" + "=" * 50)
+    print(" TOKENIZER VERIFICATION ")
+    print("=" * 50)
+    print(f"Language Model: elte-nlp/Racka-4B")
+    print("-" * 50)
+    print(f"EOS Token:  {tokenizer.eos_token} \t| ID: {tokenizer.eos_token_id}")
+    print(f"PAD Token:  {tokenizer.pad_token} \t| ID: {tokenizer.pad_token_id}")
+
+    bos_token = getattr(tokenizer, "bos_token", "Not Defined")
+    bos_token_id = getattr(tokenizer, "bos_token_id", "Not Defined")
+    print(f"BOS Token:  {bos_token} \t| ID: {bos_token_id}")
+    print("=" * 50 + "\n")
+
+if __name__ == "__main__":
+    main()
