@@ -314,6 +314,12 @@ class DualFusionModel(nn.Module):
             if self.language_tokenizer.pad_token is None:
                 self.language_tokenizer.pad_token = self.language_tokenizer.eos_token
 
+        self.pad_token_id = self.language_tokenizer.pad_token_id
+        self.eos_token_id = self.language_tokenizer.eos_token_id
+        self.bos_token_id = getattr(self.language_tokenizer, "bos_token_id", None)
+        self.skip_tokens = [t for t in [pad_token_id, eos_token_id, bos_token_id] if t is not None]
+        self.logits_processor = None
+
         if self.predict_duration:
             num_bins = int(self.max_duration / self.duration_resolution) + 1
 
@@ -1078,12 +1084,11 @@ class DualFusionModel(nn.Module):
                                                                          tag_tokens=tag_tokens,
                                                                          tag_masks=tag_masks)
 
-            pad_token_id = self.language_tokenizer.pad_token_id
             input_ids = torch.ones(
                 (prompt_embed.shape[0], prompt_embed.shape[1]),
                 dtype=torch.long,
                 device=self.device
-            ) * pad_token_id
+            ) * self.pad_token_id
 
             injection_audios, injection_masks = self.inject(encoder_outputs,
                                                             audio_embeddings,
@@ -1097,12 +1102,22 @@ class DualFusionModel(nn.Module):
                 injection_layer.prompt_audio = proj_embeddings
                 injection_layer.prompt_audio_mask = down_masks
 
+            rep_penalty = kwargs.pop("rep_penalty", 1.0)
+            if rep_penalty > 1.0 and self.logit_processor is None:
+                logits_processor = LogitsProcessorList()
+                safe_rep_processor = SafeRepetitionPenaltyLogitsProcessor(
+                    penalty=rep_penalty,
+                    skip_token_ids=skip_tokens
+                )
+                self.logits_processor.append(safe_rep_processor)
+
             try:
                 outputs = self.language_model.generate(
                     input_ids=input_ids,
                     inputs_embeds=prompt_embed,
                     attention_mask=prompt_mask.bool(),
-                    pad_token_id=pad_token_id,
+                    pad_token_id=self.pad_token_id,
+                    logits_processor=self.logits_processor,
                     **kwargs
                 )
 
