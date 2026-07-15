@@ -15,7 +15,7 @@ set_environment()
 import pandas as pd
 import torch
 from datasets import Dataset
-from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
+from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline, SpeechT5ForSpeechToText, SpeechT5Processor
 from preprocessing.prepare import get_data
 
 from config.parser import Parser
@@ -28,6 +28,7 @@ import numpy as np
 from tqdm import tqdm
 from preprocessing.parallel import parallelize_process, concat_dataframes
 from evaluations.metrics import get_metrics
+import json
 
 def gpu_evaluate(data, gpu_id, args):
     data = Dataset.from_dict(data)
@@ -35,18 +36,21 @@ def gpu_evaluate(data, gpu_id, args):
     torch_dtype = torch.float16
     batch_size = 8
 
-    model = AutoModelForSpeechSeq2Seq.from_pretrained(args['model_name'], torch_dtype=torch_dtype).to(f"cuda:{gpu_id}")
-    processor = AutoProcessor.from_pretrained(args['model_name'])
+    if "speecht5" in args['model_name'].lower():
+        model = SpeechT5ForSpeechToText.from_pretrained(args['model_name'], torch_dtype=torch_dtype).to(f"cuda:{gpu_id}")
+        processor = SpeechT5Processor.from_pretrained(args['model_name'])
+
+    else:
+        model = AutoModelForSpeechSeq2Seq.from_pretrained(args['model_name'], torch_dtype=torch_dtype).to(f"cuda:{gpu_id}")
+        processor = AutoProcessor.from_pretrained(args['model_name'])
 
     gen_kwargs = {
         "language": "hu", 
         "task": "transcribe", 
-        "return_timestamps": False,
-        "num_beams": 5,
-        "repetition_penalty": 1.15,
-        "length_penalty": 1.0,
-        "no_repeat_ngram_size": 4
+        "return_timestamps": False
     }
+
+    gen_kwargs.update(**args['gen_kwargs'])
 
     pipe = pipeline(
         "automatic-speech-recognition",
@@ -96,7 +100,8 @@ def get_results_path(conf, args, dataset: str, split: str):
                                 args['model_type'],
                                 args['model_name'],
                                 dataset,
-                                split)
+                                split,
+                                args['name'])
 
     os.makedirs(results_path, exist_ok=True)
 
@@ -106,9 +111,7 @@ def get_bad_folder_path(conf, dataset: str, split: str):
     bad_folder_path = os.path.join(os.path.expanduser('~'),
                                    conf.dataset_path,
                                    conf.language,
-                                   'bad_folder',
-                                   dataset,
-                                   split)
+                                   'bad_folder')
 
     return bad_folder_path
 
@@ -132,9 +135,14 @@ def evaluate(args, dataset: str, split: str = 'test'):
     args['res_folder'] = get_results_path(conf, args, dataset, split)
     bad_folder = get_bad_folder_path(conf, dataset, split)
 
+    if not isinstance(dataset, list):
+        dataset_names = [dataset]
+    else:
+        dataset_names = dataset
+
     split_manager = splitter()
-    data = split_manager.split(datasets=[dataset], test_split=args['test_split'])
-    evaluation_data = get_data(data[split], bad_folder, has_duration=True)
+    data = split_manager.split(datasets=dataset_names)
+    evaluation_data = get_data(data[split], bad_folder, normalized=False, has_duration=True, filters=FILTERS, split=split)
     evaluation_data = concatenate(evaluation_data)
 
     print(f"Evaluating on {dataset} ({len(evaluation_data)} samples)...")
@@ -152,6 +160,8 @@ def evaluate(args, dataset: str, split: str = 'test'):
     print(f"✅ Unified metrics saved to: {base_filename}_total_metrics.csv\n")
 
 import argparse
+FILTERS = ['duration', 'length']
+
 if __name__ == "__main__":
     print('Starting...')
 
@@ -162,6 +172,8 @@ if __name__ == "__main__":
     parser.add_argument('--model_type', type=str, default='whisper')
     parser.add_argument('--model_name', type=str, default='openai/whisper-large-v3')
     parser.add_argument('--test_split', type=float, default=0, help='test split percentage')
+    parser.add_argument('--name', type=str, default='default', help='name of the experiment')
+    parser.add_argument('--gen_kwargs', type=json.loads, default={})
 
     args, unknown = parser.parse_known_args()
 
