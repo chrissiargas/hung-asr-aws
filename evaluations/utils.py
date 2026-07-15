@@ -23,7 +23,8 @@ def get_results_path(conf, args):
                                 args['model_type'],
                                 args['model_name'],
                                 args['dataset'],
-                                args['split'])
+                                args['split'],
+                                args['name'])
 
     os.makedirs(results_path, exist_ok=True)
 
@@ -426,6 +427,7 @@ if __name__ == "__main__":
     parser.add_argument('--splits', nargs='+', type=str, default=['train', 'validation', 'test'], help='split sets')
     parser.add_argument('--model_type', type=str, default='whisper')
     parser.add_argument('--model_name', type=str, default='openai/whisper-large-v3')
+    parser.add_argument('--name', type=str, default='default', help='Name of the experiment')
 
     args, unknown = parser.parse_known_args()
     args_dict = vars(args)
@@ -436,7 +438,8 @@ if __name__ == "__main__":
                 'model_type': args.model_type,
                 'model_name': args.model_name,
                 'dataset': dataset,
-                'split': split
+                'split': split,
+                'name': args.name
             }
             
             examine_worst_predictions(base_info, top_n=100, sort_metric='cer')
