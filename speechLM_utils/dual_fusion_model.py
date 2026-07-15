@@ -1201,6 +1201,10 @@ def main():
     print(f"BOS Token:  {bos_token} \t| ID: {bos_token_id}")
     print("=" * 50 + "\n")
 
+    # If that shows 'Not set', check the generation config object directly:
+    print(f"DEBUG: Generation config max tokens")
+    print(model.language_model.generation_config)
+    
     # --- SETUP SIMULATION ---
     vocab_size = 151645
     eos_token_id = 151643
