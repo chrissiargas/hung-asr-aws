@@ -21,7 +21,10 @@ def get_results_path(conf, args):
     results_path = os.path.join(os.path.expanduser('~'),
                                 conf.results_path,
                                 args['model_type'],
+                                args['machine'],
                                 args['model_name'],
+                                args['datetime'],
+                                args['turn'],
                                 args['dataset'],
                                 args['split'],
                                 args['name'])
@@ -425,12 +428,18 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--datasets', nargs='+', type=str, default=['common_voice', 'fleurs', 'massive', 'voxpopuli', 'yodas'], help='datasets')
     parser.add_argument('--splits', nargs='+', type=str, default=['train', 'validation', 'test'], help='split sets')
-    parser.add_argument('--model_type', type=str, default='whisper')
-    parser.add_argument('--model_name', type=str, default='openai/whisper-large-v3')
+    parser.add_argument('--machine', type=str, default='kronos')
+    parser.add_argument('--datetime', type=str, default=None)
+    parser.add_argument('--turn', type=str, default=None)
+    parser.add_argument('--speech_encoder_id', type=str, default='openai/whisper-large-v3')
+    parser.add_argument('--language_model_id', type=str, default='elte-nlp/Racka-4B')
+    parser.add_argument('--model_type', type=str, default='dual_fusion_checkpoints')
     parser.add_argument('--name', type=str, default='default', help='Name of the experiment')
 
     args, unknown = parser.parse_known_args()
     args_dict = vars(args)
+
+    model_name = (args.speech_encoder_id.split('/')[1] + '_' + args.language_model_id.split('/')[1])
 
     for dataset in args.datasets:
         for split in args.splits:
