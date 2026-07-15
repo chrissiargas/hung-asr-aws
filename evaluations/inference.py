@@ -47,7 +47,11 @@ def gpu_evaluate(data, gpu_id, args):
     gen_kwargs = {
         "language": "hu", 
         "task": "transcribe", 
-        "return_timestamps": False
+        "return_timestamps": False,
+        "num_beams": 5,
+        "repetition_penalty": 1.15,
+        "length_penalty": 1.0,
+        "no_repeat_ngram_size": 4
     }
 
     gen_kwargs.update(**args['gen_kwargs'])
