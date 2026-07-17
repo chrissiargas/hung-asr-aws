@@ -15,7 +15,7 @@ set_environment()
 import pandas as pd
 import torch
 from datasets import Dataset
-from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline, SpeechT5ForSpeechToText, SpeechT5Processor
+from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline, SpeechT5ForSpeechToText, SpeechT5Processor, AutoModelForCTC
 from preprocessing.prepare import get_data
 
 from config.parser import Parser
@@ -40,32 +40,65 @@ def gpu_evaluate(data, gpu_id, args):
         model = SpeechT5ForSpeechToText.from_pretrained(args['model_name'], torch_dtype=torch_dtype).to(f"cuda:{gpu_id}")
         processor = SpeechT5Processor.from_pretrained(args['model_name'])
 
+        base_gen_kwargs = {
+            "num_beams": 5,
+            "repetition_penalty": 1.15,
+            "length_penalty": 1.0,
+            "no_repeat_ngram_size": 4
+        }
+
+    elif "mms" in args['model_name'].lower():
+        target_lang = "hun"
+        processor = AutoProcessor.from_pretrained(args['model_name'], target_lang=target_lang)
+
+        model = AutoModelForCTC.from_pretrained(
+            args['model_name'],
+            target_lang=target_lang,
+            ignore_mismatched_sizes=True,
+            torch_dtype=torch_dtype
+        ).to(f"cuda:{gpu_id}")
+
+        base_gen_kwargs = {}
+
+    elif "xlsr" in args['model_name'].lower() or "wav2vec" in args['model_name'].lower():
+        processor = AutoProcessor.from_pretrained(args['model_name'])
+        model = AutoModelForCTC.from_pretrained(args['model_name'], torch_dtype=torch_dtype).to(f"cuda:{gpu_id}")
+
+        base_gen_kwargs = {}
+
     else:
         model = AutoModelForSpeechSeq2Seq.from_pretrained(args['model_name'], torch_dtype=torch_dtype).to(f"cuda:{gpu_id}")
         processor = AutoProcessor.from_pretrained(args['model_name'])
 
-    gen_kwargs = {
-        "language": "hu", 
-        "task": "transcribe", 
-        "return_timestamps": False,
-        "num_beams": 5,
-        "repetition_penalty": 1.15,
-        "length_penalty": 1.0,
-        "no_repeat_ngram_size": 4
+        base_gen_kwargs = {
+            "language": "hu",
+            "task": "transcribe",
+            "return_timestamps": False,
+            "num_beams": 5,
+            "repetition_penalty": 1.15,
+            "length_penalty": 1.0,
+            "no_repeat_ngram_size": 4
+        }
+
+    if len(base_gen_kwargs) > 0:
+        base_gen_kwargs.update(**args['gen_kwargs'])
+
+    pipe_kwargs = {
+        "model": model,
+        "tokenizer": processor.tokenizer,
+        "feature_extractor": processor.feature_extractor,
+        "torch_dtype": torch_dtype,
+        "device": f"cuda:{gpu_id}",
+        "chunk_length_s": 30.0,
+        "batch_size": batch_size,
     }
 
-    gen_kwargs.update(**args['gen_kwargs'])
+    if len(base_gen_kwargs) > 0:
+        pipe_kwargs["generate_kwargs"] = base_gen_kwargs
 
     pipe = pipeline(
         "automatic-speech-recognition",
-        model=model,
-        tokenizer=processor.tokenizer,
-        feature_extractor=processor.feature_extractor,
-        torch_dtype=torch_dtype,
-        device=f"cuda:{gpu_id}",
-        chunk_length_s=30.0,
-        batch_size=batch_size,
-        generate_kwargs=gen_kwargs
+        **pipe_kwargs
     )
 
     predictions = []
@@ -78,9 +111,11 @@ def gpu_evaluate(data, gpu_id, args):
                 audio_data["array"] = np.array(audio_data["array"], dtype=np.float32)
             yield audio_data
 
-    for out in tqdm(pipe(yield_data(),
-                        batch_size=batch_size,
-                        generate_kwargs=gen_kwargs),
+    iter_kwargs = {"batch_size": batch_size}
+    if len(base_gen_kwargs) > 0:
+        iter_kwargs["generate_kwargs"] = base_gen_kwargs
+
+    for out in tqdm(pipe(yield_data(), **iter_kwargs),
                         position=gpu_id,
                         total=len(data),
                         desc=f"GPU {gpu_id}"):
