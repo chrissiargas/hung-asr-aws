@@ -17,22 +17,42 @@ from typing import Dict
 import argparse
 from bert_score import score
 
-def get_results_path(conf, args):
-    results_path = os.path.join(os.path.expanduser('~'),
-                                conf.results_path,
-                                args['model_type'],
-                                args['machine'],
-                                args['model_name'],
-                                args['datetime'],
-                                args['turn'],
-                                args['dataset'],
-                                args['split'],
-                                args['name'])
 
+def get_results_path(conf, args, data_specific=True):
+
+    model_type = args.get('model_type', 'dual_fusion_checkpoints')
+    model_name = args.get('model_name', 'default_model')
+
+    path_parts = [
+        os.path.expanduser('~'),
+        conf.results_path,
+        model_type
+    ]
+
+    if args.get('machine') and args.get('datetime') and args.get('turn'):
+        path_parts.extend([
+            str(args['machine']),
+            str(model_name),
+            str(args['datetime']),
+            str(args['turn'])
+        ])
+    else:
+        path_parts.append(model_name)
+
+    dataset = args.get('dataset')
+
+    if data_specific and dataset:
+        path_parts.extend([
+            dataset,
+            args.get('split', 'test')
+        ])
+
+        if args.get('name'):
+            path_parts.append(args['name'])
+
+    results_path = os.path.join(*[p for p in path_parts if p])
     os.makedirs(results_path, exist_ok=True)
-
     return results_path
-
 
 
 def get_plots_dir(conf, info):
@@ -41,6 +61,7 @@ def get_plots_dir(conf, info):
     os.makedirs(plots_dir, exist_ok=True)
 
     return plots_dir
+
 
 def generate_semantic_drift_plot(info: Dict):
     conf = Parser()
@@ -127,16 +148,15 @@ def generate_semantic_drift_plot(info: Dict):
 def aggregate_results(info: Dict):
     conf = Parser()
     conf.get_args()
-
     print("Aggregating results...")
 
     all_results = []
     for dataset_name in DATASETS:
         info['test_dataset'] = dataset_name
-        results_folder = get_results_path(conf, info)
+        results_folder = get_results_path(conf, info, data_specific=False)
         info['res_folder'] = results_folder
 
-        results_path = os.path.join(results_folder, 'results.csv')
+        results_path = os.path.join(results_folder, 'predictions_total_metrics.csv')
         predictions_path = os.path.join(results_folder, 'predictions.csv')
 
         if os.path.exists(results_path):
@@ -172,9 +192,10 @@ def aggregate_results(info: Dict):
     cols = ['dataset'] + [col for col in aggregated_df.columns if col != 'dataset']
     aggregated_df = aggregated_df[cols]
 
-    results_folder = get_results_path(conf, info, data_folder=False)
-    results_path = os.path.join(results_folder, "aggregated_results.csv")
-    aggregated_df.to_csv(results_path, index=False)
+    results_folder = get_results_path(conf, info, data_specific=False)
+    aggregated_path = os.path.join(results_folder, "aggregated_results.csv")
+    aggregated_df.to_csv(aggregated_path, index=False)
+    print(f"✅ Summary compilation saved to: {aggregated_path}")
 
     return aggregated_df
 
@@ -203,7 +224,7 @@ def compare_models(df_model1, df_model2, name_model1="Model_1", name_model2="Mod
             # Relative Error Reduction (RER)
             rer_col = f'{metric}_rer'
             comparison_df[rer_col] = (
-                        (comparison_df[col1] - comparison_df[col2]) / (comparison_df[col1] + 1e-9) * 100).round(1)
+                    (comparison_df[col1] - comparison_df[col2]) / (comparison_df[col1] + 1e-9) * 100).round(1)
 
     return comparison_df
 
@@ -212,29 +233,28 @@ def compare_models(df_model1, df_model2, name_model1="Model_1", name_model2="Mod
 def plot_sid_stacked_bar(info: Dict):
     conf = Parser()
     conf.get_args()
-    dataset_name = info['dataset']
-
     sid_data = []
-
     local_info = info.copy()
 
-    results_folder = get_results_path(conf, local_info)
-    predictions_path = os.path.join(results_folder, 'predictions.csv')
+    for dataset_name in DATASETS:
+        local_info['dataset'] = dataset_name
+        results_folder = get_results_path(conf, local_info)
+        predictions_path = os.path.join(results_folder, 'predictions.csv')
 
-    if os.path.exists(predictions_path):
-        df = pd.read_csv(predictions_path)
-        total_subs = df['substitutions'].sum()
-        total_ins = df['insertions'].sum()
-        total_dels = df['deletions'].sum()
-        total_errors = total_subs + total_ins + total_dels
+        if os.path.exists(predictions_path):
+            df = pd.read_csv(predictions_path)
+            total_subs = df['substitutions'].sum()
+            total_ins = df['insertions'].sum()
+            total_dels = df['deletions'].sum()
+            total_errors = total_subs + total_ins + total_dels
 
-        if total_errors > 0:
-            sid_data.append({
-                'Dataset': dataset_name,
-                'Substitutions': (total_subs / total_errors) * 100,
-                'Insertions': (total_ins / total_errors) * 100,
-                'Deletions': (total_dels / total_errors) * 100
-            })
+            if total_errors > 0:
+                sid_data.append({
+                    'Dataset': dataset_name,
+                    'Substitutions': (total_subs / total_errors) * 100,
+                    'Insertions': (total_ins / total_errors) * 100,
+                    'Deletions': (total_dels / total_errors) * 100
+                })
 
     if not sid_data:
         print("No S-I-D data found to plot.")
@@ -242,9 +262,7 @@ def plot_sid_stacked_bar(info: Dict):
 
     sid_df = pd.DataFrame(sid_data).set_index('Dataset')
 
-    # Plotting
-    ax = sid_df.plot(kind='bar', stacked=True, figsize=(10, 6),
-                     color=['#ffb347', '#ff6961', '#aec6cf'], edgecolor='black')
+    ax = sid_df.plot(kind='bar', stacked=True, figsize=(10, 6), color=['#ffb347', '#ff6961', '#aec6cf'], edgecolor='black')
 
     plt.title("Proportion of Error Types per Dataset (S-I-D)", fontsize=14, pad=15)
     plt.ylabel("Percentage of Total Errors (%)", fontsize=12)
@@ -252,7 +270,6 @@ def plot_sid_stacked_bar(info: Dict):
     plt.xticks(rotation=45)
     plt.legend(title="Error Type", bbox_to_anchor=(1.05, 1), loc='upper left')
 
-    # Add percentage labels inside the bars
     for p in ax.patches:
         width, height = p.get_width(), p.get_height()
         x, y = p.get_xy()
@@ -389,6 +406,7 @@ def plot_wer_distribution(info: Dict):
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()
 
+
 def examine_worst_predictions(info: Dict, top_n=10, sort_metric='n_wer'):
     conf = Parser()
     conf.get_args()
@@ -409,9 +427,9 @@ def examine_worst_predictions(info: Dict, top_n=10, sort_metric='n_wer'):
         return
 
     worst_errors = df.sort_values(by=sort_metric, ascending=False).head(top_n)
-    
-    print(f"🚀 Top {top_n} Worst Predictions (Sorted by '{sort_metric}' descending)\n" + "="*70)
-    
+
+    print(f"🚀 Top {top_n} Worst Predictions (Sorted by '{sort_metric}' descending)\n" + "=" * 70)
+
     for _, row in worst_errors.iterrows():
         print(f"🔹 Index: {row['index']} | Duration: {row['duration']}s")
         print(f"   Reference:  {row['reference']}")
@@ -420,13 +438,16 @@ def examine_worst_predictions(info: Dict, top_n=10, sort_metric='n_wer'):
             print(f"   Metrics:    n_WER: {row['n_wer']:.2f} | WER: {row['wer']:.2f}")
         elif 'cer' in sort_metric:
             print(f"   Metrics:    n_CER: {row['n_cer']:.2f} | CER: {row['cer']:.2f}")
-            
-        print(f"   Breakdown:  Substitutions: {row['substitutions']} | Insertions: {row['insertions']} | Deletions: {row['deletions']}")
+
+        print(
+            f"   Breakdown:  Substitutions: {row['substitutions']} | Insertions: {row['insertions']} | Deletions: {row['deletions']}")
         print("-" * 70)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--datasets', nargs='+', type=str, default=['common_voice', 'fleurs', 'massive', 'voxpopuli', 'yodas'], help='datasets')
+    parser.add_argument('--datasets', nargs='+', type=str,
+                        default=['common_voice', 'fleurs', 'massive', 'voxpopuli', 'yodas'], help='datasets')
     parser.add_argument('--splits', nargs='+', type=str, default=['train', 'validation', 'test'], help='split sets')
     parser.add_argument('--machine', type=str, default='kronos')
     parser.add_argument('--datetime', type=str, default=None)
@@ -438,22 +459,28 @@ if __name__ == "__main__":
 
     args, unknown = parser.parse_known_args()
     args_dict = vars(args)
+    DATASETS = args.datasets
 
     model_name = (args.speech_encoder_id.split('/')[1] + '_' + args.language_model_id.split('/')[1])
 
-    for dataset in args.datasets:
-        for split in args.splits:
-            base_info = {
-                'model_type': args.model_type,
-                'model_name': args.model_name,
-                'dataset': dataset,
-                'split': split,
-                'name': args.name
-            }
-            
+    for split in args.splits:
+        base_info = {
+            'model_type': args.model_type,
+            'model_name': model_name,
+            'split': split,
+            'machine': args.machine,
+            'datetime': args.datetime,
+            'turn': args.turn,
+            'name': args.name
+        }
+
+        aggregate_results(base_info)
+
+        for dataset in args.datasets:
+            base_info['dataset'] = dataset
             examine_worst_predictions(base_info, top_n=100, sort_metric='cer')
             plot_wer_distribution(base_info)
             plot_length_correlation(base_info)
             plot_wer_vs_duration(base_info)
-            plot_sid_stacked_bar(base_info)
-            
+
+        plot_sid_stacked_bar(base_info)
