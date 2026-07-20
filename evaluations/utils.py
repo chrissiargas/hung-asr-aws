@@ -151,10 +151,14 @@ def aggregate_results(info: Dict):
     print("Aggregating results...")
 
     all_results = []
+    local_info = info.copy()
+
     for dataset_name in DATASETS:
-        info['test_dataset'] = dataset_name
-        results_folder = get_results_path(conf, info, data_specific=False)
-        info['res_folder'] = results_folder
+        local_info['dataset'] = dataset_name
+        local_info['test_dataset'] = dataset_name
+
+        results_folder = get_results_path(conf, local_info, data_specific=False)
+        local_info['res_folder'] = results_folder
 
         results_path = os.path.join(results_folder, 'predictions_total_metrics.csv')
         predictions_path = os.path.join(results_folder, 'predictions.csv')
@@ -176,7 +180,7 @@ def aggregate_results(info: Dict):
             except Exception as e:
                 print(f"Error reading {results_path}: {e}")
         else:
-            print(f"Warning: Could not find results for {dataset} at {results_path}")
+            print(f"Warning: Could not find results for {dataset_name} at {results_path}")
 
     if not all_results:
         return pd.DataFrame()
