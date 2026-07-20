@@ -156,8 +156,8 @@ def aggregate_results(info: Dict):
     for dataset_name in DATASETS:
         local_info['dataset'] = dataset_name
         local_info['test_dataset'] = dataset_name
+        results_folder = get_results_path(conf, local_info, data_specific=True)
 
-        results_folder = get_results_path(conf, local_info, data_specific=False)
         local_info['res_folder'] = results_folder
 
         results_path = os.path.join(results_folder, 'predictions_total_metrics.csv')
