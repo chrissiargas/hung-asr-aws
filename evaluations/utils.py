@@ -459,13 +459,15 @@ if __name__ == "__main__":
     parser.add_argument('--speech_encoder_id', type=str, default='openai/whisper-large-v3')
     parser.add_argument('--language_model_id', type=str, default='elte-nlp/Racka-4B')
     parser.add_argument('--model_type', type=str, default='dual_fusion_checkpoints')
+    parser.add_argument('--model_name', type=str, default=None)
     parser.add_argument('--name', type=str, default='default', help='Name of the experiment')
 
     args, unknown = parser.parse_known_args()
     args_dict = vars(args)
     DATASETS = args.datasets
 
-    model_name = (args.speech_encoder_id.split('/')[1] + '_' + args.language_model_id.split('/')[1])
+    if args.model_name is None:
+        model_name = (args.speech_encoder_id.split('/')[1] + '_' + args.language_model_id.split('/')[1])
 
     for split in args.splits:
         base_info = {
