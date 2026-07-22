@@ -192,8 +192,7 @@ def setup(info, restart: bool = False, device: str = 'cuda', local_rank: int = -
                                do_interleave=info['interleave'],
                                temperature=args.interleave_temperature,
                                randomize=args.randomize,
-                               exp=exp,
-                               splitting=args.splitting)
+                               exp=exp)
 
     init_wandb(local_rank, args, info, date, info['model_name'], DATASETS, exp)
 
