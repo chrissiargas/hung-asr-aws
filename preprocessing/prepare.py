@@ -100,7 +100,7 @@ def get_typed_data(dataset,
 
     if normalized:
         if normalize_type == 'default':
-             = normalize
+            normalize_f = normalize
         else:
             normalize_f = normalize_vamvou
 
