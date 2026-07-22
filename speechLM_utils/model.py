@@ -99,6 +99,7 @@ def get_model(args: Dict, info: Dict, device = 'cuda', exp: int = 0, attn_implem
         audio_weight=args['audio_weight'],
         duration_weight=args['duration_weight'],
         lng_lora=args['linguistic_lora'],
+        lora_r=args['lora_r'],
         acoustic_lora=args['acoustic_lora'],
         lora_params=args['lora_params'],
         prompt_persona=args['prompt_persona'],
