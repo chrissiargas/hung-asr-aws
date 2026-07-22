@@ -26,6 +26,47 @@ def clean_whitespaces(text):
     text = re.sub(r'\s+', ' ', text)
     return text.strip()
 
+patterns = {
+    "square_bracket_tag":   re.compile(r'\[[^\]]*\]'),
+    "double_paren":         re.compile(r'\(\([^)]*\)\)'),
+    "lang_tag":             re.compile(r'<lang:[^>]+>.*?</lang:[^>]+>', re.IGNORECASE),
+    "hashtag_word":         re.compile(r'#\w+'),
+    "cutoff_word":          re.compile(r'\w+~'),
+    "foreign_character":    re.compile(r'[^\x00-\x7FáéíóöőúüűÁÉÍÓÖŐÚÜŰ]'),
+}
+
+def normalize_vamvou(text):
+    text = text.strip()
+    text = unicodedata.normalize('NFC', text)
+
+    punctuation_map = {
+        # Dashes & Hyphens
+        '–': '-',  # En-dash
+        '—': '-',  # Em-dash
+        '‑': '-',  # Non-breaking hyphen
+        # Quotation Marks
+        '„': '"',  # Hungarian / German open quote
+        '”': '"',  # Right double quote
+        '“': '"',  # Left double quote
+        '‘': "'",  # Left single quote
+        '’': "'",  # Right single quote
+        '«': '"',  # French guillemet
+        '»': '"',  # French guillemet
+        # Asian Punctuation (in case they appear standalone)
+        '，': ',',
+        '。': '.'
+    }
+
+    for strange_char, regular_char in punctuation_map.items():
+        text = text.replace(strange_char, regular_char)
+
+    text = re.sub(r'[\xad\x80-\x9F]', '', text)
+
+    text = text.lower()
+
+    return text
+
+
 def normalize(text, with_signs=True):
     if not text:
         return ''
@@ -78,10 +119,10 @@ def normalize(text, with_signs=True):
     return clean_whitespaces(text)
 
 if __name__ == "__main__":
-    sentence = """" ez nem a búcsú . ez egy fejezet lezárása és egy új fejezet kezdete . """
+    sentence = "Jó,ezt jó,ha tudod... . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."
     print(sentence)
     sentence_ = normalize(sentence)
     print(sentence_)
-    sentence__ = normalize(sentence_)
+    sentence__ = normalize(sentence_, with_signs=False)
     print(sentence__)
     print(sentence__ == sentence_)

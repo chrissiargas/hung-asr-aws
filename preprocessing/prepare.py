@@ -4,7 +4,7 @@ from typing import Dict, Optional
 from datasets import Dataset, Audio, interleave_datasets, concatenate_datasets, DatasetDict
 from preprocessing.split import splitter
 import random
-from preprocessing.normalize import normalize
+from preprocessing.normalize import normalize, normalize_vamvou
 from typing import List
 from pathlib import Path
 import csv
@@ -22,7 +22,7 @@ def make_data_module(dataset_names,
                      exp: int = 0):
 
     split = splitter(exp=exp)
-    data = split.split(datasets=dataset_names)
+    data = split.split(datasets=dataset_names, splitting=True)
 
     train_sets = get_data(data['train'],
                           bad_folder,
@@ -93,7 +93,7 @@ def get_typed_data(dataset,
 
     if normalized:
         hf_data = hf_data.map(
-            lambda x: {text_name: [normalize(t) for t in x[text_name]]},
+            lambda x: {text_name: [normalize_vamvou(t) for t in x[text_name]]},
             batched=True,
             num_proc=4
         )
