@@ -7,13 +7,11 @@ import random
 import numpy as np
 
 class splitter:
-    def __init__(self, splitting: bool = True, validation: bool = True, exp: int = 0):
+    def __init__(self, validation: bool = True, exp: int = 0):
         self.conf = Parser()
         self.conf.get_args(exp)
 
-        self.splitting = splitting
         self.validation = validation
-
         self.seed = 42
 
     def perform_speaker_split(self, manifest_folder: str, manifest_file: str, dataset: str, test_split: float = 0):
@@ -128,7 +126,7 @@ class splitter:
             if ('dataocean' in dataset) or ('datatang' in dataset):
                 print(f'Checking if {dataset} needs splitting...')
 
-                if splitting:
+                if self.conf.splitting:
                     manifest_file = os.path.join(manifest_folder, f'{self.conf.language}.json')
                     if os.path.exists(manifest_file):
                         if self.conf.split_type == 'default':
@@ -173,11 +171,11 @@ class splitter:
         return manifests
 
     def split_for_train(self):
-        if self.splitting:
+        if self.conf.splitting:
             self.split(validation=True)
 
     def split_for_inference(self):
-        if self.splitting:
+        if self.conf.splitting:
             self.split(validation=True)
 
 import pandas as pd
