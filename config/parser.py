@@ -100,6 +100,7 @@ class Parser:
 
         self.datasets = args.main_args['datasets']
         self.split_type = args.main_args['split_type']
+        self.splitting = args.main_args['splitting']
         self.results_path = args.main_args['results_path']
         self.checkpoint_path = args.main_args['checkpoint_path']
 

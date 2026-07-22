@@ -19,10 +19,11 @@ def make_data_module(dataset_names,
                      temperature: float = 1.0,
                      randomize: bool = False,
                      seed: int = 42,
-                     exp: int = 0):
+                     exp: int = 0,
+                     splitting: bool  = False):
 
     split = splitter(exp=exp)
-    data = split.split(datasets=dataset_names, splitting=True)
+    data = split.split(datasets=dataset_names, splitting=splitting)
 
     train_sets = get_data(data['train'],
                           bad_folder,
