@@ -109,6 +109,7 @@ class Parser:
 
         ## Data Configurations
         self.dual_fuse_args.randomize = args.dual_fuse_args['randomize']
+        self.dual_fuse_args.normalize = args.dual_fuse_args['normalize']
         self.dual_fuse_args.micro_data = args.dual_fuse_args['micro_data']
         self.dual_fuse_args.micro_size = args.dual_fuse_args['micro_size']
         self.dual_fuse_args.norm_mono = args.dual_fuse_args['norm_mono']
