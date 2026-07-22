@@ -36,6 +36,9 @@ patterns = {
 }
 
 def normalize_vamvou(text):
+    if not text:
+        return ''
+
     text = text.strip()
     text = unicodedata.normalize('NFC', text)
 

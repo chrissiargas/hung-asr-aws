@@ -22,7 +22,7 @@ def make_data_module(dataset_names,
                      exp: int = 0):
 
     split = splitter(exp=exp)
-    data = split.split(datasets=dataset_names, splitting=True)
+    data = split.split(datasets=dataset_names, splitting=False)
 
     train_sets = get_data(data['train'],
                           bad_folder,
