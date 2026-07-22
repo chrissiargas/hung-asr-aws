@@ -65,6 +65,31 @@ class splitter:
         print(f"[{dataset}] Successfully generated splits.")
         return generated_paths
 
+    def perform_random_split(self, manifest_folder: str, manifest_file: str, dataset: str, validation_split: float = 0.09, test_split: float = 0.01):
+        print(f"[{dataset}] No pre-existing splits found. Performing Random Split on the fly...")
+
+        data = pd.read_json(manifest_file, lines=True)
+
+        total_samples = len(data)
+        train_size = int((1 - validation_split - test_split) * total_samples)
+        val_size = int(validation_split * total_samples)
+
+        shuffled_data = data.sample(frac=1, random_state=self.seed).reset_index(drop=True)
+
+        train_data = shuffled_data.iloc[:train_size]
+        val_data = shuffled_data.iloc[train_size:train_size + val_size]
+        test_data = shuffled_data.iloc[train_size + val_size:]
+
+        generated_paths = {}
+        for split_name, split_data in zip(['train', 'validation', 'test'], [train_data, val_data, test_data]):
+            print(f"{split_name} samples: {len(split_data)}")
+
+            output_path = os.path.join(manifest_folder, f'{self.conf.language}_{split_name}.json')
+            split_data.to_json(output_path, orient='records', lines=True, force_ascii=False)
+            generated_paths[split_name] = output_path
+
+        print(f"[{dataset}] Successfully generated splits.")
+        return generated_paths
 
     def merge_manifests(self, manifest_files: Dict, split: str):
         output_path = os.path.join(self.conf.dataset_path, split + '.json')
@@ -87,7 +112,7 @@ class splitter:
                         entry['split'] = split
                         g.write(json.dumps(entry) + '\n')
 
-    def split(self, validation: bool = True, merging: bool = False, datasets: Optional[List] = None, test_split: float = 0):
+    def split(self, validation: bool = True, merging: bool = False, datasets: Optional[List] = None, splitting: bool = False):
         manifests = {
             'train': {},
             'validation': {},
@@ -96,42 +121,44 @@ class splitter:
 
         datasets = datasets if datasets else self.conf.datasets
 
-        if self.conf.split_type == 'default':
-            for dataset in datasets:
-                manifest_folder = os.path.join(os.path.expanduser('~'), self.conf.dataset_path, self.conf.language, dataset, 'manifests')
-                splits = len(os.listdir(manifest_folder))
+        for dataset in datasets:
+            manifest_folder = os.path.join(os.path.expanduser('~'), self.conf.dataset_path, self.conf.language, dataset, 'manifests')
+            splits = len(os.listdir(manifest_folder))
 
-                if ('dataocean' in dataset) or ('datatang' in dataset):
-                    print(f'Checking if {dataset} needs splitting...')
-                    
-                    if test_split > 0:
-                        manifest_file = os.path.join(manifest_folder, f'{self.conf.language}.json')
-                        if os.path.exists(manifest_file):
-                            self.perform_speaker_split(manifest_folder, manifest_file, dataset, test_split)
+            if ('dataocean' in dataset) or ('datatang' in dataset):
+                print(f'Checking if {dataset} needs splitting...')
 
-                            for split in ['train', 'validation', 'test']:
-                                manifest_file = os.path.join(manifest_folder, f'{self.conf.language}_{split}.json')
-                                if os.path.exists(manifest_file):
-                                    manifests[split][dataset] = manifest_file
-                        
-                        else:
-                            print(f'{manifest_file} Not Found!')
+                if splitting:
+                    manifest_file = os.path.join(manifest_folder, f'{self.conf.language}.json')
+                    if os.path.exists(manifest_file):
+                        if self.conf.split_type == 'default':
+                            self.perform_speaker_split(manifest_folder, manifest_file, dataset, test_split=0.2)
+                        elif self.conf.split_type == 'random':
+                            self.perform_random_split(manifest_folder, manifest_file, dataset)
+
+                        for split in ['train', 'validation', 'test']:
+                            manifest_file = os.path.join(manifest_folder, f'{self.conf.language}_{split}.json')
+                            if os.path.exists(manifest_file):
+                                manifests[split][dataset] = manifest_file
 
                     else:
-                        if splits > 3:
-                            for split in ['train', 'validation', 'test']:
-                                manifest_file = os.path.join(manifest_folder, f'{self.conf.language}_{split}.json')
-                                if os.path.exists(manifest_file):
-                                    manifests[split][dataset] = manifest_file
-                        else:
-                            manifest_file = os.path.join(manifest_folder, f'{self.conf.language}.json')
-                            manifests['train'][dataset] = manifest_file
+                        print(f'{manifest_file} Not Found!')
 
                 else:
-                    for split in ['train', 'validation', 'test']:
-                        manifest_file = os.path.join(manifest_folder, f'{self.conf.language}_{split}.json')
-                        if os.path.exists(manifest_file):
-                            manifests[split][dataset] = manifest_file
+                    if splits > 3:
+                        for split in ['train', 'validation', 'test']:
+                            manifest_file = os.path.join(manifest_folder, f'{self.conf.language}_{split}.json')
+                            if os.path.exists(manifest_file):
+                                manifests[split][dataset] = manifest_file
+                    else:
+                        manifest_file = os.path.join(manifest_folder, f'{self.conf.language}.json')
+                        manifests['train'][dataset] = manifest_file
+
+            else:
+                for split in ['train', 'validation', 'test']:
+                    manifest_file = os.path.join(manifest_folder, f'{self.conf.language}_{split}.json')
+                    if os.path.exists(manifest_file):
+                        manifests[split][dataset] = manifest_file
 
         if not validation:
             manifests['train'].update(manifests['validation'])

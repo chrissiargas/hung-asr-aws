@@ -113,6 +113,17 @@ def get_issue(x, patterns, foreign_max_threshold=0.4):
 
     return 'none'
 
+def get_vamvou_issue(x, patterns):
+    text = x['text']
+
+    if text is None:
+        return 'empty_text'
+
+    if any(p.search(text) for p in patterns.values()):
+        return 'vamvou_anomaly'
+
+    return 'none'
+
 def check_text(data, info, bad_folder, foreign_max_threshold=0.4):
     progress_bar = tqdm(
         data,
@@ -143,6 +154,50 @@ def check_text(data, info, bad_folder, foreign_max_threshold=0.4):
     split = info['split']
 
     bad_files.to_csv(os.path.join(bad_folder, dataset, split, f"bad_by_text.csv"))
+
+patterns = {
+    "square_bracket_tag":   re.compile(r'\[[^\]]*\]'),
+    "double_paren":         re.compile(r'\(\([^)]*\)\)'),
+    "lang_tag":             re.compile(r'<lang:[^>]+>.*?</lang:[^>]+>', re.IGNORECASE),
+    "hashtag_word":         re.compile(r'#\w+'),
+    "cutoff_word":          re.compile(r'\w+~'),
+    "foreign_character":    re.compile(r'[^\x00-\x7FáéíóöőúüűÁÉÍÓÖŐÚÜŰ]'),
+}
+
+def check_vamvou(data, info, bad_folder):
+    progress_bar = tqdm(
+        data,
+        leave=True,
+        ncols=100,
+        colour='green'
+    )
+
+    patterns = {
+        "square_bracket_tag": re.compile(r'\[[^\]]*\]'),
+        "double_paren": re.compile(r'\(\([^)]*\)\)'),
+        "lang_tag": re.compile(r'<lang:[^>]+>.*?</lang:[^>]+>', re.IGNORECASE),
+        "hashtag_word": re.compile(r'#\w+'),
+        "cutoff_word": re.compile(r'\w+~'),
+        "foreign_character": re.compile(r'[^\x00-\x7FáéíóöőúüűÁÉÍÓÖŐÚÜŰ]'),
+    }
+
+    issues = []
+    for i, entry in enumerate(progress_bar):
+        issues.append(get_vamvou_issue(entry, patterns))
+
+    issues = np.array(issues)
+    bad_indices = np.where(issues != 'none')[0]
+    bad_files = pd.DataFrame(bad_indices, columns=['bad_index'])
+
+    bad_files['filepath'] = bad_files.bad_index.map(lambda x: data[x]['audio_filepath'])
+    bad_files['text'] = bad_files.bad_index.map(lambda x: data[x]['text'])
+    bad_files['issue'] = bad_files.bad_index.map(lambda x: issues[x])
+
+    dataset = info['dataset']
+    split = info['split']
+
+    bad_files.to_csv(os.path.join(bad_folder, dataset, split, f"bad_by_vamvou.csv"))
+
 
 def run_check(datasets, splits):
     conf = Parser()
@@ -203,15 +258,19 @@ def run_check(datasets, splits):
             to_folder = Path(os.path.join(bad_folder, dataset, split))
             to_folder.mkdir(parents=True, exist_ok=True)
 
-            print('checking duration anomalies')
-            check_duration(data, info, bad_folder, **dataset_thresholds['duration'])
-            print('checking length anomalies', )
-            check_length(data, info, bad_folder, **dataset_thresholds['length'])
-            print('checking ratio anomalies')
-            check_ratio(data, info, bad_folder, **dataset_thresholds['ratio'])
-            print('checking text anomalies')
-            check_text(data, info, bad_folder, **dataset_thresholds['text'])
+            # print('checking duration anomalies')
+            # check_duration(data, info, bad_folder, **dataset_thresholds['duration'])
+            # print('checking length anomalies', )
+            # check_length(data, info, bad_folder, **dataset_thresholds['length'])
+            # print('checking ratio anomalies')
+            # check_ratio(data, info, bad_folder, **dataset_thresholds['ratio'])
+            # print('checking text anomalies')
+            # check_text(data, info, bad_folder, **dataset_thresholds['text'])
+            print('checking vamvou anomalies')
+            check_vamvou(data, info, bad_folder)
             print()
+
+
 
 import argparse
 if '__main__' == __name__:
