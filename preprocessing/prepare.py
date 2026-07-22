@@ -2,6 +2,8 @@ import json
 import os
 from typing import Dict, Optional
 from datasets import Dataset, Audio, interleave_datasets, concatenate_datasets, DatasetDict
+from torch.fx.operator_schemas import normalize_function
+
 from preprocessing.split import splitter
 import random
 from preprocessing.normalize import normalize, normalize_vamvou
@@ -19,10 +21,12 @@ def make_data_module(dataset_names,
                      temperature: float = 1.0,
                      randomize: bool = False,
                      seed: int = 42,
-                     exp: int = 0):
+                     exp: int = 0,
+                     splitting: bool  = False,
+                     normalize_type: str = 'default'):
 
     split = splitter(exp=exp)
-    data = split.split(datasets=dataset_names, splitting=True)
+    data = split.split(datasets=dataset_names, splitting=splitting)
 
     train_sets = get_data(data['train'],
                           bad_folder,
@@ -31,7 +35,8 @@ def make_data_module(dataset_names,
                           iters=train_samples if micro_data else None,
                           randomize=randomize,
                           has_duration=True,
-                          seed=seed)
+                          seed=seed,
+                          normalize_type=normalize_type)
 
     val_sets = get_data(data['validation'],
                         bad_folder,
@@ -40,7 +45,8 @@ def make_data_module(dataset_names,
                         iters=eval_samples,
                         randomize=randomize,
                         has_duration=True,
-                        seed=seed)
+                        seed=seed,
+                        normalize_type=normalize_type)
 
     if do_interleave and len(train_sets) > 1:
         train = interleave(train_sets, temperature=temperature)
@@ -67,7 +73,8 @@ def get_typed_data(dataset,
                    has_duration: bool = False,
                    randomize: bool = False, 
                    seed: int = 42,
-                   normalized: bool = True):
+                   normalized: bool = True,
+                   normalize_type: str = 'default'):
 
     if has_duration:
         hf_data = {
@@ -92,8 +99,13 @@ def get_typed_data(dataset,
         hf_data = hf_data.shuffle(seed=seed)
 
     if normalized:
+        if normalize_type == 'default':
+             = normalize
+        else:
+            normalize_f = normalize_vamvou
+
         hf_data = hf_data.map(
-            lambda x: {text_name: [normalize_vamvou(t) for t in x[text_name]]},
+            lambda x: {text_name: [normalize_f(t) for t in x[text_name]]},
             batched=True,
             num_proc=4
         )
@@ -106,7 +118,7 @@ def get_typed_data(dataset,
 def get_data(paths, bad_folder: str, process: bool = True,
              type: int = 1, iters: Optional[int] = None, has_duration: bool = False,
              randomize: bool = False, seed: int = 42, normalized: bool = True, norm_mono: bool = False,
-             filters: List[str] = None, split: str = ''):
+             filters: List[str] = None, split: str = '', normalize_type: str = 'default'):
 
     datasets = {}
     for name, path in paths.items():
@@ -164,7 +176,8 @@ def get_data(paths, bad_folder: str, process: bool = True,
                                      has_duration,
                                      randomize,
                                      seed,
-                                     normalized)
+                                     normalized,
+                                     normalize_type)
 
         else:
             hf_data = dataset
