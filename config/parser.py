@@ -146,6 +146,7 @@ class Parser:
         self.dual_fuse_args.linguistic_lora = args.dual_fuse_args['linguistic_lora']
         self.dual_fuse_args.acoustic_lora = args.dual_fuse_args['acoustic_lora']
         self.dual_fuse_args.lora_params = args.dual_fuse_args['lora_params']
+        self.dual_fuse_args.lora_r = args.dual_fuse_args['lora_r']
         self.dual_fuse_args.two_stage = args.dual_fuse_args['two_stage']
         self.dual_fuse_args.lora_lr = args.dual_fuse_args['lora_lr']
         self.dual_fuse_args.proj_lr = args.dual_fuse_args['proj_lr']
