@@ -116,9 +116,10 @@ class LayerWiseAttention(nn.Module):
         )
 
     def forward(self, stacked_states: torch.Tensor):
-        energy_scores = self.attention_mlp(stacked_states)
-        energy_scores = energy_scores.squeeze(-1)
-        alpha_weights = F.softmax(energy_scores, dim=0).unsqueeze(-1)
+        pooled_states = stacked_states.mean(dim=2)
+        energy_scores = self.attention_mlp(pooled_states)
+        alpha_weights = F.softmax(energy_scores, dim=0)
+        alpha_weights = alpha_weights.unsqueeze(2)
         fused_state = (stacked_states * alpha_weights).sum(dim=0)
 
         return fused_state
@@ -285,8 +286,8 @@ class DualFusionModel(nn.Module):
 
         if self.acoustic_lora:
             peft_config = LoraConfig(
-                r=8,
-                lora_alpha=16,
+                r=lora_r,
+                lora_alpha=2 * lora_r,
                 target_modules=self.lora_params,
                 lora_dropout=0.1,
                 bias='none'
