@@ -296,16 +296,16 @@ def evaluate(info, dataset, split='test', device='cuda', iters = None):
         dataset_names = dataset
 
     split_manager = splitter()
-    data = split_manager.split(datasets=dataset_names, splitting=False)
+    data = split_manager.split(datasets=dataset_names)
 
     evaluation_data = get_data(data[split],
-                          bad_folder,
-                          filters=FILTERS,
-                          split=split,
-                          iters=iters,
-                          randomize=args.randomize,
-                          has_duration=True,
-                          normalize_type=args.normalize)
+                              bad_folder,
+                              filters=FILTERS,
+                              split=split,
+                              iters=iters,
+                              randomize=args.randomize,
+                              has_duration=True,
+                              normalize_type=args.normalize)
 
     evaluation_data = concatenate(evaluation_data)
 

@@ -22,11 +22,10 @@ def make_data_module(dataset_names,
                      randomize: bool = False,
                      seed: int = 42,
                      exp: int = 0,
-                     splitting: bool  = False,
                      normalize_type: str = 'default'):
 
     split = splitter(exp=exp)
-    data = split.split(datasets=dataset_names, splitting=splitting)
+    data = split.split(datasets=dataset_names)
 
     train_sets = get_data(data['train'],
                           bad_folder,
