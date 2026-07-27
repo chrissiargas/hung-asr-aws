@@ -110,7 +110,7 @@ class splitter:
                         entry['split'] = split
                         g.write(json.dumps(entry) + '\n')
 
-    def split(self, validation: bool = True, merging: bool = False, datasets: Optional[List] = None, splitting: bool = False):
+    def split(self, validation: bool = True, merging: bool = False, datasets: Optional[List] = None):
         manifests = {
             'train': {},
             'validation': {},
