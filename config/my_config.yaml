@@ -17,6 +17,7 @@ main_args:
     - dataocean_asr_657
     - dataocean_asr_659
   split_type: 'default'
+  splitting: false
   results_path: "/home/jovyan/asr-shared/csiargka/cache/results"
   checkpoint_path: "/home/jovyan/asr-shared/csiargka/cache/checkpoints"
 
@@ -24,6 +25,7 @@ dual_fuse_args:
   checkpoint_path: "/home/jovyan/asr-shared/csiargka/cache/checkpoints"
    ## Data Configurations
   interleave_temperature: 1.2
+  normalize: vamvou
   micro_data: False
   micro_size: 100
   randomize: True
@@ -54,6 +56,7 @@ dual_fuse_args:
   layer_weights_static: False
   ## LoRA Configurations
   linguistic_lora: True
+  lora_r: 64
   acoustic_lora: False
   lora_params: ["q_proj", "k_proj", "v_proj", "o_proj"]
   proj_lr: 0.0001
