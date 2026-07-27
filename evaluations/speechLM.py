@@ -301,8 +301,6 @@ def evaluate(info, dataset, split='test', device='cuda', iters = None):
 
     split_manager = splitter()
     data = split_manager.split(datasets=dataset_names, splitting=False)
-    evaluation_data = get_data(data[split], bad_folder, iters=iters, normalized=False, has_duration=True, filters=FILTERS, split=split)
-    evaluation_data = concatenate(evaluation_data)
 
     evaluation_data = get_data(data[split],
                           bad_folder,
@@ -312,6 +310,8 @@ def evaluate(info, dataset, split='test', device='cuda', iters = None):
                           randomize=args.randomize,
                           has_duration=True,
                           normalize_type=args.normalize)
+
+    evaluation_data = concatenate(evaluation_data)
 
     print(f"Evaluating on {dataset_names} ({len(evaluation_data)} samples)...")
     evaluate_model(evaluation_data, conf, args, info, checkpoint_path, checkpoint_dir, device)
