@@ -11,45 +11,84 @@ import librosa
 from datacollective import DataCollective
 import pandas as pd
 import subprocess
+import requests
+import tarfile
 
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
-api_key = "a5a7fb5e382a78f691c85763a922b5410f9dda129943d731c79e48b9cafb1ce8"
-dataset_id = {'greek':'cmn2cx91x01dno10754vxfu3b', 'hungarian': 'cmj8u3p8900bhnxxb50f37mkm'}
+API_KEY = "a5a7fb5e382a78f691c85763a922b5410f9dda129943d731c79e48b9cafb1ce8"
+DATASET_ID = {'greek':'cmn2cx91x01dno10754vxfu3b', 'hungarian': 'cmj8u3p8900bhnxxb50f37mkm', 'english': 'cmqim2hn800ssnr07gvmpcnwu'}
+TARGET_DIR = os.path.expanduser(os.path.join("~", "asr-shared", "csiargka", "cache", "datasets", "hungarian", "common_voice"))
+LANGUAGE_ID = {'greek': 'el', 'hungariam': 'hu', 'english': 'en', 'german': 'de'}
+
+def download(language: str):
+    dataset_id = DATASET_ID[language]
+    archive_path = os.path.join(TARGET_DIR, f"common_voice_{language}.tar.gz")
+    extract_dir = os.path.join(TARGET_DIR, f"common_voice_{language}")
+
+    print("Fetching presigned download URL...")
+    api_url = f"https://mozilladatacollective.com/api/datasets/{dataset_id}/download"
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    response = requests.post(api_url, headers=headers)
+    response.raise_for_status()  # Raises an exception if the request failed
+
+    download_url = response.json().get("downloadUrl")
+    print("Successfully retrieved download URL.")
+
+    # 2. Download the file in chunks (Streaming)
+    print(f"Downloading archive to {archive_path}...")
+    with requests.get(download_url, stream=True) as download_response:
+        download_response.raise_for_status()
+
+        # Get total file size from headers if available (for progress bar)
+        total_size = int(download_response.headers.get("content-length", 0))
+
+        with open(archive_path, "wb") as f, tqdm(
+                desc=archive_path,
+                total=total_size,
+                unit="iB",
+                unit_scale=True,
+                unit_divisor=1024,
+        ) as progress_bar:
+            for chunk in download_response.iter_content(chunk_size=8192):
+                size = f.write(chunk)
+                progress_bar.update(size)
+
+    print("Download complete.")
+
+    # 3. Extract the .tar.gz archive
+    print(f"Extracting contents to {extract_dir}...")
+
+    with tarfile.open(archive_path, "r:gz") as tar:
+        tar.extractall(path=extract_dir)
+
+    print("Extraction complete!")
 
 class common_voice:
-    def __init__(self, download: bool = False):
+    def __init__(self, language: str = 'hungarian', do_download: bool = False):
         self.conf = Parser()
         self.conf.get_args()
 
-        self.client = DataCollective(api_key=api_key,
-                                    download_path=os.path.join(
-                                    os.path.expanduser('~'),
-                                    self.conf.dataset_path,
-                                    self.conf.language,
-                                    'common_voice'))
+        if do_download:
+            download(language=language)
 
-        if download:
-            self.client.load_dataset(dataset_id[self.conf.language])
-
-        if self.conf.language == 'greek':
-            self.language = 'el'
-
-        elif self.conf.language == 'hungarian':
-            self.language = 'hu'
-
-        self.load_path = os.path.join(os.path.expanduser('~'),
-                                      self.conf.dataset_path,
-                                      self.conf.language,
-                                      'common_voice',
-                                      'cv-corpus-25.0-2026-03-09',
-                                      self.language)
+        if self.conf.language == 'hungarian':
+            self.load_path = os.path.join(os.path.expanduser('~'),
+                                          self.conf.dataset_path,
+                                          self.conf.language,
+                                          'common_voice',
+                                          'cv-corpus-25.0-2026-03-09',
+                                          LANGUAGE_ID[language])
 
         self.target_path = os.path.join(
             os.path.expanduser('~'),
             self.conf.dataset_path,
             self.conf.language,
-            'common_voice'
+            f'common_voice_{language}'
         )
 
     def load_common_subset(self, split: str):
@@ -114,7 +153,7 @@ class common_voice:
         return manifest_entry
 
 if __name__ == '__main__':
-    extractor = common_voice(download=False)
+    extractor = common_voice(language='hungarian', do_download=True)
     _ = extractor.load_common_subset('train')
     _ = extractor.load_common_subset('dev')
     _ = extractor.load_common_subset('test')
