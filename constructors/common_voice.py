@@ -76,13 +76,8 @@ class common_voice:
         if do_download:
             download(language=language)
 
-        if self.conf.language == 'hungarian':
-            self.load_path = os.path.join(os.path.expanduser('~'),
-                                          self.conf.dataset_path,
-                                          self.conf.language,
-                                          'common_voice',
-                                          'cv-corpus-25.0-2026-03-09',
-                                          LANGUAGE_ID[language])
+        extract_dir = os.path.join(TARGET_DIR, f"common_voice_{language}")
+        self.load_path = os.path.join(extract_dir, LANGUAGE_ID[language])
 
         self.target_path = os.path.join(
             os.path.expanduser('~'),
@@ -152,8 +147,19 @@ class common_voice:
 
         return manifest_entry
 
+import argparse
+from distutils.util import strtobool
+
 if __name__ == '__main__':
-    extractor = common_voice(language='hungarian', do_download=True)
+    print('Starting...')
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--language', type=str, default='hungarian')
+    parser.add_argument('--restart', default=True, type=lambda x: bool(strtobool(x)))
+    args, unknown = parser.parse_known_args()
+    args_dict = vars(args)
+
+    extractor = common_voice(language=args_dict['language'], do_download=args_dict['restart'])
     _ = extractor.load_common_subset('train')
     _ = extractor.load_common_subset('dev')
     _ = extractor.load_common_subset('test')
