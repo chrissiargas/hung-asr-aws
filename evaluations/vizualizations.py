@@ -205,6 +205,7 @@ if __name__ == "__main__":
     parser.add_argument('--datetime', type=str, default=None)
     parser.add_argument('--turn', type=str, default=None)
     parser.add_argument('--exp', type=int, default=0, help='Path to config file')
+    parser.add_argument('--gen_kwargs', type=json.loads, default={})
 
     args, unknown = parser.parse_known_args()
 
@@ -222,6 +223,7 @@ if __name__ == "__main__":
         'datetime': args.datetime,
         'turn': args.turn,
         'exp': args.exp,
+        'gen_kwargs': args.gen_kwargs
     }
 
     for dataset in DATASETS:
