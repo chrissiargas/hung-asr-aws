@@ -17,7 +17,11 @@ import tarfile
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 API_KEY = "a5a7fb5e382a78f691c85763a922b5410f9dda129943d731c79e48b9cafb1ce8"
-DATASET_ID = {'greek':'cmn2cx91x01dno10754vxfu3b', 'hungarian': 'cmj8u3p8900bhnxxb50f37mkm', 'english': 'cmqim2hn800ssnr07gvmpcnwu'}
+DATASET_ID = {'greek':'cmn2cx91x01dno10754vxfu3b',
+              'hungarian': 'cmj8u3p8900bhnxxb50f37mkm',
+              'english': 'cmqim2hn800ssnr07gvmpcnwu',
+              'german': 'cmqim3xpi00t6nr07k0myqtkr'}
+
 TARGET_DIR = os.path.expanduser(os.path.join("~", "asr-shared", "csiargka", "cache", "datasets", "hungarian", "common_voice"))
 LANGUAGE_ID = {'greek': 'el', 'hungarian': 'hu', 'english': 'en', 'german': 'de'}
 
