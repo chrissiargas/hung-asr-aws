@@ -202,6 +202,10 @@ class CrossAttention(nn.Module):
         attentions = F.softmax(scores, dim=-1)
         attentions = self.dropout(attentions)
 
+        if getattr(self, "store_attention", False):
+            # Capture the attention matrix at this generation step
+            self.attention_map.append(attentions.detach().cpu())
+
         attn_output = torch.matmul(attentions, value)
         attn_output = attn_output.transpose(1, 2).contiguous().view(batch_size, text_len, self.hidden_dim)
 
