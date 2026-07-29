@@ -208,7 +208,6 @@ if __name__ == "__main__":
 
     args, unknown = parser.parse_known_args()
 
-    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpus
     DATASETS = args.datasets
     model_name = (args.speech_encoder_id.split('/')[1] + '_' + args.language_model_id.split('/')[1])
 
@@ -227,4 +226,4 @@ if __name__ == "__main__":
 
     for dataset in DATASETS:
         args_dict['test_dataset'] = dataset
-        viz(args_dict, dataset)
+        visualize_random_instance(args_dict, dataset)
