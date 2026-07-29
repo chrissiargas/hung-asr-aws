@@ -286,7 +286,6 @@ def get_bad_folder_path(conf):
 
 def evaluate(info, dataset, split='test', device='cuda', iters = None):
     conf, args, _, _, checkpoint_path, checkpoint_dir, _ = init(info, restart=False)
-    print(conf)
 
     info['res_folder'] = get_results_path(conf, info, dataset, split)
     bad_folder = get_bad_folder_path(conf)
@@ -296,7 +295,7 @@ def evaluate(info, dataset, split='test', device='cuda', iters = None):
     else:
         dataset_names = dataset
 
-    split_manager = splitter()
+    split_manager = splitter(conf=conf)
     data = split_manager.split(datasets=dataset_names)
 
     evaluation_data = get_data(data[split],
