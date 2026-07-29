@@ -268,9 +268,9 @@ def get_results_path(conf, info, dataset, split='test', data_folder: bool = True
 
     if data_folder:
         if info['name'] is not None:
-            results_path = os.path.join(results_path, dataset, split, info['name'])
+            results_path = os.path.join(results_path, str(dataset), split, info['name'])
         else:
-            results_path = os.path.join(results_path, dataset, split)
+            results_path = os.path.join(results_path, str(dataset), split)
 
     os.makedirs(results_path, exist_ok=True)
 
