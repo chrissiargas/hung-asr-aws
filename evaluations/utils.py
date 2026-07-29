@@ -452,13 +452,11 @@ def examine_worst_predictions(info: Dict, top_n=10, sort_metric='n_wer'):
 
 
 def plot_word_level_cross_attention(conf, info, cross_attentions, generated_ids, tokenizer, layer_idx=-1, sample_idx=0):
-
-    # FIX 1: Use max() instead of mean() across heads to remove "sink head" blur
-    # and highlight the sharpest phonetic alignments (prevents the vertical barcode effect)
+    # 1. Max-pooling across attention heads to isolate dominant phonetic heads
     layer_attn = cross_attentions[layer_idx, sample_idx].max(dim=0).values.numpy()
     sample_ids = generated_ids[sample_idx].cpu().numpy()
 
-    # Filter out PAD tokens immediately
+    # Filter out PAD tokens
     pad_id = tokenizer.pad_token_id
     valid_idx = [i for i, tok in enumerate(sample_ids) if tok != pad_id]
 
@@ -471,29 +469,23 @@ def plot_word_level_cross_attention(conf, info, cross_attentions, generated_ids,
     current_word_ids = []
     current_attn = np.zeros(layer_attn.shape[1])
 
-    # FIX 2: Group by Token IDs and decode safely to prevent UTF-8 Mojibake for Hungarian
+    # 2. Group by subwords and decode safely
     for token_id, attn in zip(sample_ids, layer_attn):
-        # Decode just the single token to check if it's a word boundary
         token_str = tokenizer.decode([token_id])
-
-        # Qwen uses literal spaces ' ' for new words
         is_boundary = token_str.startswith(' ') or token_str in ['.', ',', '!', '?', ':', ';', '\n']
 
         if is_boundary and current_word_ids:
-            # Decode the accumulated IDs together to perfectly reconstruct multi-byte characters (á, é, ő)
             word_str = tokenizer.decode(current_word_ids).strip()
             if word_str:
                 words.append(word_str)
                 word_attentions.append(current_attn / (np.max(current_attn) + 1e-9))
 
-            # Reset buffers
             current_word_ids = []
             current_attn = np.zeros(layer_attn.shape[1])
 
         current_word_ids.append(token_id)
         current_attn += attn
 
-    # Catch the final trailing word
     if current_word_ids:
         word_str = tokenizer.decode(current_word_ids).strip()
         if word_str:
@@ -502,40 +494,55 @@ def plot_word_level_cross_attention(conf, info, cross_attentions, generated_ids,
 
     heatmap_data = np.vstack(word_attentions)
 
-    # FIX 3: Crop Masked Time Steps using Cumulative Mass
-    # This mathematically guarantees all padding frames are dropped regardless of floating-point noise
+    # 3. Crop Masked Time Steps (Padding removal)
     col_sums = heatmap_data.sum(axis=0)
     cum_sums = np.cumsum(col_sums)
     total_mass = cum_sums[-1]
 
-    # Find the column where 99.5% of the attention mass is reached (the true end of the audio)
     if total_mass > 0:
         cutoff_idx = np.searchsorted(cum_sums, 0.995 * total_mass)
-        # Add a 3-frame visual buffer
         crop_idx = min(cutoff_idx + 3, heatmap_data.shape[1])
         heatmap_data = heatmap_data[:, :crop_idx]
 
-    # Plot the Heatmap
+    # 4. Continuous Smoothing (Optional 1D Gaussian along the time axis)
+    if smooth:
+        # Smooths discrete acoustic frame transitions (sigma=1.2 along frame axis)
+        heatmap_data = ndimage.gaussian_filter1d(heatmap_data, sigma=1.2, axis=1)
+        # Re-normalize row-wise for clear intensity
+        row_maxes = heatmap_data.max(axis=1, keepdims=True)
+        heatmap_data = np.where(row_maxes > 0, heatmap_data / row_maxes, 0)
+
+    # 5. Plot Continuous Heatmap using plt.imshow with Bilinear Interpolation
     plt.figure(figsize=(12, 8))
 
-    sns.heatmap(heatmap_data, cmap="viridis", cbar=True,
-                xticklabels=False, yticklabels=words)
+    im = plt.imshow(
+        heatmap_data,
+        aspect='auto',
+        cmap='viridis',
+        interpolation='bilinear',  # Creates smooth, continuous gradient transitions
+        origin='upper'
+    )
 
-    plt.title(f"Word-Level Cross-Modal Alignment (Layer {layer_idx})", fontsize=14, pad=15)
-    plt.xlabel("Audio Frames (Time ➔)", fontsize=12)
+    # Configure Colorbar
+    cbar = plt.colorbar(im)
+    cbar.set_label('Attention Weight', rotation=270, labelpad=15, fontsize=11)
+
+    # Formatting Y-ticks to line up with continuous word rows
+    plt.yticks(range(len(words)), words, fontsize=12, rotation=0)
+    plt.xticks([])  # Hide frame indices for clean aesthetic
+
+    plt.title(f"Continuous Word-Level Cross-Modal Alignment (Layer {layer_idx})", fontsize=14, pad=15)
+    plt.xlabel("Audio Time Stream ➔", fontsize=12)
     plt.ylabel("Generated Words", fontsize=12)
-
-    # Ensure Hungarian text renders horizontally and is legible
-    plt.yticks(rotation=0, fontsize=12)
 
     plt.tight_layout()
 
     save_dir = get_plots_dir(conf, info)
-    save_path = os.path.join(save_dir, f"word_level_alignment_layer_{layer_idx}.png")
+    save_path = os.path.join(save_dir, f"word_level_alignment_continuous_layer_{layer_idx}.png")
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()
 
-    print(f"Alignment plot saved successfully to: {save_path}\n")
+    print(f"Continuous alignment plot saved successfully to: {save_path}\n")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

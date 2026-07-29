@@ -170,16 +170,17 @@ def visualize_random_instance(info, dataset, split='test'):
     prediction = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
     print(f"Prediction: {prediction}\n")
 
-    print("Plotting Cross-Modal Alignment...")
-    plot_word_level_cross_attention(
-        conf=conf,
-        info=info,
-        cross_attentions=cross_attentions,
-        generated_ids=generated_ids,
-        tokenizer=tokenizer,
-        layer_idx=-1,  # You can change this to 0 or 1 depending on how many injection layers you have
-        sample_idx=0
-    )
+    for layer_idx in [0,1,2]:
+        print(f"Plotting Cross-Modal Alignment for Layer {layer_idx}...")
+        plot_word_level_cross_attention(
+            conf=conf,
+            info=info,
+            cross_attentions=cross_attentions,
+            generated_ids=generated_ids,
+            tokenizer=tokenizer,
+            layer_idx=-1,  # You can change this to 0 or 1 depending on how many injection layers you have
+            sample_idx=0
+        )
 
 FILTERS = ['duration', 'length']
 from distutils.util import strtobool
