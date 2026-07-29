@@ -456,7 +456,13 @@ def plot_word_level_cross_attention(conf, info, cross_attentions, generated_ids,
     sample_ids = generated_ids[sample_idx].cpu().numpy()
     tokens = [tokenizer.decode([tok]) for tok in sample_ids]
 
-    clean_tokens = [t.replace(tokenizer.pad_token, '').strip() for t in tokens]
+    pad_id = tokenizer.pad_token_id
+    valid_idx = [i for i, tok in enumerate(sample_ids) if tok != pad_id]
+
+    sample_ids = sample_ids[valid_idx]
+    layer_attn = layer_attn[valid_idx]
+
+    raw_tokens = tokenizer.convert_ids_to_tokens(sample_ids)
 
     words = []
     word_attentions = []
@@ -464,24 +470,36 @@ def plot_word_level_cross_attention(conf, info, cross_attentions, generated_ids,
     current_word = ""
     current_attn = np.zeros(layer_attn.shape[1])
 
-    for token, attn in zip(clean_tokens, layer_attn):
-        if not token:
-            continue
+    for token, attn in zip(raw_tokens, layer_attn):
+        is_new_word = token.startswith(' ') or token.startswith('Ġ')
+        is_punctuation = token in ['.', ',', '!', '?', ':', ';']
+
+        if (is_new_word or is_punctuation) and current_word:
+            clean_word = current_word.replace(' ', '').replace('Ġ', '')
+            if clean_word:
+                words.append(clean_word)
+                word_attentions.append(current_attn / (np.max(current_attn) + 1e-9))
+
+            current_word = ""
+            current_attn = np.zeros(layer_attn.shape[1])
 
         current_word += token
         current_attn += attn
 
-        if token.endswith(' ') or token in ['.', ',', '!', '?']:
-            words.append(current_word.strip())
-            word_attentions.append(current_attn / np.max(current_attn))
-            current_word = ""
-            current_attn = np.zeros(layer_attn.shape[1])
-
     if current_word:
-        words.append(current_word.strip())
-        word_attentions.append(current_attn / np.max(current_attn))
+        clean_word = current_word.replace(' ', '').replace('Ġ', '')
+        if clean_word:
+            words.append(clean_word)
+            word_attentions.append(current_attn / (np.max(current_attn) + 1e-9))
 
     heatmap_data = np.vstack(word_attentions)
+
+    col_sums = heatmap_data.sum(axis=0)
+    active_cols = np.where(col_sums > 1e-3)[0]
+
+    if len(active_cols) > 0:
+        crop_idx = min(active_cols[-1] + 5, heatmap_data.shape[1])
+        heatmap_data = heatmap_data[:, :crop_idx]
 
     plt.figure(figsize=(12, 8))
 
@@ -492,7 +510,7 @@ def plot_word_level_cross_attention(conf, info, cross_attentions, generated_ids,
     plt.xlabel("Audio Frames (Time ➔)", fontsize=12)
     plt.ylabel("Generated Words", fontsize=12)
 
-    plt.yticks(rotation=0, fontsize=10)
+    plt.yticks(rotation=0, fontsize=12)
 
     plt.tight_layout()
 
@@ -500,6 +518,8 @@ def plot_word_level_cross_attention(conf, info, cross_attentions, generated_ids,
     save_path = os.path.join(save_dir, f"word_level_alignment_layer_{layer_idx}.png")
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()
+
+    print(f"Alignment plot saved successfully to: {save_path}\n")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
