@@ -32,6 +32,7 @@ import json
 from speechLM_utils.utils import init
 from speechLM_utils.model import get_max_step
 from utils import plot_word_level_cross_attention
+import random
 
 def load_model(args, info, checkpoint_path, checkpoint_dir=None, device='cuda'):
     print(f"Initializing model...")
@@ -102,7 +103,7 @@ def visualize_random_instance(info, dataset, split='test'):
     gen_config_obj = training_args.pop('generation_config', {})
     training_args = Seq2SeqTrainingArguments(**training_args)
 
-    model = load_model(args, info, checkpoint_path, checkpoint_dir, device)
+    model = load_model(args, info, checkpoint_path, checkpoint_dir)
     tokenizer = model.language_tokenizer
 
     gen_kwargs = gen_config_obj.to_dict() if hasattr(gen_config_obj, "to_dict") else gen_config_obj
