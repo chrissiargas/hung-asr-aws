@@ -450,57 +450,75 @@ def examine_worst_predictions(info: Dict, top_n=10, sort_metric='n_wer'):
             f"   Breakdown:  Substitutions: {row['substitutions']} | Insertions: {row['insertions']} | Deletions: {row['deletions']}")
         print("-" * 70)
 
-def plot_word_level_cross_attention(conf, info, cross_attentions, generated_ids, tokenizer, layer_idx=-1, sample_idx=0):
-    layer_attn = cross_attentions[layer_idx, sample_idx].mean(dim=0).numpy()
 
+def plot_word_level_cross_attention(cross_attentions, generated_ids, tokenizer, info, layer_idx=-1, sample_idx=0):
+    from config.parser import Parser
+    conf = Parser()
+    conf.get_args()
+
+    # FIX 1: Use max() instead of mean() across heads to remove "sink head" blur
+    # and highlight the sharpest phonetic alignments (prevents the vertical barcode effect)
+    layer_attn = cross_attentions[layer_idx, sample_idx].max(dim=0).values.numpy()
     sample_ids = generated_ids[sample_idx].cpu().numpy()
-    tokens = [tokenizer.decode([tok]) for tok in sample_ids]
 
+    # Filter out PAD tokens immediately
     pad_id = tokenizer.pad_token_id
     valid_idx = [i for i, tok in enumerate(sample_ids) if tok != pad_id]
 
     sample_ids = sample_ids[valid_idx]
     layer_attn = layer_attn[valid_idx]
 
-    raw_tokens = tokenizer.convert_ids_to_tokens(sample_ids)
-
     words = []
     word_attentions = []
 
-    current_word = ""
+    current_word_ids = []
     current_attn = np.zeros(layer_attn.shape[1])
 
-    for token, attn in zip(raw_tokens, layer_attn):
-        is_new_word = token.startswith(' ') or token.startswith('Ġ')
-        is_punctuation = token in ['.', ',', '!', '?', ':', ';']
+    # FIX 2: Group by Token IDs and decode safely to prevent UTF-8 Mojibake for Hungarian
+    for token_id, attn in zip(sample_ids, layer_attn):
+        # Decode just the single token to check if it's a word boundary
+        token_str = tokenizer.decode([token_id])
 
-        if (is_new_word or is_punctuation) and current_word:
-            clean_word = current_word.replace(' ', '').replace('Ġ', '')
-            if clean_word:
-                words.append(clean_word)
+        # Qwen uses literal spaces ' ' for new words
+        is_boundary = token_str.startswith(' ') or token_str in ['.', ',', '!', '?', ':', ';', '\n']
+
+        if is_boundary and current_word_ids:
+            # Decode the accumulated IDs together to perfectly reconstruct multi-byte characters (á, é, ő)
+            word_str = tokenizer.decode(current_word_ids).strip()
+            if word_str:
+                words.append(word_str)
                 word_attentions.append(current_attn / (np.max(current_attn) + 1e-9))
 
-            current_word = ""
+            # Reset buffers
+            current_word_ids = []
             current_attn = np.zeros(layer_attn.shape[1])
 
-        current_word += token
+        current_word_ids.append(token_id)
         current_attn += attn
 
-    if current_word:
-        clean_word = current_word.replace(' ', '').replace('Ġ', '')
-        if clean_word:
-            words.append(clean_word)
+    # Catch the final trailing word
+    if current_word_ids:
+        word_str = tokenizer.decode(current_word_ids).strip()
+        if word_str:
+            words.append(word_str)
             word_attentions.append(current_attn / (np.max(current_attn) + 1e-9))
 
     heatmap_data = np.vstack(word_attentions)
 
+    # FIX 3: Crop Masked Time Steps using Cumulative Mass
+    # This mathematically guarantees all padding frames are dropped regardless of floating-point noise
     col_sums = heatmap_data.sum(axis=0)
-    active_cols = np.where(col_sums > 1e-3)[0]
+    cum_sums = np.cumsum(col_sums)
+    total_mass = cum_sums[-1]
 
-    if len(active_cols) > 0:
-        crop_idx = min(active_cols[-1] + 5, heatmap_data.shape[1])
+    # Find the column where 99.5% of the attention mass is reached (the true end of the audio)
+    if total_mass > 0:
+        cutoff_idx = np.searchsorted(cum_sums, 0.995 * total_mass)
+        # Add a 3-frame visual buffer
+        crop_idx = min(cutoff_idx + 3, heatmap_data.shape[1])
         heatmap_data = heatmap_data[:, :crop_idx]
 
+    # Plot the Heatmap
     plt.figure(figsize=(12, 8))
 
     sns.heatmap(heatmap_data, cmap="viridis", cbar=True,
@@ -510,6 +528,7 @@ def plot_word_level_cross_attention(conf, info, cross_attentions, generated_ids,
     plt.xlabel("Audio Frames (Time ➔)", fontsize=12)
     plt.ylabel("Generated Words", fontsize=12)
 
+    # Ensure Hungarian text renders horizontally and is legible
     plt.yticks(rotation=0, fontsize=12)
 
     plt.tight_layout()
