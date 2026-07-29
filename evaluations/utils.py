@@ -16,6 +16,9 @@ import seaborn as sns
 from typing import Dict
 import argparse
 from bert_score import score
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
 
 
 def get_results_path(conf, args, data_specific=True):
@@ -447,6 +450,52 @@ def examine_worst_predictions(info: Dict, top_n=10, sort_metric='n_wer'):
             f"   Breakdown:  Substitutions: {row['substitutions']} | Insertions: {row['insertions']} | Deletions: {row['deletions']}")
         print("-" * 70)
 
+def plot_word_level_cross_attention(cross_attentions, generated_ids, tokenizer, layer_idx=-1, sample_idx=0):
+    layer_attn = cross_attentions[layer_idx, sample_idx].mean(dim=0).numpy()
+
+    sample_ids = generated_ids[sample_idx].cpu().numpy()
+    tokens = [tokenizer.decode([tok]) for tok in sample_ids]
+
+    clean_tokens = [t.replace(tokenizer.pad_token, '').strip() for t in tokens]
+
+    words = []
+    word_attentions = []
+
+    current_word = ""
+    current_attn = np.zeros(layer_attn.shape[1])
+
+    for token, attn in zip(clean_tokens, layer_attn):
+        if not token:
+            continue
+
+        current_word += token
+        current_attn += attn
+
+        if token.endswith(' ') or token in ['.', ',', '!', '?']:
+            words.append(current_word.strip())
+            word_attentions.append(current_attn / np.max(current_attn))
+            current_word = ""
+            current_attn = np.zeros(layer_attn.shape[1])
+
+    if current_word:
+        words.append(current_word.strip())
+        word_attentions.append(current_attn / np.max(current_attn))
+
+    heatmap_data = np.vstack(word_attentions)
+
+    plt.figure(figsize=(12, 8))
+
+    sns.heatmap(heatmap_data, cmap="viridis", cbar=True,
+                xticklabels=False, yticklabels=words)
+
+    plt.title(f"Word-Level Cross-Modal Alignment (Layer {layer_idx})", fontsize=14, pad=15)
+    plt.xlabel("Audio Frames (Time ➔)", fontsize=12)
+    plt.ylabel("Generated Words", fontsize=12)
+
+    plt.yticks(rotation=0, fontsize=10)
+
+    plt.tight_layout()
+    plt.show()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
