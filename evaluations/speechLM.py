@@ -280,7 +280,7 @@ def get_results_path(conf, info, dataset, split='test', data_folder: bool = True
 
     return results_path
 
-def get_bad_folder_path(conf, dataset: str, split: str):
+def get_bad_folder_path(conf):
     bad_folder_path = os.path.join(os.path.expanduser('~'),
                                    conf.dataset_path,
                                    conf.language,
@@ -290,9 +290,10 @@ def get_bad_folder_path(conf, dataset: str, split: str):
 
 def evaluate(info, dataset, split='test', device='cuda', iters = None):
     conf, args, _, _, checkpoint_path, checkpoint_dir, _ = init(info, restart=False)
+    print(conf)
 
     info['res_folder'] = get_results_path(conf, info, dataset, split)
-    bad_folder = get_bad_folder_path(conf, dataset, split)
+    bad_folder = get_bad_folder_path(conf)
 
     if not isinstance(dataset, list):
         dataset_names = [dataset]
@@ -415,9 +416,10 @@ if __name__ == "__main__":
             if args_dict['concat_test']:
                 args_dict['test_dataset'] = DATASETS
                 evaluate(args_dict, DATASETS, device=device)
-            for dataset in DATASETS:
-                args_dict['test_dataset'] = dataset
-                evaluate(args_dict, dataset, device=device)
+            else:
+                for dataset in DATASETS:
+                    args_dict['test_dataset'] = dataset
+                    evaluate(args_dict, dataset, device=device)
 
             wandb.finish()
 
