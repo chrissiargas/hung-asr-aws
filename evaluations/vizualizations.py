@@ -172,6 +172,8 @@ def visualize_random_instance(info, dataset, split='test'):
 
     print("Plotting Cross-Modal Alignment...")
     plot_word_level_cross_attention(
+        conf=conf,
+        info=info,
         cross_attentions=cross_attentions,
         generated_ids=generated_ids,
         tokenizer=tokenizer,
