@@ -30,39 +30,42 @@ def download(language: str):
     archive_path = os.path.join(TARGET_DIR, f"common_voice_{language}.tar.gz")
     extract_dir = os.path.join(TARGET_DIR, f"common_voice_{language}")
 
-    print("Fetching presigned download URL...")
-    api_url = f"https://mozilladatacollective.com/api/datasets/{dataset_id}/download"
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json"
-    }
+    if os.path.exists(archive_path):
+        print("No need to download.")
+    else:
+        print("Fetching presigned download URL...")
+        api_url = f"https://mozilladatacollective.com/api/datasets/{dataset_id}/download"
+        headers = {
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json"
+        }
 
-    response = requests.post(api_url, headers=headers)
-    response.raise_for_status()  # Raises an exception if the request failed
+        response = requests.post(api_url, headers=headers)
+        response.raise_for_status()  # Raises an exception if the request failed
 
-    download_url = response.json().get("downloadUrl")
-    print("Successfully retrieved download URL.")
+        download_url = response.json().get("downloadUrl")
+        print("Successfully retrieved download URL.")
 
-    # 2. Download the file in chunks (Streaming)
-    print(f"Downloading archive to {archive_path}...")
-    with requests.get(download_url, stream=True) as download_response:
-        download_response.raise_for_status()
+        # 2. Download the file in chunks (Streaming)
+        print(f"Downloading archive to {archive_path}...")
+        with requests.get(download_url, stream=True) as download_response:
+            download_response.raise_for_status()
 
-        # Get total file size from headers if available (for progress bar)
-        total_size = int(download_response.headers.get("content-length", 0))
+            # Get total file size from headers if available (for progress bar)
+            total_size = int(download_response.headers.get("content-length", 0))
 
-        with open(archive_path, "wb") as f, tqdm(
-                desc=archive_path,
-                total=total_size,
-                unit="iB",
-                unit_scale=True,
-                unit_divisor=1024,
-        ) as progress_bar:
-            for chunk in download_response.iter_content(chunk_size=8192):
-                size = f.write(chunk)
-                progress_bar.update(size)
+            with open(archive_path, "wb") as f, tqdm(
+                    desc=archive_path,
+                    total=total_size,
+                    unit="iB",
+                    unit_scale=True,
+                    unit_divisor=1024,
+            ) as progress_bar:
+                for chunk in download_response.iter_content(chunk_size=8192):
+                    size = f.write(chunk)
+                    progress_bar.update(size)
 
-    print("Download complete.")
+        print("Download complete.")
 
     # 3. Extract the .tar.gz archive
     print(f"Extracting contents to {extract_dir}...")
