@@ -166,7 +166,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--language', type=str, default='hungarian')
-    parser.add_argument('--do_download', default=True, type=lambda x: bool(strtobool(x)))
+    parser.add_argument('--do_download', default=False, type=lambda x: bool(strtobool(x)))
     args, unknown = parser.parse_known_args()
     args_dict = vars(args)
 
