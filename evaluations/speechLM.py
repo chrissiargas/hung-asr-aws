@@ -313,6 +313,7 @@ def evaluate(info, dataset, split='test', device='cuda', iters = None):
     evaluate_model(evaluation_data, conf, args, info, checkpoint_path, checkpoint_dir, device)
 
 FILTERS = ['duration', 'length']
+from distutils.util import strtobool
 
 if __name__ == "__main__":
     all_datasets = ['common_voice',
@@ -338,6 +339,7 @@ if __name__ == "__main__":
     parser.add_argument('--exp', type=int, default=0, help='Path to config file')
     parser.add_argument('--name', type=str, default=None)
     parser.add_argument('--gen_kwargs', type=json.loads, default={})
+    parser.add_argument('--concat_test', type=lambda x: bool(strtobool(x)), default=False)
 
     args, unknown = parser.parse_known_args()
 
@@ -358,7 +360,8 @@ if __name__ == "__main__":
         'turn': args.turn,
         'exp': args.exp,
         'name': args.name,
-        'gen_kwargs': args.gen_kwargs
+        'gen_kwargs': args.gen_kwargs,
+        'concat_test': args.concat_test
     }
 
     if args_dict['datetime'] is None:
@@ -385,11 +388,14 @@ if __name__ == "__main__":
             resume_wandb(local_rank, args_dict['datetime'], args_dict['model_name'], args_dict['exp'])
 
             try:
-                for dataset in DATASETS:
-                    args_dict['test_dataset'] = dataset
+                if args_dict['concat_test']:
+                    args_dict['test_dataset'] = DATASETS
+                    evaluate(args_dict, device=device)
+                else:
+                    for dataset in DATASETS:
+                        args_dict['test_dataset'] = dataset
 
-                    evaluate(args_dict,
-                             device=device)
+                        evaluate(args_dict, device=device)
 
                 wandb.finish()
 
@@ -402,7 +408,11 @@ if __name__ == "__main__":
         resume_wandb(local_rank, args_dict['datetime'], args_dict['model_name'], args_dict['exp'])
 
         try:
+            if args_dict['concat_test']:
+                args_dict['test_dataset'] = DATASETS
+                evaluate(args_dict, DATASETS, device=device)
             for dataset in DATASETS:
+                args_dict['test_dataset'] = dataset
                 evaluate(args_dict, dataset, device=device)
 
             wandb.finish()
