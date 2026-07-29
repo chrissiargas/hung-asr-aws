@@ -19,7 +19,7 @@ from bert_score import score
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
-
+import scipy.ndimage as ndimage
 
 def get_results_path(conf, args, data_specific=True):
 
@@ -504,13 +504,11 @@ def plot_word_level_cross_attention(conf, info, cross_attentions, generated_ids,
         crop_idx = min(cutoff_idx + 3, heatmap_data.shape[1])
         heatmap_data = heatmap_data[:, :crop_idx]
 
-    # 4. Continuous Smoothing (Optional 1D Gaussian along the time axis)
-    if smooth:
-        # Smooths discrete acoustic frame transitions (sigma=1.2 along frame axis)
-        heatmap_data = ndimage.gaussian_filter1d(heatmap_data, sigma=1.2, axis=1)
-        # Re-normalize row-wise for clear intensity
-        row_maxes = heatmap_data.max(axis=1, keepdims=True)
-        heatmap_data = np.where(row_maxes > 0, heatmap_data / row_maxes, 0)
+    # Smooths discrete acoustic frame transitions (sigma=1.2 along frame axis)
+    heatmap_data = ndimage.gaussian_filter1d(heatmap_data, sigma=1.2, axis=1)
+    # Re-normalize row-wise for clear intensity
+    row_maxes = heatmap_data.max(axis=1, keepdims=True)
+    heatmap_data = np.where(row_maxes > 0, heatmap_data / row_maxes, 0)
 
     # 5. Plot Continuous Heatmap using plt.imshow with Bilinear Interpolation
     plt.figure(figsize=(12, 8))

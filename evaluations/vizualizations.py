@@ -178,7 +178,7 @@ def visualize_random_instance(info, dataset, split='test'):
             cross_attentions=cross_attentions,
             generated_ids=generated_ids,
             tokenizer=tokenizer,
-            layer_idx=-1,  # You can change this to 0 or 1 depending on how many injection layers you have
+            layer_idx=layer_idx,  # You can change this to 0 or 1 depending on how many injection layers you have
             sample_idx=0
         )
 
