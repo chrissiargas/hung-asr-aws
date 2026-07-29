@@ -450,7 +450,7 @@ def examine_worst_predictions(info: Dict, top_n=10, sort_metric='n_wer'):
             f"   Breakdown:  Substitutions: {row['substitutions']} | Insertions: {row['insertions']} | Deletions: {row['deletions']}")
         print("-" * 70)
 
-def plot_word_level_cross_attention(cross_attentions, generated_ids, tokenizer, layer_idx=-1, sample_idx=0):
+def plot_word_level_cross_attention(conf, info, cross_attentions, generated_ids, tokenizer, layer_idx=-1, sample_idx=0):
     layer_attn = cross_attentions[layer_idx, sample_idx].mean(dim=0).numpy()
 
     sample_ids = generated_ids[sample_idx].cpu().numpy()
@@ -495,7 +495,11 @@ def plot_word_level_cross_attention(cross_attentions, generated_ids, tokenizer, 
     plt.yticks(rotation=0, fontsize=10)
 
     plt.tight_layout()
-    plt.show()
+
+    save_dir = get_plots_dir(conf, info)
+    save_path = os.path.join(save_dir, f"word_level_alignment_layer_{layer_idx}.png")
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
