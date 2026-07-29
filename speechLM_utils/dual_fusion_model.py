@@ -1063,6 +1063,8 @@ class DualFusionModel(nn.Module):
                  tag_masks=None,
                  **kwargs):
 
+        return_attention = kwargs.pop("return_attention", False)
+
         with torch.inference_mode():
             inputs = audios
             batch_size = inputs.shape[0]
@@ -1133,6 +1135,11 @@ class DualFusionModel(nn.Module):
                 )
                 self.logits_processor.append(safe_rep_processor)
 
+            if return_attention:
+                for injection_layer in self.injection_layers:
+                    injection_layer.cross_attention_layer.store_attention = True
+                    injection_layer.cross_attention_layer.attention_map = []
+
             try:
                 outputs = self.language_model.generate(
                     input_ids=input_ids,
@@ -1143,14 +1150,28 @@ class DualFusionModel(nn.Module):
                     **kwargs
                 )
 
+                cross_attentions = None
+                if return_attention:
+                    layer_attentions = []
+                    for injection_layer in self.injection_layers:
+                        layer_attn = torch.cat(injection_layer.cross_attention_layer.attention_map, dim=2)
+                        layer_attentions.append(layer_attn)
+
+                    cross_attentions = torch.stack(layer_attentions)
+
             finally:
                 for injection_layer in self.injection_layers:
                     injection_layer.cross_attention_layer.clear_cache()
+                    injection_layer.cross_attention_layer.store_attention = False
+                    injection_layer.cross_attention_layer.injection_audio = None
                     injection_layer.injection_audio = None
                     injection_layer.injection_audio_mask = None
                     injection_layer.prompt_audio = None
                     injection_layer.prompt_audio_mask = None
 
+            if return_attention:
+                return outputs, cross_attentions
+            
             return outputs
 
     @property
