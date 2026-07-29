@@ -451,10 +451,7 @@ def examine_worst_predictions(info: Dict, top_n=10, sort_metric='n_wer'):
         print("-" * 70)
 
 
-def plot_word_level_cross_attention(cross_attentions, generated_ids, tokenizer, info, layer_idx=-1, sample_idx=0):
-    from config.parser import Parser
-    conf = Parser()
-    conf.get_args()
+def plot_word_level_cross_attention(conf, info, cross_attentions, generated_ids, tokenizer, layer_idx=-1, sample_idx=0):
 
     # FIX 1: Use max() instead of mean() across heads to remove "sink head" blur
     # and highlight the sharpest phonetic alignments (prevents the vertical barcode effect)
