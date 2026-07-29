@@ -19,7 +19,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 API_KEY = "a5a7fb5e382a78f691c85763a922b5410f9dda129943d731c79e48b9cafb1ce8"
 DATASET_ID = {'greek':'cmn2cx91x01dno10754vxfu3b', 'hungarian': 'cmj8u3p8900bhnxxb50f37mkm', 'english': 'cmqim2hn800ssnr07gvmpcnwu'}
 TARGET_DIR = os.path.expanduser(os.path.join("~", "asr-shared", "csiargka", "cache", "datasets", "hungarian", "common_voice"))
-LANGUAGE_ID = {'greek': 'el', 'hungariam': 'hu', 'english': 'en', 'german': 'de'}
+LANGUAGE_ID = {'greek': 'el', 'hungarian': 'hu', 'english': 'en', 'german': 'de'}
 
 def download(language: str):
     dataset_id = DATASET_ID[language]
@@ -72,25 +72,26 @@ class common_voice:
     def __init__(self, language: str = 'hungarian', do_download: bool = False):
         self.conf = Parser()
         self.conf.get_args()
+        self.language = language
 
         if do_download:
-            download(language=language)
+            download(language=self.language)
 
-        extract_dir = os.path.join(TARGET_DIR, f"common_voice_{language}")
-        self.load_path = os.path.join(extract_dir, LANGUAGE_ID[language])
+        extract_dir = os.path.join(TARGET_DIR, f"common_voice_{self.language}")
+        self.load_path = os.path.join(extract_dir, LANGUAGE_ID[self.language])
 
         self.target_path = os.path.join(
             os.path.expanduser('~'),
             self.conf.dataset_path,
             self.conf.language,
-            f'common_voice_{language}'
+            f'common_voice_{self.language}'
         )
 
     def load_common_subset(self, split: str):
         manifest_path = os.path.join(self.load_path, f"{split}.tsv")
         clips_path = os.path.join(self.load_path, "clips")
 
-        dataset = pd.read_csv(manifest_path, sep="\t")
+        dataset = pd.read_csv(manifest_path, sep="\t", low_memory=False)
         dataset["audio_path"] = dataset["path"].apply(lambda x: os.path.join(clips_path, x))
 
         dataset = Dataset.from_pandas(dataset)
@@ -102,8 +103,8 @@ class common_voice:
         remove_files = False if split == 'other' and self.conf.other_to_train else True
         split = 'train' if split == 'other' and self.conf.other_to_train else split
 
-        audio_dir = Path(os.path.join(self.target_path, 'data', f'{self.conf.language}_{split}_clips'))
-        manifest_dir = Path(os.path.join(self.target_path, 'manifests', f"{self.conf.language}_{split}.json"))
+        audio_dir = Path(os.path.join(self.target_path, 'data', f'{self.language}_{split}_clips'))
+        manifest_dir = Path(os.path.join(self.target_path, 'manifests', f"{self.language}_{split}.json"))
 
         if remove_files:
             if audio_dir.exists():
@@ -122,14 +123,20 @@ class common_voice:
         else:
             offset = 0
 
-        manifest_entries = [self.extract_samples(sample, audio_dir, manifest_dir, offset + idx) for
-            idx, sample in enumerate(tqdm(dataset))]
+        manifest_entries = []
+        for idx, sample in enumerate(tqdm(dataset)):
+            entry = self.extract_samples(sample, audio_dir, manifest_dir, offset + len(manifest_entries))
+            if entry is not None:
+                manifest_entries.append(entry)
 
         return manifest_entries
 
     def extract_samples(self, sample, audio_dir: str, manifest_dir: str, idx: int):
-        audio_data, sampling_rate = sf.read(sample['audio_path'])
-        audio_data = librosa.resample(y=audio_data, orig_sr=sampling_rate, target_sr=self.conf.sampling_rate)
+        try:
+            audio_data, _ = librosa.load(sample['audio_path'], sr=self.conf.sampling_rate)
+        except Exception as e:
+            # Safely skip unreadable or corrupt mp3 files
+            return None
 
         audio_filepath = os.path.join(audio_dir, f'{idx:06d}.wav')
 
@@ -155,11 +162,11 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--language', type=str, default='hungarian')
-    parser.add_argument('--restart', default=True, type=lambda x: bool(strtobool(x)))
+    parser.add_argument('--do_download', default=True, type=lambda x: bool(strtobool(x)))
     args, unknown = parser.parse_known_args()
     args_dict = vars(args)
 
-    extractor = common_voice(language=args_dict['language'], do_download=args_dict['restart'])
+    extractor = common_voice(language=args_dict['language'], do_download=args_dict['do_download'])
     _ = extractor.load_common_subset('train')
     _ = extractor.load_common_subset('dev')
     _ = extractor.load_common_subset('test')
