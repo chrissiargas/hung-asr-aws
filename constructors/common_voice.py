@@ -67,8 +67,7 @@ def download(language: str):
     # 3. Extract the .tar.gz archive
     print(f"Extracting contents to {extract_dir}...")
 
-    with tarfile.open(archive_path, "r:gz") as tar:
-        tar.extractall(path=extract_dir)
+    subprocess.run(["tar", "-xzf", archive_path, "-C", extract_dir], check=True)
 
     print("Extraction complete!")
 
