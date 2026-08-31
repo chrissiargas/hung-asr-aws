@@ -356,7 +356,7 @@ class DualFusionModel(nn.Module):
                 task_type=TaskType.CAUSAL_LM,
                 inference_mode=False,
                 r=lora_r,
-                lora_alpha=2*lora_r,
+                lora_alpha=2 * lora_r,
                 lora_dropout=0.1,
                 target_modules=self.lora_params,
                 bias='none',
@@ -476,6 +476,7 @@ class DualFusionModel(nn.Module):
             return self.language_model.model.layers[layer_id]
 
     def get_named_params(self):
+
         lora_params = []
         down_params = []
         adapter_params = []
@@ -489,7 +490,7 @@ class DualFusionModel(nn.Module):
         for name, param in self.named_parameters():
             is_lora = "lora" in name
             is_down = (
-                        "input_downsampler" in name or "injection_downsampler" in name or 'injection_downsamplers' in name)
+                    "input_downsampler" in name or "injection_downsampler" in name or 'injection_downsamplers' in name)
             is_cross_attn = "cross_attention_layer" in name
             is_layer_weights = "layer_static" in name or "layer_dynamic" in name
             is_adapter = "adapter" in name
@@ -529,6 +530,22 @@ class DualFusionModel(nn.Module):
                 'core': core_params}
 
     def get_gradient(self):
+        import bitsandbytes as bnb
+
+        def build_true_param_counts(model):
+            """Map id(param) -> true unpacked element count for every quantized Linear4bit weight."""
+            true_counts = {}
+            for module in model.modules():
+                if isinstance(module, bnb.nn.Linear4bit):
+                    true_counts[id(module.weight)] = module.in_features * module.out_features
+                    # module.bias (if present) is NOT quantized — its .numel() is already correct
+            return true_counts
+
+        def numel_true(param, true_counts):
+            return true_counts.get(id(param), param.numel())
+
+        true_counts = build_true_param_counts(self)
+
         trainable_params = 0
         all_params = 0
 
@@ -547,11 +564,11 @@ class DualFusionModel(nn.Module):
 
         print("\n---MODEL PARAMETERS---")
         for name, param in self.named_parameters():
-            all_params += param.numel()
+            all_params += numel_true(param, true_counts)
 
             is_llm_lora = ("lora" in name and "language_model" in name)
             is_whisper_lora = ("lora" in name and (
-                        "speech_model" in name or "speech_encoder" in name or "speech_decoder" in name))
+                    "speech_model" in name or "speech_encoder" in name or "speech_decoder" in name))
             is_cross_attn = "cross_attention_layer" in name
             is_layer_weights = "layer_static" in name or "layer_dynamic" in name
             is_input_down = "input_downsampler" in name
@@ -564,22 +581,22 @@ class DualFusionModel(nn.Module):
             is_audio_head = "audio_predictor" in name
 
             if param.requires_grad:
-                trainable_params += param.numel()
-                if is_llm_lora: llm_lora_params += param.numel()
-                if is_whisper_lora: whisper_lora_params += param.numel()
-                if is_cross_attn: cross_attn_params += param.numel()
-                if is_layer_weights: layer_weight_params += param.numel()
-                if is_input_down: input_down_params += param.numel()
-                if is_injection_down: injection_down_params += param.numel()
-                if is_adapter: adapter_params += param.numel()
-                if is_ctc_head: ctc_params += param.numel()
-                if is_duration_token_parameters: duration_params += param.numel()
-                if is_audio_head: audio_params += param.numel()
+                trainable_params += numel_true(param, true_counts)
+                if is_llm_lora: llm_lora_params += numel_true(param, true_counts)
+                if is_whisper_lora: whisper_lora_params += numel_true(param, true_counts)
+                if is_cross_attn: cross_attn_params += numel_true(param, true_counts)
+                if is_layer_weights: layer_weight_params += numel_true(param, true_counts)
+                if is_input_down: input_down_params += numel_true(param, true_counts)
+                if is_injection_down: injection_down_params += numel_true(param, true_counts)
+                if is_adapter: adapter_params += numel_true(param, true_counts)
+                if is_ctc_head: ctc_params += numel_true(param, true_counts)
+                if is_duration_token_parameters: duration_params += numel_true(param, true_counts)
+                if is_audio_head: audio_params += numel_true(param, true_counts)
             else:
-                if is_whisper: frozen_whisper_params += param.numel()
-                if is_llm: frozen_llm_params += param.numel()
-                if is_input_down: input_down_params += param.numel()
-                if is_adapter: adapter_params += param.numel()
+                if is_whisper: frozen_whisper_params += numel_true(param, true_counts)
+                if is_llm: frozen_llm_params += numel_true(param, true_counts)
+                if is_input_down: input_down_params += numel_true(param, true_counts)
+                if is_adapter: adapter_params += numel_true(param, true_counts)
 
         adapter_trainable = 'Frozen' if self.static_projector else 'Trainable'
         injection_trainable = 'Frozen' if self.static_injection else 'Trainable'
@@ -615,51 +632,51 @@ class DualFusionModel(nn.Module):
         duration_params = 0
 
         for param in self.speech_encoder.parameters():
-            encoder_params += param.numel()
+            encoder_params += numel_true(param, true_counts)
 
         for injection_layer in self.injection_layers:
             for param in injection_layer.cross_attention_layer.parameters():
-                cross_attn_params += param.numel()
+                cross_attn_params += numel_true(param, true_counts)
 
         if self.layer_wise_fusion:
             if self.layer_weights_static:
-                layer_weight_params += self.layer_static.numel()
+                layer_weight_params += numel_true(self.layer_static, true_counts)
             else:
                 for ld in self.layer_dynamic:
                     for param in ld.parameters():
-                        layer_weight_params += param.numel()
+                        layer_weight_params += numel_true(param, true_counts)
 
         if self.include_adapter:
             for param in self.input_downsampler.parameters():
-                input_down_params += param.numel()
+                input_down_params += numel_true(param, true_counts)
 
         if self.downsamplers == 'injection_common' and self.downsample_L > 1:
             for param in self.injection_downsampler.parameters():
-                injection_down_params += param.numel()
+                injection_down_params += numel_true(param, true_counts)
 
         elif self.downsamplers == 'different' and self.downsample_L > 1:
             for injection_downsampler in self.injection_downsamplers:
                 for param in injection_downsampler.parameters():
-                    injection_down_params += param.numel()
+                    injection_down_params += numel_true(param, true_counts)
 
         if self.include_adapter:
             for param in self.adapter.parameters():
-                adapter_params += param.numel()
+                adapter_params += numel_true(param, true_counts)
 
         if self.ctc:
             for param in self.ctc_predictor.parameters():
-                ctc_params += param.numel()
+                ctc_params += numel_true(param, true_counts)
 
         if self.audio_forecasting:
             for param in self.audio_predictor.parameters():
-                audio_params += param.numel()
+                audio_params += numel_true(param, true_counts)
 
         if self.predict_duration:
             for param in self.duration_predictor.parameters():
-                duration_params += param.numel()
+                duration_params += numel_true(param, true_counts)
 
         for param in self.language_model.parameters():
-            llm_params += param.numel()
+            llm_params += numel_true(param, true_counts)
 
         print(f"Input Downsampler Params: {input_down_params:,}")
         print(f"Adapter Params: {adapter_params:,}")
@@ -1171,7 +1188,7 @@ class DualFusionModel(nn.Module):
 
             if return_attention:
                 return outputs, cross_attentions
-            
+
             return outputs
 
     @property

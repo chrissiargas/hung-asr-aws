@@ -8,11 +8,11 @@ import numpy as np
 
 class splitter:
     def __init__(self, conf: Optional[Parser] = None, validation: bool = True, exp: int = 0):
-        if conf is None:
-            self.conf = Parser()
-            self.conf.get_args(exp)
-        else:
-            self.conf = conf
+        # if conf is None:
+        self.conf = Parser()
+        self.conf.get_args(exp)
+        # else:
+        #     self.conf = conf
 
         self.validation = validation
         self.seed = 42

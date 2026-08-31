@@ -521,17 +521,11 @@ def plot_word_level_cross_attention(conf, info, cross_attentions, generated_ids,
         origin='upper'
     )
 
-    # Configure Colorbar
-    cbar = plt.colorbar(im)
-    cbar.set_label('Attention Weight', rotation=270, labelpad=15, fontsize=11)
-
     # Formatting Y-ticks to line up with continuous word rows
     plt.yticks(range(len(words)), words, fontsize=12, rotation=0)
     plt.xticks([])  # Hide frame indices for clean aesthetic
 
-    plt.title(f"Continuous Word-Level Cross-Modal Alignment (Layer {layer_idx})", fontsize=14, pad=15)
     plt.xlabel("Audio Time Stream ➔", fontsize=12)
-    plt.ylabel("Generated Words", fontsize=12)
 
     plt.tight_layout()
 

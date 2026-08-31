@@ -22,28 +22,23 @@ def get_tags(args: Dict, info: Dict, datasets: List[str]):
 
     ds_string = ','.join(datasets)
     if len(ds_string) > 64:
-        tags.append(ds_string[:61] + '...')
+        tags.append(", ".join([dataset[:5] for dataset in datasets]))
     else:
         tags.append(ds_string)
 
     ## Regularization & Augmentation Configurations
-    if args['blank_training']:
-        tags.append('blank_training')
     if args['text_perturbation']:
         tags.append('text_perturbation')
+        tags.append('text_dropout: ' + str(args['text_dropout']))
 
     ## Input Injection Configurations
     if args['include_adapter']:
         tags.append('include_adapter')
-    if args['static_projector']:
-        tags.append('static_projector')
-    tags.append('downsample_K: ' + str(args['downsample_K']))
+        tags.append('downsample_K: ' + str(args['downsample_K']))
 
     ## Cross-Attention Injection Configurations
     tags.append('downsample_L: ' + str(args['downsample_L']))
-    tags.append('injection_downsample: ' + str(args['injection_downsample']))
-    tags.append('injection_layers: ' + ','.join(str(args['injection_layers'])))
-    tags.append('downsamplers: ' + str(args['downsamplers']))
+    tags.append('injection_layers: ' + ', '.join(args['injection_layers']))
     if args['gated_cross_attention']:
         tags.append('gated_cross_attention')
     if args['causal_fusion']:
@@ -52,10 +47,13 @@ def get_tags(args: Dict, info: Dict, datasets: List[str]):
         tags.append('positional_info')
     if args['pyramid_layers']:
         tags.append('pyramid_layers')
+    if args['layer_wise_fusion']:
+        tags.append('layer_wise_fusion')
 
     ## LoRA Configurations
     if args['linguistic_lora']:
         tags.append('linguistic_lora')
+        tags.append('lora_r: ' + str(args['lora_r']))
     if args['two_stage']:
         tags.append('two_stage')
 
