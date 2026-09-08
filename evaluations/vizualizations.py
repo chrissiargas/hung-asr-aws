@@ -93,9 +93,7 @@ def get_bad_folder_path(conf):
     return bad_folder_path
 
 def plot_word_level_attention(conf, info, heatmap_data, words, layer_idx=0):
-    # Smooths discrete acoustic frame transitions (sigma=1.2 along frame axis)
     heatmap_data = ndimage.gaussian_filter1d(heatmap_data, sigma=1.2, axis=1)
-    # Re-normalize row-wise for clear intensity
     row_maxes = heatmap_data.max(axis=1, keepdims=True)
     heatmap_data = np.where(row_maxes > 0, heatmap_data / row_maxes, 0)
 
@@ -120,6 +118,37 @@ def plot_word_level_attention(conf, info, heatmap_data, words, layer_idx=0):
 
     save_dir = get_plots_dir(conf, info)
     save_path = os.path.join(save_dir, f"word_level_alignment_continuous_layer_{layer_idx}.png")
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close()
+
+
+def plot_aggregated_level_attention(conf, info, mean_heatmap, layer_idx):
+    mean_heatmap = ndimage.gaussian_filter1d(mean_heatmap, sigma=1.2, axis=1)
+    row_maxes = mean_heatmap.max(axis=1, keepdims=True)
+    mean_heatmap = np.where(row_maxes > 0, mean_heatmap / row_maxes, 0)
+
+    plt.figure(figsize=(12, 8))
+
+    im = plt.imshow(
+        mean_heatmap,
+        aspect='auto',
+        cmap='viridis',
+        interpolation='bilinear',
+        origin='upper'
+    )
+
+    plt.title(f"Aggregated Mean Attention (n=200) - Layer {layer_idx}\nDataset: {dataset}", fontsize=14)
+    plt.xlabel("Normalized Audio Stream (%)", fontsize=12)
+    plt.ylabel("Normalized Text Length (%)", fontsize=12)
+
+    # Align ticks to represent 0% to 100% progression
+    plt.xticks([0, 25, 50, 75, 99], ['0%', '25%', '50%', '75%', '100%'])
+    plt.yticks([0, 25, 50, 75, 99], ['0%', '25%', '50%', '75%', '100%'])
+
+    plt.tight_layout()
+
+    save_dir = get_plots_dir(conf, info)
+    save_path = os.path.join(save_dir, f"mean_aggregated_alignment_layer_{layer_idx}.png")
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()
 
@@ -183,6 +212,7 @@ def visualize_random_instance(info, dataset, split='test', num_samples: int = 20
     print(f"\n--- Evaluating Attention Metrics on {num_samples} samples from {dataset} ---")
 
     metrics_records = []
+    aggregated_heatmaps = {layer: [] for layer in layers}
 
     for q in tqdm(range(num_samples), desc="Computing Attention Dynamics"):
         random_idx = random.randint(0, len(evaluation_data) - 1)
@@ -225,25 +255,37 @@ def visualize_random_instance(info, dataset, split='test', num_samples: int = 20
                 'diagonality_r': res['diagonality_r']
             })
 
-        df_metrics = pd.DataFrame(metrics_records)
+            if heatmap_data is not None and heatmap_data.shape[0] > 1 and heatmap_data.shape[1] > 1:
+                tensor_hm = torch.tensor(heatmap_data, dtype=torch.float32).unsqueeze(0).unsqueeze(0)
+                resized_hm = F.interpolate(tensor_hm, size=(100, 100), mode='bilinear', align_corners=False)
+                aggregated_heatmaps[layer_idx].append(resized_hm.squeeze().numpy())
 
-        summary = df_metrics.groupby('layer_idx').agg({
-            'norm_entropy': ['mean', 'std'],
-            'diagonality_r': ['mean', 'std']
-        }).round(3)
+    df_metrics = pd.DataFrame(metrics_records)
 
-        print("\n================ Layer Attention Dynamics Summary ================")
-        print(summary)
-        print("==================================================================")
+    summary = df_metrics.groupby('layer_idx').agg({
+        'norm_entropy': ['mean', 'std'],
+        'diagonality_r': ['mean', 'std']
+    }).round(3)
 
-        # Save to disk
-        plots_dir = os.path.join(os.path.expanduser('~'), conf.results_path, 'plots')
-        os.makedirs(plots_dir, exist_ok=True)
-        summary_path = os.path.join(plots_dir, f"{dataset}_attention_dynamics_summary.csv")
-        summary.to_csv(summary_path)
-        print(f"Metrics table saved to: {summary_path}")
+    print("\n================ Layer Attention Dynamics Summary ================")
+    print(summary)
+    print("==================================================================")
 
-        return summary
+    # Save to disk
+    plots_dir = os.path.join(os.path.expanduser('~'), conf.results_path, 'plots')
+    os.makedirs(plots_dir, exist_ok=True)
+    summary_path = os.path.join(plots_dir, f"{dataset}_attention_dynamics_summary.csv")
+    summary.to_csv(summary_path)
+    print(f"Metrics table saved to: {summary_path}")
+
+    for layer_idx in [0,1,2]:
+        if len(aggregated_heatmaps[layer_idx]) > 0:
+            mean_heatmap = np.mean(aggregated_heatmaps[layer_idx], axis=0)
+            plot_aggregated_level_attention(conf, info, mean_heatmap, layer_idx)
+        else:
+            print(f"Warning: No valid heatmaps to aggregate for layer {layer_idx}")
+
+    return summary
 
 
 
