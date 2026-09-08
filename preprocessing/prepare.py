@@ -122,6 +122,7 @@ def get_data(paths, bad_folder: str, process: bool = True,
     datasets = {}
     for name, path in paths.items():
         manifest_path = os.path.join(path)
+        print(manifest_path)
 
         if filters is not None:
             bad_filepaths = set()
