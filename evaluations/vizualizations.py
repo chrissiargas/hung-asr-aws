@@ -155,6 +155,7 @@ def plot_aggregated_level_attention(conf, info, mean_heatmap, layer_idx):
 
 def visualize_random_instance(info, dataset, split='test', num_samples: int = 200):
     conf, args, _, _, checkpoint_path, checkpoint_dir, _ = init(info, restart=False)
+    layers = [0,1,2]
 
     print(f"Loading the Model...")
 
@@ -236,7 +237,7 @@ def visualize_random_instance(info, dataset, split='test', num_samples: int = 20
         prediction = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
         print(f"Prediction: {prediction}\n")
 
-        for layer_idx in [0,1,2]:
+        for layer_idx in layers:
             print(f"Plotting Cross-Modal Alignment for Layer {layer_idx}...")
             heatmap_data, _ = extract_word_level_attention(
                 cross_attentions=cross_attentions,
@@ -278,7 +279,7 @@ def visualize_random_instance(info, dataset, split='test', num_samples: int = 20
     summary.to_csv(summary_path)
     print(f"Metrics table saved to: {summary_path}")
 
-    for layer_idx in [0,1,2]:
+    for layer_idx in layers:
         if len(aggregated_heatmaps[layer_idx]) > 0:
             mean_heatmap = np.mean(aggregated_heatmaps[layer_idx], axis=0)
             plot_aggregated_level_attention(conf, info, mean_heatmap, layer_idx)
