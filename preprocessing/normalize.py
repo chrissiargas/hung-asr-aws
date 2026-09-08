@@ -95,7 +95,7 @@ def normalize(text, with_signs=True):
     # print(text)
 
     # This safely deletes any stray (, ), <, >, [, or ] left in the string
-    text = re.sub(r'[()<>\[\]\"\']', '', text)
+    text = re.sub(r'[()<>\[\]\']', '', text)
 
     # print(text)
 

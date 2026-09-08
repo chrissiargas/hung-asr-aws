@@ -122,9 +122,10 @@ def train_model(dataset, args, training_args, info, checkpoint_path, checkpoint_
         {"params": params['cross_attn'], "lr": args.proj_lr},
         {"params": params['ctc_head'], "lr": args.proj_lr},
         {"params": params['audio_head'], "lr": args.proj_lr},
-        {"params": params['duration_token_params'], "lr": args.proj_lr}
+        {"params": params['duration_token_params'], "lr": args.proj_lr},
+        {"params": params['layer_weights'], "lr": args.proj_lr}
     ] if len(group["params"]) > 0
-                                    ]
+    ]
 
     optimizer = torch.optim.AdamW(
         optimizer_grouped_parameters,

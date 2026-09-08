@@ -19,7 +19,6 @@ from bert_score import score
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
-import scipy.ndimage as ndimage
 
 def get_results_path(conf, args, data_specific=True):
 
@@ -450,26 +449,20 @@ def examine_worst_predictions(info: Dict, top_n=10, sort_metric='n_wer'):
             f"   Breakdown:  Substitutions: {row['substitutions']} | Insertions: {row['insertions']} | Deletions: {row['deletions']}")
         print("-" * 70)
 
+def extract_word_level_attention(cross_attentions, generated_ids, tokenizer, layer_idx=0, sample_idx=0):
+    layer_attn = cross_attentions[layer_idx, sample_idx].max(dim=0).values.detach().cpu().numpy()
+    sample_ids = generated_ids[sample_idx].detach().cpu().numpy()
 
-def plot_word_level_cross_attention(conf, info, cross_attentions, generated_ids, tokenizer, layer_idx=-1, sample_idx=0):
-    # 1. Max-pooling across attention heads to isolate dominant phonetic heads
-    layer_attn = cross_attentions[layer_idx, sample_idx].max(dim=0).values.numpy()
-    sample_ids = generated_ids[sample_idx].cpu().numpy()
-
-    # Filter out PAD tokens
     pad_id = tokenizer.pad_token_id
     valid_idx = [i for i, tok in enumerate(sample_ids) if tok != pad_id]
-
     sample_ids = sample_ids[valid_idx]
     layer_attn = layer_attn[valid_idx]
 
     words = []
     word_attentions = []
-
     current_word_ids = []
     current_attn = np.zeros(layer_attn.shape[1])
 
-    # 2. Group by subwords and decode safely
     for token_id, attn in zip(sample_ids, layer_attn):
         token_str = tokenizer.decode([token_id])
         is_boundary = token_str.startswith(' ') or token_str in ['.', ',', '!', '?', ':', ';', '\n']
@@ -479,7 +472,6 @@ def plot_word_level_cross_attention(conf, info, cross_attentions, generated_ids,
             if word_str:
                 words.append(word_str)
                 word_attentions.append(current_attn / (np.max(current_attn) + 1e-9))
-
             current_word_ids = []
             current_attn = np.zeros(layer_attn.shape[1])
 
@@ -492,9 +484,12 @@ def plot_word_level_cross_attention(conf, info, cross_attentions, generated_ids,
             words.append(word_str)
             word_attentions.append(current_attn / (np.max(current_attn) + 1e-9))
 
+    if not word_attentions:
+        return None, []
+
     heatmap_data = np.vstack(word_attentions)
 
-    # 3. Crop Masked Time Steps (Padding removal)
+    # Crop trailing zero-padded frames
     col_sums = heatmap_data.sum(axis=0)
     cum_sums = np.cumsum(col_sums)
     total_mass = cum_sums[-1]
@@ -504,43 +499,45 @@ def plot_word_level_cross_attention(conf, info, cross_attentions, generated_ids,
         crop_idx = min(cutoff_idx + 3, heatmap_data.shape[1])
         heatmap_data = heatmap_data[:, :crop_idx]
 
-    # Smooths discrete acoustic frame transitions (sigma=1.2 along frame axis)
-    heatmap_data = ndimage.gaussian_filter1d(heatmap_data, sigma=1.2, axis=1)
-    # Re-normalize row-wise for clear intensity
-    row_maxes = heatmap_data.max(axis=1, keepdims=True)
-    heatmap_data = np.where(row_maxes > 0, heatmap_data / row_maxes, 0)
+    return heatmap_data, words
 
-    # 5. Plot Continuous Heatmap using plt.imshow with Bilinear Interpolation
-    plt.figure(figsize=(12, 8))
+from scipy.stats import pearsonr
+def calculate_attention_metrics(heatmap_data, eps=1e-12):
+    if heatmap_data is None or heatmap_data.shape[0] < 2 or heatmap_data.shape[1] < 2:
+        return {'mean_entropy': np.nan, 'norm_entropy': np.nan, 'diagonality_r': np.nan}
 
-    im = plt.imshow(
-        heatmap_data,
-        aspect='auto',
-        cmap='viridis',
-        interpolation='bilinear',  # Creates smooth, continuous gradient transitions
-        origin='upper'
-    )
+    T, S = heatmap_data.shape
 
-    # Configure Colorbar
-    cbar = plt.colorbar(im)
-    cbar.set_label('Attention Weight', rotation=270, labelpad=15, fontsize=11)
+    # 1. Normalize rows into probability distributions
+    row_sums = heatmap_data.sum(axis=1, keepdims=True)
+    P = np.where(row_sums > 0, heatmap_data / (row_sums + eps), 1.0 / S)
 
-    # Formatting Y-ticks to line up with continuous word rows
-    plt.yticks(range(len(words)), words, fontsize=12, rotation=0)
-    plt.xticks([])  # Hide frame indices for clean aesthetic
+    # 2. Shannon Entropy per text step: H_t = -sum(p * log2(p))
+    # Normalized entropy scales by log2(S) to account for varying utterance lengths
+    H_t = -np.sum(P * np.log2(P + eps), axis=1)
+    max_entropy = np.log2(S)
+    norm_H_t = H_t / (max_entropy + eps)
 
-    plt.title(f"Continuous Word-Level Cross-Modal Alignment (Layer {layer_idx})", fontsize=14, pad=15)
-    plt.xlabel("Audio Time Stream ➔", fontsize=12)
-    plt.ylabel("Generated Words", fontsize=12)
+    mean_entropy = float(np.mean(H_t))
+    norm_entropy = float(np.mean(norm_H_t))
 
-    plt.tight_layout()
+    # 3. Attention Center of Mass (CoM) per word step
+    frame_indices = np.arange(S)
+    com = np.sum(P * frame_indices, axis=1)  # shape: [T]
 
-    save_dir = get_plots_dir(conf, info)
-    save_path = os.path.join(save_dir, f"word_level_alignment_continuous_layer_{layer_idx}.png")
-    plt.savefig(save_path, dpi=300, bbox_inches='tight')
-    plt.close()
+    # 4. Diagonality: Pearson correlation between word step t and CoM
+    word_steps = np.arange(T)
+    if np.std(com) < 1e-6 or np.std(word_steps) < 1e-6:
+        diagonality_r = 0.0
+    else:
+        r, _ = pearsonr(word_steps, com)
+        diagonality_r = float(r) if not np.isnan(r) else 0.0
 
-    print(f"Continuous alignment plot saved successfully to: {save_path}\n")
+    return {
+        'mean_entropy': mean_entropy,
+        'norm_entropy': norm_entropy,
+        'diagonality_r': diagonality_r
+    }
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

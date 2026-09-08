@@ -17,6 +17,7 @@ os.environ["PYTORCH_ALLOC_CONF"] = "expandable_segments:True"
 set_environment()
 
 import transformers
+
 transformers.logging.set_verbosity_error()
 
 from config.parser import Parser
@@ -38,6 +39,7 @@ from speechLM_utils.model import get_max_step
 import argparse
 import csv
 from preprocessing.normalize import normalize
+
 
 class StreamingSeq2SeqTrainer(Seq2SeqTrainer):
     def __init__(self, *args, streaming_save_path=None, **kwargs):
@@ -81,6 +83,7 @@ class StreamingSeq2SeqTrainer(Seq2SeqTrainer):
 
         return loss, generated_tokens, labels
 
+
 class PredictionProgressCallback(TrainerCallback):
     def __init__(self):
         self.prediction_bar = None
@@ -107,6 +110,7 @@ class PredictionProgressCallback(TrainerCallback):
         if self.is_main_process and self.prediction_bar is not None:
             self.prediction_bar.close()
             self.prediction_bar = None
+
 
 def load_model(args, info, checkpoint_path, checkpoint_dir=None, device='cuda'):
     print(f"Initializing model...")
@@ -152,6 +156,7 @@ def load_model(args, info, checkpoint_path, checkpoint_dir=None, device='cuda'):
     model.eval()
     return model
 
+
 def debug_predictions(predictions, references, generated_ids, label_ids, tokenizer):
     pad_id = tokenizer.pad_token_id
     eos_id = tokenizer.eos_token_id
@@ -175,7 +180,7 @@ def debug_predictions(predictions, references, generated_ids, label_ids, tokeniz
         print(ref_len)
 
 
-def evaluate_model(data, conf, args, info, checkpoint_path, checkpoint_dir, device = 'cuda'):
+def evaluate_model(data, conf, args, info, checkpoint_path, checkpoint_dir, device='cuda'):
     training_args = conf.eval_args.training_args
     training_args['report_to'] = "none"
     if info['gen_kwargs'] is None:
@@ -186,7 +191,6 @@ def evaluate_model(data, conf, args, info, checkpoint_path, checkpoint_dir, devi
     training_args['disable_tqdm'] = True
 
     gen_config_obj = training_args.pop('generation_config', {})
-    
     training_args = Seq2SeqTrainingArguments(**training_args)
 
     model = load_model(args, info, checkpoint_path, checkpoint_dir, device)
@@ -261,6 +265,7 @@ def evaluate_model(data, conf, args, info, checkpoint_path, checkpoint_dir, devi
 
     return samples_path, total_path
 
+
 def get_results_path(conf, info, dataset, split='test', data_folder: bool = True):
     results_path = os.path.join(os.path.expanduser('~'),
                                 conf.results_path,
@@ -280,6 +285,7 @@ def get_results_path(conf, info, dataset, split='test', data_folder: bool = True
 
     return results_path
 
+
 def get_bad_folder_path(conf):
     bad_folder_path = os.path.join(os.path.expanduser('~'),
                                    conf.dataset_path,
@@ -288,7 +294,8 @@ def get_bad_folder_path(conf):
 
     return bad_folder_path
 
-def evaluate(info, dataset, split='test', device='cuda', iters = None):
+
+def evaluate(info, dataset, split='test', device='cuda', iters=None):
     conf, args, _, _, checkpoint_path, checkpoint_dir, _ = init(info, restart=False)
 
     info['res_folder'] = get_results_path(conf, info, dataset, split)
@@ -303,18 +310,19 @@ def evaluate(info, dataset, split='test', device='cuda', iters = None):
     data = split_manager.split(datasets=dataset_names)
 
     evaluation_data = get_data(data[split],
-                              bad_folder,
-                              filters=FILTERS,
-                              split=split,
-                              iters=iters,
-                              randomize=args.randomize,
-                              has_duration=True,
-                              normalize_type=args.normalize)
+                               bad_folder,
+                               filters=FILTERS,
+                               split=split,
+                               iters=iters,
+                               randomize=args.randomize,
+                               has_duration=True,
+                               normalize_type=args.normalize)
 
     evaluation_data = concatenate(evaluation_data)
 
     print(f"Evaluating on {dataset_names} ({len(evaluation_data)} samples)...")
     evaluate_model(evaluation_data, conf, args, info, checkpoint_path, checkpoint_dir, device)
+
 
 FILTERS = ['duration', 'length']
 from distutils.util import strtobool
@@ -333,7 +341,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpus', type=str, default='0,1,2,3', help='GPUs to be used')
     parser.add_argument('--datasets', nargs='+', type=str, default=all_datasets, help='datasets')
-    parser.add_argument('--train_datasets', nargs='+', type=str, default=all_datasets, help='datasets of the trained models')
+    parser.add_argument('--train_datasets', nargs='+', type=str, default=all_datasets,
+                        help='datasets of the trained models')
     parser.add_argument('--checkpoint_folder', type=str, default='dual_fusion_checkpoints')
     parser.add_argument('--speech_encoder_id', type=str, default='openai/whisper-large-v3')
     parser.add_argument('--language_model_id', type=str, default='elte-nlp/Racka-4B')

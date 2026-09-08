@@ -2,15 +2,23 @@ from preprocessing.normalize import normalize
 import jiwer
 import pandas as pd
 from typing import Tuple
+from transformers.models.whisper.english_normalizer import BasicTextNormalizer
+from copy import copy
 
-
-def get_metrics(predictions, references, indices, durations, verbose: bool = True) -> Tuple[
+def get_metrics(predictions, references, indices, durations, verbose: bool = True, is_whisper: bool = False) -> Tuple[
     pd.DataFrame, pd.DataFrame]:
-    norm_predictions = [normalize(t, with_signs=False) for t in predictions]
-    norm_references = [normalize(t, with_signs=False) for t in references]
 
-    predictions = [normalize(t, with_signs=True) for t in predictions]
-    references = [normalize(t, with_signs=True) for t in references]
+    if is_whisper:
+        normalize_f = BasicTextNormalizer()
+        norm_predictions = copy(predictions)
+        norm_references = copy(predictions)
+    else:
+        normalize_f = normalize
+        norm_predictions = [normalize(t, with_signs=False) for t in predictions]
+        norm_references = [normalize(t, with_signs=False) for t in references]
+
+    predictions = [normalize_f(t) for t in predictions]
+    references = [normalize_f(t) for t in references]
 
     valid_data = [
         (p, r, np, nr, i, d) for p, r, np, nr, i, d in zip(
