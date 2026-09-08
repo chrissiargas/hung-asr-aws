@@ -39,6 +39,7 @@ import pandas as pd
 from tqdm import tqdm
 import scipy.ndimage as ndimage
 import matplotlib.pyplot as plt
+import torch.nn.functional as F
 
 def load_model(args, info, checkpoint_path, checkpoint_dir=None, device='cuda'):
     print(f"Initializing model...")
