@@ -8,6 +8,8 @@ import sys
 
 from plotly.graph_objs.layout.slider import currentvalue
 
+from evaluations.utils import extract_word_level_attention, calculate_attention_metrics
+
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
 
 from speechLM_utils.environment import set_environment
@@ -31,8 +33,12 @@ import wandb
 import json
 from speechLM_utils.utils import init
 from speechLM_utils.model import get_max_step
-from utils import plot_word_level_cross_attention
+from utils import extract_word_level_attention, calculate_attention_metrics, get_plots_dir
 import random
+import pandas as pd
+from tqdm import tqdm
+import scipy.ndimage as ndimage
+import matplotlib.pyplot as plt
 
 def load_model(args, info, checkpoint_path, checkpoint_dir=None, device='cuda'):
     print(f"Initializing model...")
@@ -86,7 +92,39 @@ def get_bad_folder_path(conf):
 
     return bad_folder_path
 
-def visualize_random_instance(info, dataset, split='test'):
+def plot_word_level_attention(conf, info, heatmap_data, words, layer_idx=0):
+    # Smooths discrete acoustic frame transitions (sigma=1.2 along frame axis)
+    heatmap_data = ndimage.gaussian_filter1d(heatmap_data, sigma=1.2, axis=1)
+    # Re-normalize row-wise for clear intensity
+    row_maxes = heatmap_data.max(axis=1, keepdims=True)
+    heatmap_data = np.where(row_maxes > 0, heatmap_data / row_maxes, 0)
+
+    # 5. Plot Continuous Heatmap using plt.imshow with Bilinear Interpolation
+    plt.figure(figsize=(12, 8))
+
+    im = plt.imshow(
+        heatmap_data,
+        aspect='auto',
+        cmap='viridis',
+        interpolation='bilinear',  # Creates smooth, continuous gradient transitions
+        origin='upper'
+    )
+
+    # Formatting Y-ticks to line up with continuous word rows
+    plt.yticks(range(len(words)), words, fontsize=12, rotation=0)
+    plt.xticks([])  # Hide frame indices for clean aesthetic
+
+    plt.xlabel("Audio Time Stream ➔", fontsize=12)
+
+    plt.tight_layout()
+
+    save_dir = get_plots_dir(conf, info)
+    save_path = os.path.join(save_dir, f"word_level_alignment_continuous_layer_{layer_idx}.png")
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close()
+
+
+def visualize_random_instance(info, dataset, split='test', num_samples: int = 200):
     conf, args, _, _, checkpoint_path, checkpoint_dir, _ = init(info, restart=False)
 
     print(f"Loading the Model...")
@@ -136,51 +174,78 @@ def visualize_random_instance(info, dataset, split='test'):
                               filters=FILTERS,
                               split=split,
                               iters=None,
-                              randomize=args.randomize,
+                              randomize=True,
                               has_duration=True,
                               normalize_type=args.normalize)
 
     evaluation_data = concatenate(evaluation_data)
+    num_samples = min(num_samples, len(evaluation_data))
+    print(f"\n--- Evaluating Attention Metrics on {num_samples} samples from {dataset} ---")
 
-    random_idx = random.randint(0, len(evaluation_data) - 1)
-    instance = evaluation_data[random_idx]
+    metrics_records = []
 
-    print(f"\n--- Selected Instance Index: {instance['index']} ---")
-    print(f"Reference Text: {instance['reference']}")
+    for q in tqdm(range(num_samples), desc="Computing Attention Dynamics"):
+        random_idx = random.randint(0, len(evaluation_data) - 1)
+        instance = evaluation_data[random_idx]
 
-    batch = collator([instance])
+        batch = collator([instance])
 
-    print(f"Running inference on the selected instance...")
+        audios = batch['audios']
+        audio_masks = batch['audio_masks']
 
-    audios = batch['audios']
-    audio_masks = batch['audio_masks']
-
-    print("\nGenerating transcription and capturing cross-modal attention...")
-
-    # We pass return_attention=True to trigger the tracking mechanism we added to CrossAttention
-    outputs, cross_attentions = model.generate(
-        audios=audios,
-        audio_masks=audio_masks,
-        max_new_tokens=200,
-        return_attention=True
-    )
-
-    generated_ids = outputs.sequences if hasattr(outputs, "sequences") else outputs
-
-    prediction = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
-    print(f"Prediction: {prediction}\n")
-
-    for layer_idx in [0,1,2]:
-        print(f"Plotting Cross-Modal Alignment for Layer {layer_idx}...")
-        plot_word_level_cross_attention(
-            conf=conf,
-            info=info,
-            cross_attentions=cross_attentions,
-            generated_ids=generated_ids,
-            tokenizer=tokenizer,
-            layer_idx=layer_idx,  # You can change this to 0 or 1 depending on how many injection layers you have
-            sample_idx=0
+        # We pass return_attention=True to trigger the tracking mechanism we added to CrossAttention
+        outputs, cross_attentions = model.generate(
+            audios=audios,
+            audio_masks=audio_masks,
+            max_new_tokens=200,
+            return_attention=True
         )
+
+        generated_ids = outputs.sequences if hasattr(outputs, "sequences") else outputs
+
+        prediction = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
+        print(f"Prediction: {prediction}\n")
+
+        for layer_idx in [0,1,2]:
+            print(f"Plotting Cross-Modal Alignment for Layer {layer_idx}...")
+            heatmap_data, _ = extract_word_level_attention(
+                cross_attentions=cross_attentions,
+                generated_ids=generated_ids,
+                tokenizer=tokenizer,
+                layer_idx=layer_idx,  # You can change this to 0 or 1 depending on how many injection layers you have
+                sample_idx=0
+            )
+
+            res = calculate_attention_metrics(heatmap_data)
+            metrics_records.append({
+                'sample_idx': q,
+                'layer_idx': layer_idx,
+                'mean_entropy': res['mean_entropy'],
+                'norm_entropy': res['norm_entropy'],
+                'diagonality_r': res['diagonality_r']
+            })
+
+        df_metrics = pd.DataFrame(metrics_records)
+
+        summary = df_metrics.groupby('layer_idx').agg({
+            'norm_entropy': ['mean', 'std'],
+            'diagonality_r': ['mean', 'std']
+        }).round(3)
+
+        print("\n================ Layer Attention Dynamics Summary ================")
+        print(summary)
+        print("==================================================================")
+
+        # Save to disk
+        plots_dir = os.path.join(os.path.expanduser('~'), conf.results_path, 'plots')
+        os.makedirs(plots_dir, exist_ok=True)
+        summary_path = os.path.join(plots_dir, f"{dataset}_attention_dynamics_summary.csv")
+        summary.to_csv(summary_path)
+        print(f"Metrics table saved to: {summary_path}")
+
+        return summary
+
+
 
 FILTERS = ['duration', 'length']
 from distutils.util import strtobool

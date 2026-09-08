@@ -1144,11 +1144,10 @@ class DualFusionModel(nn.Module):
                 injection_layer.prompt_audio_mask = down_masks
 
             rep_penalty = kwargs.pop("rep_penalty", 1.0)
-            if rep_penalty > 1.0 and self.logit_processor is None:
-                logits_processor = LogitsProcessorList()
+            if rep_penalty > 1.0 and self.logits_processor is None:
                 safe_rep_processor = SafeRepetitionPenaltyLogitsProcessor(
                     penalty=rep_penalty,
-                    skip_token_ids=skip_tokens
+                    skip_token_ids=self.skip_tokens
                 )
                 self.logits_processor.append(safe_rep_processor)
 
