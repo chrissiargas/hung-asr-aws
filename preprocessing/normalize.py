@@ -1,6 +1,7 @@
 import re
 import unicodedata
 from num2words import num2words
+from transformers.models.whisper.english_normalizer import BasicTextNormalizer
 
 def normalize_symbols(text):
     text = text.replace('«', '"').replace('»', '"')
@@ -120,6 +121,13 @@ def normalize(text, with_signs=True):
     # print(text)
 
     return clean_whitespaces(text)
+
+whisper_normalizer = BasicTextNormalizer()
+def whisper_normalize(text):
+    if not text:
+        return ''
+
+    return whisper_normalizer(text)
 
 if __name__ == "__main__":
     sentence = "Jó,ezt jó,ha tudod... . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ."

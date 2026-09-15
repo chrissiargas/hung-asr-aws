@@ -1,9 +1,11 @@
 import numpy as np
 import wandb
 import evaluate
+
 cer_metric = evaluate.load("cer")
 wer_metric = evaluate.load("wer")
 import random
+
 
 def wrap_compute_metrics(tokenizer, dataset, writer, info):
     def compute_metrics(eval_preds):
@@ -43,7 +45,7 @@ def wrap_compute_metrics(tokenizer, dataset, writer, info):
         if info['compute_wer_cer']:
             preds_arr = np.char.strip(np.array(decoded_preds))
             labels_arr = np.char.strip(np.array(decoded_labels))
-            
+
             empty_ref_mask = (labels_arr == "")
             labels_arr[empty_ref_mask] = "<SIL>"
 
@@ -52,7 +54,7 @@ def wrap_compute_metrics(tokenizer, dataset, writer, info):
                 "<SIL>",
                 np.char.add("<SIL> ", preds_arr[empty_ref_mask])
             )
-            
+
             preds_arr = np.where(preds_arr == "", " ", preds_arr)
 
             filtered_preds = preds_arr.tolist()
