@@ -9,8 +9,9 @@ def get_metrics(predictions, references, indices, durations, verbose: bool = Tru
     pd.DataFrame, pd.DataFrame]:
 
     if is_whisper:
-        norm_predictions = [BasicTextNormalizer(t) for t in predictions]
-        norm_references = [BasicTextNormalizer(t) for t in references]
+        whisper_normalizer = BasicTextNormalizer()
+        norm_predictions = [whisper_normalizer(t) for t in predictions]
+        norm_references = [whisper_normalizer(t) for t in references]
     else:
         norm_predictions = [normalize(t, with_signs=False) for t in predictions]
         norm_references = [normalize(t, with_signs=False) for t in references]
