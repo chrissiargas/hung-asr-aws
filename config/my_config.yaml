@@ -27,7 +27,7 @@ dual_fuse_args:
   checkpoint_path: "/home/jovyan/asr-shared/csiargka/cache/checkpoints"
    ## Data Configurations
   interleave_temperature: 1.2
-  normalize: default
+  normalize: 'default'
   micro_data: False
   micro_size: 100
   randomize: True
