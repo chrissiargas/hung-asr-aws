@@ -234,12 +234,9 @@ def visualize_random_instance(info, dataset, split='test', num_samples: int = 20
         )
 
         generated_ids = outputs.sequences if hasattr(outputs, "sequences") else outputs
-
-        prediction = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
-        print(f"Prediction: {prediction}\n")
+        # prediction = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
 
         for layer_idx in layers:
-            print(f"Plotting Cross-Modal Alignment for Layer {layer_idx}...")
             heatmap_data, _ = extract_word_level_attention(
                 cross_attentions=cross_attentions,
                 generated_ids=generated_ids,

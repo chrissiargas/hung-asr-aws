@@ -2,14 +2,14 @@ import json
 import os
 from typing import Dict, Optional
 from datasets import Dataset, Audio, interleave_datasets, concatenate_datasets, DatasetDict
-from torch.fx.operator_schemas import normalize_function
 
 from preprocessing.split import splitter
 import random
-from preprocessing.normalize import normalize, normalize_vamvou
+from preprocessing.normalize import normalize
 from typing import List
 from pathlib import Path
 import csv
+from transformers.models.whisper.english_normalizer import BasicTextNormalizer
 
 def make_data_module(dataset_names,
                      bad_folder: str,
@@ -68,9 +68,9 @@ def make_data_module(dataset_names,
 
 def get_typed_data(dataset,
                    audio_name: str,
-                   text_name: str, 
+                   text_name: str,
                    has_duration: bool = False,
-                   randomize: bool = False, 
+                   randomize: bool = False,
                    seed: int = 42,
                    normalized: bool = True,
                    normalize_type: str = 'default'):
@@ -122,7 +122,6 @@ def get_data(paths, bad_folder: str, process: bool = True,
     datasets = {}
     for name, path in paths.items():
         manifest_path = os.path.join(path)
-        print(manifest_path)
 
         if filters is not None:
             bad_filepaths = set()

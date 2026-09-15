@@ -248,7 +248,7 @@ class DualFusionModel(nn.Module):
         language_project_dim = lm_config.hidden_size
 
         self.processor = WhisperProcessor.from_pretrained(speech_encoder_model_id,
-                                                          language='hu',
+                                                          language='el',
                                                           task='transcribe',
                                                           predict_timestamps=False)
         if self.spec_augment:
@@ -319,13 +319,8 @@ class DualFusionModel(nn.Module):
             token=access_token
         )
 
-        if 'Racka' in language_model_id:
-            if self.language_tokenizer.pad_token_id is None:
-                self.language_tokenizer.pad_token_id = self.language_tokenizer.eos_token_id
-
-        if 'PULI':
-            if self.language_tokenizer.pad_token is None:
-                self.language_tokenizer.pad_token = self.language_tokenizer.eos_token
+        if self.language_tokenizer.pad_token is None:
+            self.language_tokenizer.pad_token = self.language_tokenizer.eos_token
 
         self.pad_token_id = self.language_tokenizer.pad_token_id
         self.eos_token_id = self.language_tokenizer.eos_token_id
@@ -405,8 +400,7 @@ class DualFusionModel(nn.Module):
                 self.injection_downsamplers.append(injection_downsampler)
 
         for l, injection_layer_id in enumerate(self.injection_layer_ids):
-            injection_downsampler = self.injection_downsamplers[
-                l] if self.downsamplers == 'different' else self.injection_downsampler
+            injection_downsampler = self.injection_downsamplers[l] if self.downsamplers == 'different' else self.injection_downsampler
 
             cross_attn = CrossAttention(
                 hidden_dim=language_project_dim,
@@ -878,22 +872,6 @@ class DualFusionModel(nn.Module):
                     inj_audio_mask = self.calculate_mask(audio_masks, audio_features)
                     injection_audio = audio_features
 
-            elif self.pyramid_layers:
-                if l == self.n_injections - 1:
-                    audio_features = encoder_outputs.last_hidden_state
-                else:
-                    audio_features = encoder_outputs.hidden_states[injection_layer]
-
-                if self.downsample_L > 1:
-                    if isinstance(self.injection_downsamplers[l], CIFireAdapter):
-                        injection_audio, inj_audio_mask, _ = self.injection_downsamplers[l](audio_features, audio_masks)
-                    else:
-                        injection_audio = self.injection_downsamplers[l](audio_features)
-                        inj_audio_mask = self.calculate_mask(audio_masks, injection_audio)
-                else:
-                    inj_audio_mask = self.calculate_mask(audio_masks, audio_features)
-                    injection_audio = audio_features
-
             elif self.downsamplers == 'different':
                 if self.downsample_L > 1:
                     if isinstance(self.injection_downsamplers[l], CIFireAdapter):
@@ -945,12 +923,9 @@ class DualFusionModel(nn.Module):
         return duration_loss
 
     def forward(self, audios, audio_masks,
-                audio_lb_tokens=None,
                 labels=None,
-                label_lengths=None,
                 label_masks=None,
                 duration_ids=None,
-                index=None,
                 ctc_labels=None,
                 ctc_lengths=None,
                 tag_tokens=None,
@@ -1144,10 +1119,11 @@ class DualFusionModel(nn.Module):
                 injection_layer.prompt_audio_mask = down_masks
 
             rep_penalty = kwargs.pop("rep_penalty", 1.0)
-            if rep_penalty > 1.0 and self.logits_processor is None:
+            if rep_penalty > 1.0 and self.logit_processor is None:
+                logits_processor = LogitsProcessorList()
                 safe_rep_processor = SafeRepetitionPenaltyLogitsProcessor(
                     penalty=rep_penalty,
-                    skip_token_ids=self.skip_tokens
+                    skip_token_ids=skip_tokens
                 )
                 self.logits_processor.append(safe_rep_processor)
 
