@@ -93,35 +93,56 @@ def get_bad_folder_path(conf):
 
     return bad_folder_path
 
-def plot_word_level_attention(conf, info, heatmap_data, words, layer_idx=0):
-    heatmap_data = ndimage.gaussian_filter1d(heatmap_data, sigma=1.2, axis=1)
-    row_maxes = heatmap_data.max(axis=1, keepdims=True)
-    heatmap_data = np.where(row_maxes > 0, heatmap_data / row_maxes, 0)
 
-    # 5. Plot Continuous Heatmap using plt.imshow with Bilinear Interpolation
-    plt.figure(figsize=(12, 8))
+def plot_combined_word_level_attention(conf, info, heatmaps, words, layers, dataset):
+    """
+    Plots the attention heatmaps for multiple layers side-by-side as subplots.
+    Only the leftmost plot contains the Y-axis words.
+    """
+    # Create 1 row, len(layers) columns
+    fig, axes = plt.subplots(1, len(layers), figsize=(14, 6))
 
-    im = plt.imshow(
-        heatmap_data,
-        aspect='auto',
-        cmap='viridis',
-        interpolation='bilinear',  # Creates smooth, continuous gradient transitions
-        origin='upper'
-    )
+    if len(layers) == 1:
+        axes = [axes]
 
-    # Formatting Y-ticks to line up with continuous word rows
-    plt.yticks(range(len(words)), words, fontsize=12, rotation=0)
-    plt.xticks([])  # Hide frame indices for clean aesthetic
+    for i, layer_idx in enumerate(layers):
+        heatmap_data = heatmaps[layer_idx]
 
-    plt.xlabel("Audio Time Stream ➔", fontsize=12)
+        # Smoothing and normalization
+        heatmap_data = ndimage.gaussian_filter1d(heatmap_data, sigma=1.2, axis=1)
+        row_maxes = heatmap_data.max(axis=1, keepdims=True)
+        heatmap_data = np.where(row_maxes > 0, heatmap_data / row_maxes, 0)
 
+        ax = axes[i]
+        im = ax.imshow(
+            heatmap_data,
+            aspect='auto',
+            cmap='viridis',
+            interpolation='bilinear',  # Smooth gradient transitions
+            origin='upper'
+        )
+
+        # Y-axis handling: Only add words to the first subplot
+        ax.set_yticks(range(len(words)))
+        if i == 0:
+            ax.set_yticklabels(words, fontsize=14, rotation=0)
+        else:
+            ax.set_yticklabels([])  # Hide words for subsequent plots
+
+        ax.set_xticks([])  # Hide X-ticks for clean aesthetic
+        ax.set_title(f"Layer {layer_idx}", fontsize=16, pad=10)
+        ax.set_xlabel("Audio Time Stream ➔", fontsize=14, labelpad=10)
+
+    # Adjust layout to minimize whitespace between the subplots
     plt.tight_layout()
+    plt.subplots_adjust(wspace=0.05)
 
     save_dir = get_plots_dir(conf, info)
-    save_path = os.path.join(save_dir, f"word_level_alignment_continuous_layer_{layer_idx}.png")
+    save_path = os.path.join(save_dir, f"combined_word_alignment_{dataset}.png")
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()
 
+    print(f"✅ Combined attention plot saved to: {save_path}")
 
 def plot_aggregated_level_attention(conf, info, mean_heatmap, layer_idx):
     mean_heatmap = ndimage.gaussian_filter1d(mean_heatmap, sigma=1.2, axis=1)
@@ -216,6 +237,10 @@ def visualize_random_instance(info, dataset, split='test', num_samples: int = 20
     metrics_records = []
     aggregated_heatmaps = {layer: [] for layer in layers}
 
+    # NEW: Containers for the single-instance plot
+    representative_heatmaps = {}
+    representative_words = None
+
     for q in tqdm(range(num_samples), desc="Computing Attention Dynamics"):
         random_idx = random.randint(0, len(evaluation_data) - 1)
         instance = evaluation_data[random_idx]
@@ -225,7 +250,6 @@ def visualize_random_instance(info, dataset, split='test', num_samples: int = 20
         audios = batch['audios']
         audio_masks = batch['audio_masks']
 
-        # We pass return_attention=True to trigger the tracking mechanism we added to CrossAttention
         outputs, cross_attentions = model.generate(
             audios=audios,
             audio_masks=audio_masks,
@@ -234,16 +258,19 @@ def visualize_random_instance(info, dataset, split='test', num_samples: int = 20
         )
 
         generated_ids = outputs.sequences if hasattr(outputs, "sequences") else outputs
-        # prediction = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
 
         for layer_idx in layers:
-            heatmap_data, _ = extract_word_level_attention(
+            heatmap_data, words = extract_word_level_attention(
                 cross_attentions=cross_attentions,
                 generated_ids=generated_ids,
                 tokenizer=tokenizer,
-                layer_idx=layer_idx,  # You can change this to 0 or 1 depending on how many injection layers you have
+                layer_idx=layer_idx,
                 sample_idx=0
             )
+
+            if q == 0 and heatmap_data is not None:
+                representative_heatmaps[layer_idx] = heatmap_data
+                representative_words = words
 
             res = calculate_attention_metrics(heatmap_data)
             metrics_records.append({
@@ -258,6 +285,15 @@ def visualize_random_instance(info, dataset, split='test', num_samples: int = 20
                 tensor_hm = torch.tensor(heatmap_data, dtype=torch.float32).unsqueeze(0).unsqueeze(0)
                 resized_hm = F.interpolate(tensor_hm, size=(100, 100), mode='bilinear', align_corners=False)
                 aggregated_heatmaps[layer_idx].append(resized_hm.squeeze().numpy())
+
+        # NEW: Plot the combined multi-layer plot for the representative instance
+        if q==0:
+            plot_combined_word_level_attention(conf,
+                                               info,
+                                               representative_heatmaps,
+                                               representative_words,
+                                               layers,
+                                               dataset)
 
     df_metrics = pd.DataFrame(metrics_records)
 
