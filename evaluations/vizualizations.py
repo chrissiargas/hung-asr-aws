@@ -106,10 +106,16 @@ def plot_layer_fusion_weights(conf, info, weights_per_layer, injection_layers, n
     if num_injections == 1:
         axes = [axes]
 
+    # Dynamically determine the title prefix based on the filename passed
+    title_prefix = "Aggregated " if "aggregated" in dataset else ""
+
     for i, ax in enumerate(axes):
         flat_weights = np.array(weights_per_layer[i]).flatten()
         ax.bar(range(num_whisper_layers), flat_weights, color='#3498db', edgecolor='black', alpha=0.8)
-        ax.set_title(f"Acoustic Pooling Weights for LLM Injection Layer {injection_layers[i]}", fontsize=14)
+        ax.set_title(f"{title_prefix}Acoustic Pooling Weights for LLM Injection Layer {injection_layers[i]}", fontsize=14)
+        ax.set_ylabel("Attention Weight", fontsize=12)
+        ax.set_xticks(range(0, num_whisper_layers, 2))
+        ax.grid(axis='y', linestyle='--', alpha=0.6)
 
     axes[-1].set_xlabel("Whisper Encoder Layer Index (0 = Embeddings, 32 = Final Output)", fontsize=12)
     plt.tight_layout()
@@ -258,6 +264,7 @@ def visualize_random_instance(info, dataset, split='test', num_samples: int = 20
 
     metrics_records = []
     aggregated_heatmaps = {layer: [] for layer in layers}
+    aggregated_fusion_weights = []
 
     # NEW: Containers for the single-instance plot
     representative_heatmaps = {}
@@ -310,6 +317,13 @@ def visualize_random_instance(info, dataset, split='test', num_samples: int = 20
                 resized_hm = F.interpolate(tensor_hm, size=(100, 100), mode='bilinear', align_corners=False)
                 aggregated_heatmaps[layer_idx].append(resized_hm.squeeze().numpy())
 
+        if fusion_weights is not None:
+            if not aggregated_fusion_weights:
+                # Initialize lists for each injection layer dynamically
+                aggregated_fusion_weights = [[] for _ in range(len(fusion_weights))]
+            for i, fw in enumerate(fusion_weights):
+                aggregated_fusion_weights[i].append(fw)
+
         # NEW: Plot the combined multi-layer plot for the representative instance
         if q==0:
             inj_layers = model.injection_layer_ids
@@ -346,6 +360,21 @@ def visualize_random_instance(info, dataset, split='test', num_samples: int = 20
             plot_aggregated_level_attention(conf, info, mean_heatmap, layer_idx)
         else:
             print(f"Warning: No valid heatmaps to aggregate for layer {layer_idx}")
+
+    # NEW: Calculate and plot the aggregated layer-wise fusion weights
+    if aggregated_fusion_weights:
+        mean_fusion_weights = []
+        for layer_weights in aggregated_fusion_weights:
+            # Stack all samples and calculate the mean across the sample dimension (axis=0)
+            mean_fw = np.mean(np.stack(layer_weights), axis=0)
+            mean_fusion_weights.append(mean_fw)
+
+        inj_layers = model.injection_layer_ids
+        num_w_layers = model.num_whisper_layers
+
+        print(f"\nPlotting aggregated layer fusion weights for {dataset}...")
+        plot_layer_fusion_weights(conf, info, mean_fusion_weights, inj_layers, num_w_layers,
+                                  f"{dataset}_aggregated")
 
     return summary
 
