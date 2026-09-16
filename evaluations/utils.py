@@ -501,6 +501,59 @@ def extract_word_level_attention(cross_attentions, generated_ids, tokenizer, lay
 
     return heatmap_data, words
 
+
+def extract_layer_fusion_weights(cross_attentions, generated_ids, tokenizer, layer_idx=0, sample_idx=0):
+    layer_attn = cross_attentions[layer_idx, sample_idx].max(dim=0).values.detach().cpu().numpy()
+    sample_ids = generated_ids[sample_idx].detach().cpu().numpy()
+
+    pad_id = tokenizer.pad_token_id
+    valid_idx = [i for i, tok in enumerate(sample_ids) if tok != pad_id]
+    sample_ids = sample_ids[valid_idx]
+    layer_attn = layer_attn[valid_idx]
+
+    words = []
+    word_attentions = []
+    current_word_ids = []
+    current_attn = np.zeros(layer_attn.shape[1])
+
+    for token_id, attn in zip(sample_ids, layer_attn):
+        token_str = tokenizer.decode([token_id])
+        is_boundary = token_str.startswith(' ') or token_str in ['.', ',', '!', '?', ':', ';', '\n']
+
+        if is_boundary and current_word_ids:
+            word_str = tokenizer.decode(current_word_ids).strip()
+            if word_str:
+                words.append(word_str)
+                word_attentions.append(current_attn / (np.max(current_attn) + 1e-9))
+            current_word_ids = []
+            current_attn = np.zeros(layer_attn.shape[1])
+
+        current_word_ids.append(token_id)
+        current_attn += attn
+
+    if current_word_ids:
+        word_str = tokenizer.decode(current_word_ids).strip()
+        if word_str:
+            words.append(word_str)
+            word_attentions.append(current_attn / (np.max(current_attn) + 1e-9))
+
+    if not word_attentions:
+        return None, []
+
+    heatmap_data = np.vstack(word_attentions)
+
+    # Crop trailing zero-padded frames
+    col_sums = heatmap_data.sum(axis=0)
+    cum_sums = np.cumsum(col_sums)
+    total_mass = cum_sums[-1]
+
+    if total_mass > 0:
+        cutoff_idx = np.searchsorted(cum_sums, 0.995 * total_mass)
+        crop_idx = min(cutoff_idx + 3, heatmap_data.shape[1])
+        heatmap_data = heatmap_data[:, :crop_idx]
+
+    return heatmap_data, words
+
 from scipy.stats import pearsonr
 def calculate_attention_metrics(heatmap_data, eps=1e-12):
     if heatmap_data is None or heatmap_data.shape[0] < 2 or heatmap_data.shape[1] < 2:

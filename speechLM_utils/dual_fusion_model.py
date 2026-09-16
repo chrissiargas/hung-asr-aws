@@ -122,6 +122,9 @@ class LayerWiseAttention(nn.Module):
         alpha_weights = alpha_weights.unsqueeze(2)
         fused_state = (stacked_states * alpha_weights).sum(dim=0)
 
+        if return_weights:
+            return fused_state, alpha_weights
+
         return fused_state
 
 
@@ -826,11 +829,14 @@ class DualFusionModel(nn.Module):
 
         return ctc_loss
 
-    def inject(self, encoder_outputs, audio_embs, audio_masks, down_embs, down_masks):
+    def inject(self, encoder_outputs, audio_embs, audio_masks, down_embs, down_masks, return_layer_weights=False):
         injection_audios = []
         injection_masks = []
+        layer_weights_list = []
 
         if self.n_injections == 0:
+            if return_layer_weights:
+                return injection_audios, injection_masks, layer_weights_list
             return injection_audios, injection_masks
 
         stacked_hidden_states = None
@@ -854,10 +860,21 @@ class DualFusionModel(nn.Module):
         for l, injection_layer in enumerate(self.injection_layers):
             if self.layer_wise_fusion:
                 if self.layer_weights_static:
-                    layer_alpha = F.softmax(self.layer_static[l], dim=0).view(-1, 1, 1, 1)
+                    alpha = F.softmax(self.layer_static[l], dim=0)
+
+                    if return_layer_weights:
+                        layer_weights_list.append(alpha.detach().cpu().numpy())
+
+                    layer_alpha = alpha.view(-1, 1, 1, 1)
                     audio_features = (stacked_hidden_states * layer_alpha).sum(dim=0)
                 else:
-                    audio_features = self.layer_dynamic[l](stacked_hidden_states)
+                    if return_layer_weights:
+                        audio_features, alpha = self.layer_dynamic[l](stacked_hidden_states, return_weights=True)
+                        # Average over batch dimension (if >1) and squeeze to match visualization expectations
+                        mean_alpha = alpha.mean(dim=1).squeeze(-1).detach().cpu().numpy()
+                        layer_weights_list.append(mean_alpha)
+                    else:
+                        audio_features = self.layer_dynamic[l](stacked_hidden_states)
 
                 if self.downsample_L > 1:
                     ds = self.injection_downsamplers[
@@ -885,6 +902,9 @@ class DualFusionModel(nn.Module):
 
             injection_audios.append(injection_audio)
             injection_masks.append(inj_audio_mask)
+
+        if return_layer_weights:
+            return injection_audios, injection_masks, layer_weights_list
 
         return injection_audios, injection_masks
 
@@ -1056,6 +1076,7 @@ class DualFusionModel(nn.Module):
                  **kwargs):
 
         return_attention = kwargs.pop("return_attention", False)
+        return_layer_fusion = kwargs.pop("return_layer_fusion", False)
 
         with torch.inference_mode():
             inputs = audios
@@ -1105,11 +1126,15 @@ class DualFusionModel(nn.Module):
                 device=self.device
             ) * self.pad_token_id
 
-            injection_audios, injection_masks = self.inject(encoder_outputs,
-                                                            audio_embeddings,
-                                                            batch_masks,
-                                                            down_embeddings,
-                                                            down_masks)
+            if return_layer_fusion:
+                injection_audios, injection_masks, layer_fusion_weights = self.inject(
+                    encoder_outputs, audio_embeddings, batch_masks, down_embeddings, down_masks,
+                    return_layer_weights=True
+                )
+            else:
+                injection_audios, injection_masks = self.inject(
+                    encoder_outputs, audio_embeddings, batch_masks, down_embeddings, down_masks
+                )
 
             for injection_audio, injection_mask, injection_layer in zip(injection_audios, injection_masks,
                                                                         self.injection_layers):
@@ -1161,8 +1186,14 @@ class DualFusionModel(nn.Module):
                     injection_layer.prompt_audio = None
                     injection_layer.prompt_audio_mask = None
 
-            if return_attention:
+
+
+            if return_attention and return_layer_fusion:
+                return outputs, cross_attentions, layer_fusion_weights
+            elif return_attention:
                 return outputs, cross_attentions
+            elif return_layer_fusion:
+                return outputs, layer_fusion_weights
 
             return outputs
 
