@@ -95,12 +95,7 @@ def get_bad_folder_path(conf):
 
 
 def plot_combined_word_level_attention(conf, info, heatmaps, words, layers, dataset):
-    """
-    Plots the attention heatmaps for multiple layers side-by-side as subplots.
-    Only the leftmost plot contains the Y-axis words.
-    """
-    # Create 1 row, len(layers) columns
-    fig, axes = plt.subplots(1, len(layers), figsize=(14, 6))
+    fig, axes = plt.subplots(1, len(layers), figsize=(18, 6))
 
     if len(layers) == 1:
         axes = [axes]
@@ -241,6 +236,7 @@ def visualize_random_instance(info, dataset, split='test', num_samples: int = 20
     representative_heatmaps = {}
     representative_words = None
 
+    random.seed(10)
     for q in tqdm(range(num_samples), desc="Computing Attention Dynamics"):
         random_idx = random.randint(0, len(evaluation_data) - 1)
         instance = evaluation_data[random_idx]
