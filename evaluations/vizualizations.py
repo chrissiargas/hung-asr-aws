@@ -107,11 +107,9 @@ def plot_layer_fusion_weights(conf, info, weights_per_layer, injection_layers, n
         axes = [axes]
 
     for i, ax in enumerate(axes):
-        ax.bar(range(num_whisper_layers), weights_per_layer[i], color='#3498db', edgecolor='black', alpha=0.8)
+        flat_weights = np.array(weights_per_layer[i]).flatten()
+        ax.bar(range(num_whisper_layers), flat_weights, color='#3498db', edgecolor='black', alpha=0.8)
         ax.set_title(f"Acoustic Pooling Weights for LLM Injection Layer {injection_layers[i]}", fontsize=14)
-        ax.set_ylabel("Attention Weight", fontsize=12)
-        ax.set_xticks(range(0, num_whisper_layers, 2))
-        ax.grid(axis='y', linestyle='--', alpha=0.6)
 
     axes[-1].set_xlabel("Whisper Encoder Layer Index (0 = Embeddings, 32 = Final Output)", fontsize=12)
     plt.tight_layout()

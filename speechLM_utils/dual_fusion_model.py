@@ -871,7 +871,7 @@ class DualFusionModel(nn.Module):
                     if return_layer_weights:
                         audio_features, alpha = self.layer_dynamic[l](stacked_hidden_states, return_weights=True)
                         # Average over batch dimension (if >1) and squeeze to match visualization expectations
-                        mean_alpha = alpha.mean(dim=1).squeeze(-1).detach().cpu().numpy()
+                        mean_alpha = alpha.mean(dim=1).squeeze().detach().cpu().numpy()
                         layer_weights_list.append(mean_alpha)
                     else:
                         audio_features = self.layer_dynamic[l](stacked_hidden_states)
