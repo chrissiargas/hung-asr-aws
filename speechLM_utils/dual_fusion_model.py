@@ -115,7 +115,7 @@ class LayerWiseAttention(nn.Module):
             nn.Linear(bottleneck_dim, 1, bias=False)
         )
 
-    def forward(self, stacked_states: torch.Tensor):
+    def forward(self, stacked_states: torch.Tensor, return_weights: bool = False):
         pooled_states = stacked_states.mean(dim=2)
         energy_scores = self.attention_mlp(pooled_states)
         alpha_weights = F.softmax(energy_scores, dim=0)
