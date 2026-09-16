@@ -94,6 +94,59 @@ def get_bad_folder_path(conf):
     return bad_folder_path
 
 
+def plot_layer_fusion_weights(conf, info, model, audios, audio_masks, dataset):
+    if not model.layer_wise_fusion:
+        return
+
+    model.eval()
+    with torch.no_grad():
+        num_injections = model.n_injections
+        num_whisper_layers = model.num_whisper_layers
+        weights_per_layer = []
+
+        if model.layer_weights_static:
+            # Static weights are fixed parameters
+            for l in range(num_injections):
+                alpha = F.softmax(model.layer_static[l], dim=0).cpu().numpy()
+                weights_per_layer.append(alpha)
+        else:
+            # Dynamic weights depend on the specific audio utterance
+            encoder_outputs = model.speech_encoder(audios, attention_mask=audio_masks, output_hidden_states=True)
+            stacked_hidden_states = torch.stack(encoder_outputs.hidden_states, dim=0)
+
+            for l in range(num_injections):
+                pooled_states = stacked_hidden_states.mean(dim=2)
+                energy_scores = model.layer_dynamic[l].attention_mlp(pooled_states)
+                alpha_weights = F.softmax(energy_scores, dim=0)
+
+                # Average over batch dimension (if batch size > 1) and squeeze
+                mean_alpha = alpha_weights.mean(dim=1).squeeze(-1).cpu().numpy()
+                weights_per_layer.append(mean_alpha)
+
+        # Plotting the weights as bar charts
+        fig, axes = plt.subplots(num_injections, 1, figsize=(10, 3 * num_injections), sharex=True)
+        if num_injections == 1:
+            axes = [axes]
+
+        injection_layers = model.injection_layer_ids
+
+        for i, ax in enumerate(axes):
+            ax.bar(range(num_whisper_layers), weights_per_layer[i], color='#3498db', edgecolor='black', alpha=0.8)
+            ax.set_title(f"Acoustic Pooling Weights for LLM Injection Layer {injection_layers[i]}", fontsize=14)
+            ax.set_ylabel("Attention Weight", fontsize=12)
+            ax.set_xticks(range(0, num_whisper_layers, 2))
+            ax.grid(axis='y', linestyle='--', alpha=0.6)
+
+        axes[-1].set_xlabel("Whisper Encoder Layer Index (0 = Embeddings, 32 = Final Output)", fontsize=12)
+        plt.tight_layout()
+
+        save_dir = get_plots_dir(conf, info)
+        save_path = os.path.join(save_dir, f"layer_fusion_weights_{dataset}.png")
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        plt.close()
+
+        print(f"✅ Layer fusion weights plot saved to: {save_path}")
+
 def plot_combined_word_level_attention(conf, info, heatmaps, words, layers, dataset):
     fig, axes = plt.subplots(1, len(layers), figsize=(18, 6))
 
@@ -284,6 +337,7 @@ def visualize_random_instance(info, dataset, split='test', num_samples: int = 20
 
         # NEW: Plot the combined multi-layer plot for the representative instance
         if q==0:
+            plot_layer_fusion_weights(conf, info, model, audios, audio_masks, dataset)
             plot_combined_word_level_attention(conf,
                                                info,
                                                representative_heatmaps,
