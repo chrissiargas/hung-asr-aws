@@ -4,8 +4,8 @@
 #         bash run_fair_eval_hungarian.sh fleurs yodas    (only the ones you name)
 set -euo pipefail
 
-LANG_TAG=hungarian
-EXP=2                          # exp of the trained model, so the test split matches its training config
+LANG_TAG=greek
+EXP=1                          # exp of the trained model, so the test split matches its training config
 MODEL_DECODING=legacy           # plain | penalized | legacy
 WHISPER_DECODING=whisper_standard         # plain | penalized | legacy | whisper_standard
 if (( $# )); then DATASETS=("$@"); else DATASETS=(common_voice fleurs massive voxpopuli yodas); fi
@@ -30,7 +30,8 @@ for ds in "${DATASETS[@]}"; do
     [[ -f "${model_out}/predictions.jsonl" ]] || torchrun --standalone --nproc_per_node=4 \
         evaluations/fair_speechLM.py \
         --manifest "$manifest" --out "$model_out" --decoding "$MODEL_DECODING" \
-        --exp "$EXP" --machine hu-asr-medium-3-0 --datetime Aug31_12-08 --name full --turn 37500
+        --exp "$EXP" --machine greekasr-0 --datetime Sep10_13-36 --name full \
+         --train_datasets common_voice fleurs hparl tedx logotypographia stoma
 
     python evaluations/fair_eval.py compare "$model_out" "$whisper_out" \
         | tee "${runs}/compare_${MODEL_DECODING}_vs_${WHISPER_DECODING}.txt"
