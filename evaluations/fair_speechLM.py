@@ -1,12 +1,12 @@
-"""Dual-Fusion evaluation on a frozen test manifest, through the shared fair-comparison harness.
+"""Dual-Fusion (Racka-4B) evaluation on a frozen test manifest, through the shared fair-comparison harness.
 
-  torchrun --nproc_per_node=4 evaluations/speechLM.py \
-      --manifest manifests/greek_fleurs_test.jsonl --out runs/greek_fleurs_test/dual_fusion_plain \
-      --exp 1 --machine greekasr-0 --datetime Sep10_13-36 --name full --decoding plain
+  torchrun --nproc_per_node=4 evaluations/fair_speechLM.py \
+      --manifest manifests/hungarian_fleurs_test.jsonl --out runs/hungarian_fleurs_test/dual_fusion_plain \
+      --exp <exp> --machine <machine> --datetime <run datetime> --name <name> --decoding plain
 
 Reproduce the settings behind the current paper numbers (old decoding, no style tag at test
 time, Hugging Face's attention-mask-derived position ids):
-      ... --decoding legacy --style_tags off --position_ids hf --out runs/greek_fleurs_test/dual_fusion_legacy
+      ... --decoding legacy --style_tags off --position_ids hf --out runs/hungarian_fleurs_test/dual_fusion_legacy
 """
 import argparse
 import json
@@ -176,6 +176,8 @@ def parse_args():
     parser.add_argument("--style_tags", default="off",
                         choices=["auto", "dataset", "clean", "verbatim", "formal", "off"],
                         help="auto = per-corpus tags if the model was trained with prompt_verbatim, else off")
+    parser.add_argument("--verbalize_numbers", default="on", choices=["on", "off"],
+                        help="score with digits spelled out (num2words, hu); on = the training convention")
     parser.add_argument("--position_ids", default="train", choices=["train", "hf"],
                         help="train = RoPE positions as in training; hf = the old generate() behaviour")
     parser.add_argument("--checkpoint", default=None, help="explicit checkpoint directory")
@@ -226,6 +228,7 @@ def main():
         model.processor.feature_extractor,
         checkpoint=abspath(checkpoint), exp=args.exp, language_model=args.language_model_id,
         speech_encoder=args.speech_encoder_id, style_tags=style_tags, position_ids=args.position_ids,
+        verbalize_numbers=args.verbalize_numbers == "on",
         llm_quantization="nf4-4bit")
     fe.run_sharded(transcriber, rows, meta, args.out, args.batch_size, run_config)
 

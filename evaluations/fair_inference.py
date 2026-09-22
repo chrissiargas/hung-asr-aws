@@ -1,12 +1,16 @@
 """Whisper baseline on the same frozen test manifest, through the same harness as Dual-Fusion.
 
-  torchrun --nproc_per_node=4 evaluations/inference.py \
-      --manifest manifests/greek_fleurs_test.jsonl --out runs/greek_fleurs_test/whisper_plain --decoding plain
+  torchrun --nproc_per_node=4 evaluations/fair_inference.py \
+      --manifest manifests/hungarian_fleurs_test.jsonl --out runs/hungarian_fleurs_test/whisper_plain --decoding plain
 
 Whisper with its own recommended decoding (report as a separate "each system at its best" row):
-      ... --decoding whisper_standard --out runs/greek_fleurs_test/whisper_standard
+      ... --decoding whisper_standard --out runs/hungarian_fleurs_test/whisper_standard
 
-Plain `python evaluations/inference.py ...` also works (one GPU). Unlike the old script, this one
+The forced language comes from the manifest (hu for a Hungarian manifest); the old script's
+hard-coded "language" no longer exists. Numbers are not verbalized when scoring Whisper
+(--verbalize_numbers on scores it like the Dual-Fusion model).
+
+Plain `python evaluations/fair_inference.py ...` also works (one GPU). Unlike the old script, this one
 reads the rank from torchrun, so it no longer runs four racing copies of the evaluation.
 """
 import argparse
@@ -79,6 +83,8 @@ def parse_args():
     parser.add_argument("--decoding", default="whisper_standard", choices=fe.presets_for("whisper"))
     parser.add_argument("--max_new_tokens", type=int, default=None, help="override the preset's cap")
     parser.add_argument("--batch_size", type=int, default=8)
+    parser.add_argument("--verbalize_numbers", default="off", choices=["on", "off"],
+                        help="score with digits spelled out (num2words, hu); off = Whisper's own digit output")
     parser.add_argument("--dtype", default="bfloat16", choices=list(DTYPES),
                         help="bfloat16 matches the precision of the Dual-Fusion Whisper encoder")
     return parser.parse_args()  # strict: an old --gen_kwargs now fails instead of being ignored
@@ -98,7 +104,8 @@ def main():
     run_config = fe.base_run_config(
         "whisper", args.manifest, meta, transcriber.decoding_description, args.batch_size,
         transcriber.processor.feature_extractor,
-        model=args.model_name, dtype=args.dtype, forced_language=language)
+        model=args.model_name, dtype=args.dtype, forced_language=language,
+        verbalize_numbers=args.verbalize_numbers == "on")
     fe.run_sharded(transcriber, rows, meta, args.out, args.batch_size, run_config)
 
 

@@ -22,6 +22,7 @@ except ImportError:
 import jiwer
 import numpy as np
 import torch
+from num2words import num2words
 from transformers import LogitsProcessor, LogitsProcessorList
 from transformers.models.whisper.english_normalizer import BasicTextNormalizer
 
@@ -49,20 +50,24 @@ def strip_speaker_tag(text):
     match = _SPEAKER_TAG_RE.match(folded)
     return text[match.end():] if match else text
 
+def verbalize_numbers(text):
+    return re.sub(r"\d+", lambda m: num2words(int(m.group(0)), lang="hu"), text)
 
-def _cleanup(text):
+def _cleanup(text, verbalize=True):
     text = unicodedata.normalize("NFKC", text or "")
     text = strip_speaker_tag(text)
     text = _BRACKETS_RE.sub(" ", text)
     text = text.replace("~", "")
+    if verbalize:
+        text = verbalize_numbers(text)
     return text.lower().translate(_QUOTES)
 
 
-def normalize_nwer(text):
-    return _BASIC(_cleanup(text)).strip()
+def normalize_nwer(text, verbalize=True):
+    return _BASIC(_cleanup(text, verbalize)).strip()
 
-def normalize_wer_punct(text):
-    text = re.sub(r"([^\w\s])\1*", r" \g<0> ", _cleanup(text))
+def normalize_wer_punct(text, verbalize=True):
+    text = re.sub(r"([^\w\s])\1*", r" \g<0> ", _cleanup(text, verbalize))
     return re.sub(r"\s+", " ", text).strip()
 
 def _sha256(path):
@@ -78,6 +83,7 @@ def _write_jsonl(path, records):
         for record in records:
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
     os.replace(tmp, path)
+
 
 def _read_jsonl(path):
     with open(path, encoding="utf-8") as f:
@@ -112,7 +118,7 @@ def build_manifest(exp, datasets, split, out_path, check_train_overlap=True):
             row = {"id": f"{name}:{item['index']}", "dataset_name": name, "index": int(item["index"]),
                    "audio_filepath": item["audio_filepath"], "reference_raw": reference,
                    "duration": float(item.get("duration") or 0.0)}
-            keep = normalize_nwer(reference) and normalize_wer_punct(reference)
+            keep = all(normalize_nwer(reference, v) and normalize_wer_punct(reference, v) for v in (True, False))
             (rows if keep else dropped).append(row)
     rows.sort(key=lambda r: (r["dataset_name"], r["index"]))
     ids = [r["id"] for r in rows]
@@ -368,12 +374,13 @@ def run_sharded(transcriber, rows, manifest_meta, out_dir, batch_size, run_confi
     _write_jsonl(os.path.join(out_dir, "predictions.jsonl"), merged)
     _write_json(os.path.join(out_dir, "run_config.json"),
                 {**run_config, "config_hash": digest, "finished": time.strftime("%Y-%m-%d %H:%M:%S")})
-    metrics = score_records(merged)
+    metrics = score_records(merged, run_verbalizes(run_config))
     _write_json(os.path.join(out_dir, "metrics.json"), metrics)
     for r in range(world):
         for suffix in (".jsonl", ".done.json"):
             os.remove(os.path.join(shard_dir, f"shard_{r}{suffix}"))
-    print_metrics(f"{run_config['system']} [{run_config['decoding']['preset']}] -> {out_dir}", metrics)
+    print_metrics(f"{run_config['system']} [{run_config['decoding']['preset']}, numbers verbalized: "
+                  f"{'yes' if run_verbalizes(run_config) else 'no'}] -> {out_dir}", metrics)
     return metrics
 
 
@@ -400,11 +407,12 @@ def _utterance_counts(refs, hyps, unit="word"):
     return counts
 
 
-def utterance_table(records):
+def utterance_table(records, verbalize=True):
     refs = [r["reference_raw"] for r in records]
     hyps = [r.get("hypothesis_raw") or "" for r in records]
-    n_refs, n_hyps = [normalize_nwer(t) for t in refs], [normalize_nwer(t) for t in hyps]
-    p_refs, p_hyps = [normalize_wer_punct(t) for t in refs], [normalize_wer_punct(t) for t in hyps]
+    n_refs, n_hyps = [normalize_nwer(t, verbalize) for t in refs], [normalize_nwer(t, verbalize) for t in hyps]
+    p_refs = [normalize_wer_punct(t, verbalize) for t in refs]
+    p_hyps = [normalize_wer_punct(t, verbalize) for t in hyps]
     return {"n_wer": _utterance_counts(n_refs, n_hyps),
             "n_cer": _utterance_counts(n_refs, n_hyps, unit="char"),
             "wer_punct": _utterance_counts(p_refs, p_hyps)}
@@ -415,9 +423,14 @@ def _rate(counts):
     return float(counts[:, :3].sum() / n_ref) if n_ref else float("nan")
 
 
-def score_records(records):
+def run_verbalizes(config):
+    """Number verbalization used for a run; runs made before the setting existed were verbalized."""
+    return bool(config.get("verbalize_numbers", True))
+
+
+def score_records(records, verbalize=True):
     """Corpus-level (micro-averaged) metrics for each subset."""
-    table = utterance_table(records)
+    table = utterance_table(records, verbalize)
     metrics = {}
     for name, keep in SUBSETS.items():
         mask = np.array([keep(r) for r in records], dtype=bool)
@@ -428,6 +441,7 @@ def score_records(records):
             "wer_punct": _rate(table["wer_punct"][mask]),
             "sub": int(words[:, 0].sum()), "del": int(words[:, 1].sum()), "ins": int(words[:, 2].sum()),
             "cap_hits": sum(bool(r.get("hit_cap")) for r, m in zip(records, mask) if m),
+            "verbalize_numbers": verbalize,
         }
     return metrics
 
@@ -447,23 +461,27 @@ def load_run(run_dir):
     return config, _read_jsonl(os.path.join(run_dir, "predictions.jsonl"))
 
 
-def paired_bootstrap(errors_a, errors_b, n_ref, n_boot=2000, seed=0, chunk=250):
-    """Resample utterances; return (observed delta, 95% CI low, high, two-sided p) of corpus WER A-B."""
+def paired_bootstrap(errors_a, errors_b, n_ref, n_ref_b=None, n_boot=2000, seed=0, chunk=250):
+    """Resample utterances; return (observed delta, 95% CI low, high, two-sided p) of corpus WER A-B.
+    `n_ref_b` is only needed when B's references were normalized differently (other word counts)."""
+    n_ref_b = n_ref if n_ref_b is None else n_ref_b
     rng = np.random.default_rng(seed)
     n = len(n_ref)
     deltas = []
     for start in range(0, n_boot, chunk):
         idx = rng.integers(0, n, size=(min(chunk, n_boot - start), n))
-        deltas.append((errors_a[idx].sum(axis=1) - errors_b[idx].sum(axis=1)) / n_ref[idx].sum(axis=1))
+        deltas.append(errors_a[idx].sum(axis=1) / n_ref[idx].sum(axis=1)
+                      - errors_b[idx].sum(axis=1) / n_ref_b[idx].sum(axis=1))
     deltas = np.concatenate(deltas)
-    observed = (errors_a.sum() - errors_b.sum()) / n_ref.sum()
+    observed = errors_a.sum() / n_ref.sum() - errors_b.sum() / n_ref_b.sum()
     low, high = np.percentile(deltas, [2.5, 97.5])
     p_value = min(1.0, 2.0 * min((deltas >= 0).mean(), (deltas <= 0).mean()))
     return float(observed), float(low), float(high), float(p_value)
 
 
-def compare_runs(dir_a, dir_b, n_boot=2000, seed=0):
-    """Re-score both runs with the current normalizer and test A-B on identical utterances."""
+def compare_runs(dir_a, dir_b, n_boot=2000, seed=0, verbalize=None):
+    """Re-score both runs with the current normalizer and test A-B on identical utterances.
+    verbalize=None uses each run's own number-verbalization setting; True/False forces one for both."""
     config_a, records_a = load_run(dir_a)
     config_b, records_b = load_run(dir_b)
     if config_a["manifest_sha256"] != config_b["manifest_sha256"]:
@@ -480,9 +498,19 @@ def compare_runs(dir_a, dir_b, n_boot=2000, seed=0):
     if config_a["decoding"] != config_b["decoding"]:
         print("NOTE: decoding differs between the runs, so this is not the controlled comparison.")
         print(f"  A: {config_a['decoding']}\n  B: {config_b['decoding']}")
-    table_a, table_b = utterance_table(records_a), utterance_table(records_b)
+    verbalize_a = run_verbalizes(config_a) if verbalize is None else verbalize
+    verbalize_b = run_verbalizes(config_b) if verbalize is None else verbalize
+    table_a, table_b = utterance_table(records_a, verbalize_a), utterance_table(records_b, verbalize_b)
+    yes_no = {True: "yes", False: "no"}
 
-    print(f"\nA = {label_a}\nB = {label_b}\n")
+    print(f"\nA = {label_a}, numbers verbalized: {yes_no[verbalize_a]}")
+    print(f"B = {label_b}, numbers verbalized: {yes_no[verbalize_b]}")
+    if verbalize_a != verbalize_b:
+        words_a, words_b = int(table_a["n_wer"][:, 3].sum()), int(table_b["n_wer"][:, 3].sum())
+        print(f"NOTE: the runs are scored against differently normalized references "
+              f"({words_a} vs {words_b} reference words), so each rate uses its own denominator.\n"
+              f"      Run `compare ... --verbalize on` (or off) for the same-reference comparison.")
+    print()
     print(f"{'subset':<10}{'metric':<10}{'utts':>6}{'A':>8}{'B':>8}{'A-B':>8}{'95% CI':>18}{'p':>8}")
     for name, keep in SUBSETS.items():
         mask = np.array([keep(r) for r in records_a], dtype=bool)
@@ -490,7 +518,8 @@ def compare_runs(dir_a, dir_b, n_boot=2000, seed=0):
             continue
         for key, title in (("n_wer", "N-WER"), ("wer_punct", "WER(p)")):
             a, b = table_a[key][mask], table_b[key][mask]
-            delta, low, high, p_value = paired_bootstrap(a[:, :3].sum(1), b[:, :3].sum(1), a[:, 3], n_boot, seed)
+            delta, low, high, p_value = paired_bootstrap(a[:, :3].sum(1), b[:, :3].sum(1), a[:, 3], b[:, 3],
+                                                         n_boot, seed)
             ci = f"[{100 * low:+.2f}, {100 * high:+.2f}]"
             print(f"{name:<10}{title:<10}{int(mask.sum()):>6}{100 * _rate(a):>8.2f}{100 * _rate(b):>8.2f}"
                   f"{100 * delta:>+8.2f}{ci:>18}{p_value:>8.3f}")
@@ -519,6 +548,8 @@ def main():
     compare.add_argument("run_b")
     compare.add_argument("--n_boot", type=int, default=2000)
     compare.add_argument("--seed", type=int, default=0)
+    compare.add_argument("--verbalize", default="run", choices=["run", "on", "off"],
+                         help="run = each run's own setting; on/off = score both runs the same way")
 
     args = parser.parse_args()
     if args.command == "build-manifest":
@@ -526,11 +557,12 @@ def main():
         print(json.dumps({k: v for k, v in meta.items() if not k.endswith("_ids")}, indent=2, ensure_ascii=False))
     elif args.command == "score":
         config, records = load_run(args.run_dir)
-        metrics = score_records(records)
+        metrics = score_records(records, run_verbalizes(config))
         _write_json(os.path.join(args.run_dir, "metrics.json"), metrics)
         print_metrics(f"{config['system']} [{config['decoding']['preset']}]", metrics)
     else:
-        compare_runs(args.run_a, args.run_b, args.n_boot, args.seed)
+        forced = {"run": None, "on": True, "off": False}[args.verbalize]
+        compare_runs(args.run_a, args.run_b, args.n_boot, args.seed, forced)
 
 
 if __name__ == "__main__":
