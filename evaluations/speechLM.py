@@ -67,11 +67,11 @@ class StreamingSeq2SeqTrainer(Seq2SeqTrainer):
 
             gen_ids = np.where(gen_ids != -100, gen_ids, self.tokenizer.pad_token_id)
             preds = self.tokenizer.batch_decode(gen_ids, skip_special_tokens=True)
-            preds = [normalize(pd, with_signs=True) for pd in preds]
+            preds = [normalize(pd) for pd in preds]
 
             lbl_ids = np.where(lbl_ids != -100, lbl_ids, self.tokenizer.pad_token_id)
             refs = self.tokenizer.batch_decode(lbl_ids, skip_special_tokens=True)
-            refs = [normalize(rf, with_signs=True) for rf in refs]
+            refs = [normalize(rf) for rf in refs]
 
             indices = inputs.get("index").cpu().numpy() if "index" in inputs else [None] * len(preds)
             durations = inputs.get("duration").cpu().numpy() if "duration" in inputs else [None] * len(preds)
@@ -194,6 +194,12 @@ def evaluate_model(data, conf, args, info, checkpoint_path, checkpoint_dir, devi
     training_args = Seq2SeqTrainingArguments(**training_args)
 
     model = load_model(args, info, checkpoint_path, checkpoint_dir, device)
+
+    lm = model.language_model
+    inner = (lm.get_base_model() if hasattr(lm, "get_base_model") else lm).model
+    _forward = inner.forward
+    inner.forward = lambda *a, **k: _forward(*a, **{**k, "position_ids": None})
+
     tokenizer = model.language_tokenizer
 
     gen_kwargs = gen_config_obj.to_dict() if hasattr(gen_config_obj, "to_dict") else gen_config_obj
@@ -210,7 +216,8 @@ def evaluate_model(data, conf, args, info, checkpoint_path, checkpoint_dir, devi
                             has_audio_lb_tokens=True,
                             has_duration_lb=args['predict_duration'],
                             to_chars=args['ctc'] or args['injection_downsample'] == 'cif',
-                            contain_index=True)
+                            contain_index=True,
+                            prompt_verbatim=args['prompt_verbatim'])
 
     samples_path = os.path.join(info['res_folder'], "predictions.csv")
 
@@ -246,7 +253,7 @@ def evaluate_model(data, conf, args, info, checkpoint_path, checkpoint_dir, devi
 
     print(f"Computing metrics...")
 
-    res_samples, res_total = get_metrics(predictions, references, indices, durations, verbose=True, is_whisper=True)
+    res_samples, res_total = get_metrics(predictions, references, indices, durations, verbose=True)
 
     total_path = os.path.join(info['res_folder'], "results.csv")
 
@@ -316,7 +323,7 @@ def evaluate(info, dataset, split='test', device='cuda', iters=None):
                                iters=iters,
                                randomize=args.randomize,
                                has_duration=True,
-                               normalize_type=args.normalize)
+                               normalized=False)
 
     evaluation_data = concatenate(evaluation_data)
 
