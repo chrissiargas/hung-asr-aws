@@ -6,8 +6,8 @@ set -euo pipefail
 
 LANG_TAG=hungarian
 EXP=2                          # exp of the trained model, so the test split matches its training config
-MODEL_DECODING=plain           # plain | penalized | legacy
-WHISPER_DECODING=plain         # plain | penalized | legacy | whisper_standard
+MODEL_DECODING=legacy           # plain | penalized | legacy
+WHISPER_DECODING=whisper_standard         # plain | penalized | legacy | whisper_standard
 if (( $# )); then DATASETS=("$@"); else DATASETS=(common_voice fleurs massive voxpopuli yodas); fi
 
 for ds in "${DATASETS[@]}"; do
