@@ -53,15 +53,19 @@ def strip_speaker_tag(text):
 def verbalize_numbers(text):
     return re.sub(r"\d+", lambda m: num2words(int(m.group(0)), lang="hu"), text)
 
+def _drop_invisibles(text):
+    return "".join(" " if unicodedata.category(c) == "Cc"
+                   else c for c in text if unicodedata.category(c) != "Cf")
+
 def _cleanup(text, verbalize=True):
     text = unicodedata.normalize("NFKC", text or "")
+    text = _drop_invisibles(text)
     text = strip_speaker_tag(text)
     text = _BRACKETS_RE.sub(" ", text)
     text = text.replace("~", "")
     if verbalize:
         text = verbalize_numbers(text)
     return text.lower().translate(_QUOTES)
-
 
 def normalize_nwer(text, verbalize=True):
     return _BASIC(_cleanup(text, verbalize)).strip()
