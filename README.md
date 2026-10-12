@@ -113,14 +113,14 @@ python evaluations/collect_results.py runs/hungarian_*_test --bootstrap
 ## Tests
 
 ```bash
-pip install pytest
-pytest
+pytest          # inside the project environment (pip install pytest if it is missing)
 ```
 
 The tests run on CPU without model downloads. They cover the zero-gate identity of the
 cross-attention, padding masks, beam expansion, layer-wise fusion weights, the downsamplers,
 text perturbation, the repetition-penalty and n-gram processors, and the evaluation normalizer,
-manifest check and bootstrap.
+manifest check and bootstrap. GitHub Actions installs the CPU-only dependencies in
+`tests/requirements.txt` and runs the tests, plus a lint check for undefined names, on every push.
 
 ## Data
 

@@ -1,0 +1,14 @@
+# CPU-only test dependencies, pinned to the versions in environment.yml.
+# PyTorch and torchaudio are installed first from the CPU wheel index (see .github/workflows/tests.yml).
+transformers==4.53.3
+tokenizers==0.21.4
+huggingface-hub==0.36.0
+peft==0.18.0
+accelerate==1.12.0
+safetensors==0.7.0
+numpy==1.26.4
+pyyaml==6.0.3
+jiwer==3.1.0
+num2words==0.5.14
+pytest>=8
+ruff
