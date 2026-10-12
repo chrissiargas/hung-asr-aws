@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Fair Whisper vs. Dual-Fusion evaluation for every Hungarian test set.
-# Usage:  bash run_fair_eval.sh                 (all datasets below)
-#         bash run_fair_eval.sh fleurs yodas    (only the ones you name)
+# Whisper baseline decoding only, on test manifests already built by run_fair_eval.sh.
+# Usage:  bash evaluations/run_inference.sh                 (all datasets below)
+#         bash evaluations/run_inference.sh fleurs yodas    (only the ones you name)
 set -euo pipefail
 
 LANG_TAG=hungarian

@@ -433,7 +433,6 @@ class DualFusionModel(nn.Module):
         self.duration_weight = duration_weight
         self.cif_weight = 1.0
 
-        self.get_gradient()
         self.with_adapter_gradient = torch.no_grad() if self.static_projector else contextlib.nullcontext()
         self.with_injection_gradient = torch.no_grad() if self.static_injection else contextlib.nullcontext()
 
@@ -442,12 +441,22 @@ class DualFusionModel(nn.Module):
             for param in self.input_downsampler.parameters(): param.requires_grad = False
 
         if self.static_injection:
+            # The whole cross-attention path is frozen, including the layer-wise fusion weights:
+            # inject() runs under no_grad here, so they could not be trained anyway.
             for layer in self.injection_layers:
                 for param in layer.cross_attention_layer.parameters(): param.requires_grad = False
             if self.injection_downsampler:
                 for param in self.injection_downsampler.parameters(): param.requires_grad = False
             for ds in self.injection_downsamplers:
-                for param in ds.parameters(): param.requires_grad = False
+                if ds is not None:
+                    for param in ds.parameters(): param.requires_grad = False
+            if self.layer_wise_fusion:
+                fusion_params = ([self.layer_static] if self.layer_weights_static
+                                 else list(self.layer_dynamic.parameters()))
+                for param in fusion_params: param.requires_grad = False
+
+        # Report parameter counts after freezing, so the trainable totals are the real ones.
+        self.get_gradient()
 
     @property
     def injection_layers(self):

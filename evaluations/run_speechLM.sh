@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
-# Fair Whisper vs. Dual-Fusion evaluation for every Hungarian test set.
-# Usage:  bash run_fair_eval.sh                 (all datasets below)
-#         bash run_fair_eval.sh fleurs yodas    (only the ones you name)
+# Dual-Fusion decoding only, on test manifests already built by run_fair_eval.sh.
+# Usage:  bash evaluations/run_speechLM.sh                 (all datasets below)
+#         bash evaluations/run_speechLM.sh fleurs yodas    (only the ones you name)
 set -euo pipefail
 
 LANG_TAG=hungarian
 EXP=2                          # exp of the trained model, so the test split matches its training config
 MODEL_DECODING=legacy           # plain | penalized | legacy
+POSITION_IDS=train              # train | hf  (hf = the generate() behaviour behind the paper numbers, see fair_speechLM.py)
 WHISPER_DECODING=whisper_standard         # plain | penalized | legacy | whisper_standard
 DATETIME=Aug31_12-08
 MACHINE=hu-asr-medium-3-0
@@ -24,5 +25,6 @@ for ds in "${DATASETS[@]}"; do
     [[ -f "${model_out}/predictions.jsonl" ]] || torchrun --standalone --nproc_per_node=4 \
         evaluations/fair_speechLM.py \
         --manifest "$manifest" --out "$model_out" --decoding "$MODEL_DECODING" \
+        --position_ids "$POSITION_IDS" \
         --exp "$EXP" --machine $MACHINE --datetime $DATETIME --name full --turn $TURN
 done
