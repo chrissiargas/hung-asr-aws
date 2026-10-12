@@ -16,7 +16,8 @@ import tarfile
 
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
-API_KEY = "a5a7fb5e382a78f691c85763a922b5410f9dda129943d731c79e48b9cafb1ce8"
+# Mozilla Data Collective API key, read from the environment (never commit it).
+API_KEY = os.environ.get("MDC_API_KEY")
 DATASET_ID = {'greek':'cmn2cx91x01dno10754vxfu3b',
               'hungarian': 'cmj8u3p8900bhnxxb50f37mkm',
               'english': 'cmqim2hn800ssnr07gvmpcnwu',
@@ -33,6 +34,8 @@ def download(language: str):
     if os.path.exists(archive_path):
         print("No need to download.")
     else:
+        if not API_KEY:
+            raise RuntimeError("Set the MDC_API_KEY environment variable to download Common Voice.")
         print("Fetching presigned download URL...")
         api_url = f"https://mozilladatacollective.com/api/datasets/{dataset_id}/download"
         headers = {

@@ -13,8 +13,8 @@ os.environ["PYTORCH_ALLOC_CONF"] = "expandable_segments:True"
 set_environment()
 
 import gc
+import math
 import torch
-import os
 from typing import List
 from config.parser import Parser
 from pathlib import Path
@@ -56,7 +56,10 @@ def calculate_perplexity(outputs, inputs_ids, device):
     ppl = math.exp(sum(nlls) / total_length)
     return ppl.item()
 
-access_token = "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"
+# Read from the environment; None falls back to the token cached by `huggingface-cli login`.
+access_token = os.environ.get("HF_TOKEN")
+
+
 def main(datasets: List[str], models: List[str]):
     local_rank, device = init_gpu()
 

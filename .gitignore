@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Experiment tracking and run outputs (tracked in W&B, not in git)
+wandb/
+runs/
+manifests/
+tmp/
+
+# Editors and IDEs (deployment settings contain machine-specific hosts)
+.idea/
+.vscode/
+
+# Local credentials
+.env
+*.env
+
+# Personal scratch scripts
+lab.py
+migrate.sh
+constructors/test.py

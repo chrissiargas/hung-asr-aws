@@ -1,7 +1,6 @@
 import json
 import os
 
-from debugpy._vendored.pydevd._pydevd_bundle._debug_adapter import __main__pydevd_gen_debug_adapter_protocol
 from tqdm import tqdm
 from config.parser import Parser
 from datasets import load_dataset
@@ -72,7 +71,7 @@ class speech_massive:
                     self.language,
                     split=orig_split,
                     trust_remote_code=True,
-                    token='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'
+                    token=os.environ.get("HF_TOKEN")
                 )
 
                 manifest_entries = [self.extract_samples(sample, audio_dir, manifest_dir, idx_offset + idx)
