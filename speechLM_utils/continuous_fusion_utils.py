@@ -8,7 +8,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from typing import Optional
 import math
-import matplotlib.pyplot as plt
 from speechLM_utils.downsamplers import ReshapeAdapter
 
 
@@ -88,6 +87,8 @@ class CrossAttention(nn.Module):
         min_val = torch.finfo(dtype).min
 
         if verbose:
+            import matplotlib.pyplot as plt  # debugging plots only
+
             if prm_audio_mask is not None:
                 plt.imshow(prm_audio_mask[0].unsqueeze(0).detach().cpu(), aspect='auto')
                 plt.show()

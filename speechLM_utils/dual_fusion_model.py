@@ -1,44 +1,37 @@
-import contextlib
-import sys
-from os.path import dirname, abspath
+"""Dual-Fusion speech LLM: a frozen Whisper encoder bridged into a decoder-only LLM through
+(1) prompt-level acoustic tokens and (2) gated cross-attention at several intermediate layers.
 
-from mcp.cli.cli import dev
-from pyarrow import duration
+Entry points (training and evaluation scripts) call `set_environment()` before importing this
+module, so importing it has no side effects on the environment.
+"""
+import contextlib
+import gc
+import os
+import sys
+from dataclasses import dataclass
+from os.path import abspath, dirname
+from typing import Optional
 
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
-import warnings
-
-warnings.filterwarnings("ignore")
-
-from speechLM_utils.environment import set_environment
-
-set_environment()
 
 import numpy
 import torch
 import torch.nn as nn
-from torchmetrics.text import CharErrorRate, WordErrorRate
-from transformers import (AutoModelForCausalLM, AutoTokenizer, WhisperProcessor,
-                          BitsAndBytesConfig, AutoModel, AutoProcessor, AutoConfig, WhisperForConditionalGeneration)
-from transformers import WhisperModel
-
-from peft import get_peft_model, LoraConfig, TaskType, prepare_model_for_kbit_training
-from config.parser import Parser
-import gc
-from speechLM_utils.continuous_fusion_utils import CrossAttention, InjectionLayer
-import torchaudio.transforms as T
-from speechLM_utils.downsamplers import get_downsampler, CIFireAdapter
-from typing import Optional
-from transformers.modeling_outputs import ModelOutput
-from dataclasses import dataclass
-
-val_num_beams = 2
-stopping_criteria = None
-cer = CharErrorRate()
-wer = WordErrorRate()
-access_token = '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'
-from speechLM_utils.data_collator import NUM_CLASSES, BLANK_IDX
 import torch.nn.functional as F
+import torchaudio.transforms as T
+from peft import LoraConfig, TaskType, get_peft_model, prepare_model_for_kbit_training
+from transformers import (AutoConfig, AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig,
+                          LogitsProcessorList, RepetitionPenaltyLogitsProcessor, WhisperModel,
+                          WhisperProcessor)
+from transformers.modeling_outputs import ModelOutput
+
+from config.parser import Parser
+from speechLM_utils.continuous_fusion_utils import CrossAttention, InjectionLayer
+from speechLM_utils.data_collator import BLANK_IDX, NUM_CLASSES
+from speechLM_utils.downsamplers import CIFireAdapter, get_downsampler
+
+# Read from the environment; None falls back to the token cached by `huggingface-cli login`.
+access_token = os.environ.get("HF_TOKEN")
 
 
 def apply_text_dropout(batch_labels, batch_label_masks, tokenizer, dropout_prob=0.1, device=None):
@@ -84,14 +77,10 @@ def apply_audio_dropout(batch_audios, batch_labels, batch_label_masks, tokenizer
     return noisy_audios, new_labels, new_masks
 
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-
-from transformers import LogitsProcessorList, RepetitionPenaltyLogitsProcessor
-
-
 class SafeRepetitionPenaltyLogitsProcessor(RepetitionPenaltyLogitsProcessor):
+    """Hugging Face's repetition penalty, except that the given special tokens (EOS, PAD, BOS)
+    are never penalized, so a long transcript can still end."""
+
     def __init__(self, penalty: float, skip_token_ids: list[int]):
         super().__init__(penalty=penalty)
         self.skip_token_ids = skip_token_ids
@@ -185,7 +174,6 @@ class DualFusionModel(nn.Module):
                  exp):
 
         super().__init__()
-        super(DualFusionModel, self).__init__()
 
         self.conf = Parser()
         self.conf.get_args(exp)
@@ -1009,58 +997,50 @@ class DualFusionModel(nn.Module):
             injection_layer.prompt_audio = proj_embeddings
             injection_layer.prompt_audio_mask = down_masks
 
-        try:
-            outputs = self.language_model(
-                inputs_embeds=prompt_embed,
-                attention_mask=prompt_mask.bool(),
-                labels=true_labels,
-                output_hidden_states=True,
-                **kwargs
-            )
+        # The injected audio is deliberately not cleared after this call: if gradient checkpointing
+        # re-runs the wrapped layers during backward, they still need it. It is overwritten on the
+        # next forward and cleared at the end of generate().
+        outputs = self.language_model(
+            inputs_embeds=prompt_embed,
+            attention_mask=prompt_mask.bool(),
+            labels=true_labels,
+            output_hidden_states=True,
+            **kwargs
+        )
 
-            if self.audio_forecasting:
-                aux_audio_loss = self.get_audio_loss(outputs, down_embeddings, down_masks)
+        if self.audio_forecasting:
+            aux_audio_loss = self.get_audio_loss(outputs, down_embeddings, down_masks)
 
-            if self.predict_duration:
-                aux_duration_loss = self.get_duration_loss(outputs, down_masks, duration_ids)
+        if self.predict_duration:
+            aux_duration_loss = self.get_duration_loss(outputs, down_masks, duration_ids)
 
-            with_CIF = self.include_adapter and isinstance(self.input_downsampler, CIFireAdapter)
-            if with_CIF:
-                predicted_lengths = alphas.sum(-1)
-                target_lengths = ctc_lengths.float()
-                aux_cif_loss = nn.functional.l1_loss(predicted_lengths, target_lengths)
+        with_CIF = self.include_adapter and isinstance(self.input_downsampler, CIFireAdapter)
+        if with_CIF:
+            predicted_lengths = alphas.sum(-1)
+            target_lengths = ctc_lengths.float()
+            aux_cif_loss = nn.functional.l1_loss(predicted_lengths, target_lengths)
 
-            aux_ctc_loss = aux_ctc_loss if self.ctc else torch.tensor(0.0, device=outputs.loss.device)
-            norm_audio_loss = aux_audio_loss if self.audio_forecasting else torch.tensor(0.0,
+        aux_ctc_loss = aux_ctc_loss if self.ctc else torch.tensor(0.0, device=outputs.loss.device)
+        norm_audio_loss = aux_audio_loss if self.audio_forecasting else torch.tensor(0.0,
+                                                                                     device=outputs.loss.device)
+        aux_duration_loss = aux_duration_loss if self.predict_duration else torch.tensor(0.0,
                                                                                          device=outputs.loss.device)
-            aux_duration_loss = aux_duration_loss if self.predict_duration else torch.tensor(0.0,
-                                                                                             device=outputs.loss.device)
-            aux_cif_loss = aux_cif_loss if with_CIF else torch.tensor(0.0, device=outputs.loss.device)
+        aux_cif_loss = aux_cif_loss if with_CIF else torch.tensor(0.0, device=outputs.loss.device)
 
-            total_loss = (outputs.loss +
-                          (aux_ctc_loss * self.ctc_weight) +
-                          (norm_audio_loss * self.audio_weight) +
-                          (aux_duration_loss * self.duration_weight) +
-                          (aux_cif_loss * self.cif_weight))
+        total_loss = (outputs.loss +
+                      (aux_ctc_loss * self.ctc_weight) +
+                      (norm_audio_loss * self.audio_weight) +
+                      (aux_duration_loss * self.duration_weight) +
+                      (aux_cif_loss * self.cif_weight))
 
-            out = DualFusionOutput(
-                loss=total_loss,
-                logits=outputs.logits,
-                loss_lm=outputs.loss.detach(),
-                loss_ctc=aux_ctc_loss.detach(),
-                loss_audio=norm_audio_loss.detach(),
-                loss_duration=aux_duration_loss.detach()
-            )
-
-            return out
-
-        finally:
-            pass
-            # for injection_layer in self.injection_layers:
-            #     injection_layer.injection_audio = None
-            #     injection_layer.injection_audio_mask = None
-            #     injection_layer.prompt_audio = None
-            #     injection_layer.prompt_audio_mask = None
+        return DualFusionOutput(
+            loss=total_loss,
+            logits=outputs.logits,
+            loss_lm=outputs.loss.detach(),
+            loss_ctc=aux_ctc_loss.detach(),
+            loss_audio=norm_audio_loss.detach(),
+            loss_duration=aux_duration_loss.detach()
+        )
 
     def generate(self, audios=None,
                  audio_masks=None,
@@ -1143,14 +1123,15 @@ class DualFusionModel(nn.Module):
                 injection_layer.prompt_audio = proj_embeddings
                 injection_layer.prompt_audio_mask = down_masks
 
+            logits_processor = self.logits_processor
             rep_penalty = kwargs.pop("rep_penalty", 1.0)
-            if rep_penalty > 1.0 and self.logit_processor is None:
-                logits_processor = LogitsProcessorList()
-                safe_rep_processor = SafeRepetitionPenaltyLogitsProcessor(
+            if rep_penalty > 1.0:
+                # Work on a copy so processors do not pile up on the model across calls.
+                logits_processor = LogitsProcessorList(list(logits_processor or []))
+                logits_processor.append(SafeRepetitionPenaltyLogitsProcessor(
                     penalty=rep_penalty,
-                    skip_token_ids=skip_tokens
-                )
-                self.logits_processor.append(safe_rep_processor)
+                    skip_token_ids=self.skip_tokens
+                ))
 
             if return_attention:
                 for injection_layer in self.injection_layers:
@@ -1163,7 +1144,7 @@ class DualFusionModel(nn.Module):
                     inputs_embeds=prompt_embed,
                     attention_mask=prompt_mask.bool(),
                     pad_token_id=self.pad_token_id,
-                    logits_processor=self.logits_processor,
+                    logits_processor=logits_processor,
                     **kwargs
                 )
 
@@ -1200,120 +1181,3 @@ class DualFusionModel(nn.Module):
     @property
     def config(self):
         return self.language_model.config
-
-
-def main():
-    from transformers import GenerationConfig
-
-    # This shows the absolute defaults defined by Hugging Face
-    default_config = GenerationConfig()
-    print(f"Library default max_new_tokens: {default_config.max_new_tokens}")
-    print(f"Library default max_length: {default_config.max_length}")
-
-    print("Initializing DualFusionModel for token verification...")
-
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
-
-    model = DualFusionModel(
-        speech_encoder_model_id="openai/whisper-large-v3",
-        language_model_id="elte-nlp/Racka-4B",
-        blank_training=False,
-        audio_dropout=0.1,
-        text_perturbation=True,
-        text_dropout=0.1,
-        spec_augment=True,
-        include_adapter=True,
-        input_downsample='reshape',
-        static_projector=False,
-        downsample_K=5,
-        hidden_dim=2048,
-        static_injection=False,
-        injection_layers=[15, 25, 35],
-        pyramid_layers=False,
-        gated=False,
-        downsample_L=5,
-        injection_downsample='conv1d',
-        downsamplers='injection_common',
-        causal_fusion=False,
-        positional_info=False,
-        layer_wise_fusion=False,
-        layer_weights_static=False,
-        predict_duration=False,
-        duration_resolution=0.1,
-        max_duration=30.0,
-        ctc=False,
-        audio_forecasting=False,
-        ctc_weight=0.4,
-        duration_weight=0.4,
-        audio_weight=0.4,
-        lng_lora=True,
-        acoustic_lora=False,
-        lora_params=["q_proj", "k_proj", "v_proj", "o_proj"],
-        prompt_persona="none",
-        prompt_instruction="Kizárólag a hanganyag szöveges átiratát add vissza. Semmilyen más karaktert, fejlécet vagy jelet ne használj.\n\nÁtirat:",
-        prompt_verbatim=True,
-        dtype=dtype,
-        bit4=True,  # Ensure bitsandbytes is installed if running locally
-        attn_implementation="sdpa",
-        device=device,
-        exp=0
-    )
-
-    tokenizer = model.language_tokenizer
-
-    print("\n" + "=" * 50)
-    print(" TOKENIZER VERIFICATION ")
-    print("=" * 50)
-    print(f"Language Model: elte-nlp/Racka-4B")
-    print("-" * 50)
-    print(f"EOS Token:  {tokenizer.eos_token} \t| ID: {tokenizer.eos_token_id}")
-    print(f"PAD Token:  {tokenizer.pad_token} \t| ID: {tokenizer.pad_token_id}")
-
-    bos_token = getattr(tokenizer, "bos_token", "Not Defined")
-    bos_token_id = getattr(tokenizer, "bos_token_id", "Not Defined")
-    print(f"BOS Token:  {bos_token} \t| ID: {bos_token_id}")
-    print("=" * 50 + "\n")
-
-    # If that shows 'Not set', check the generation config object directly:
-    print(f"DEBUG: Generation config max tokens")
-    print(model.language_model.generation_config)
-
-    # --- SETUP SIMULATION ---
-    vocab_size = 151645
-    eos_token_id = 151643
-    word_token_id = 1050  # Let's pretend this is the token for the word "demokrácia"
-
-    # Simulate that the model has already generated both the word and the EOS token in the past
-    input_ids = torch.tensor([[word_token_id, eos_token_id, word_token_id]])
-
-    # Simulate the raw output logits from the LLM (before any penalties)
-    # We set all logits to exactly 10.0 so the math is easy to see.
-    raw_scores = torch.ones(1, vocab_size) * 10.0
-
-    print(f"--- RAW UNPENALIZED SCORES ---")
-    print(f"Word Token Score: {raw_scores[0, word_token_id]:.4f}")
-    print(f"EOS Token Score:  {raw_scores[0, eos_token_id]:.4f}\n")
-
-    # --- TEST 1: STANDARD HUGGING FACE PENALTY ---
-    # With a penalty of 1.2, scores > 0 are divided by 1.2 (10.0 / 1.2 = 8.333)
-    standard_processor = RepetitionPenaltyLogitsProcessor(penalty=1.2)
-
-    # Note: processors modify tensors in place, so we clone raw_scores
-    standard_penalized_scores = standard_processor(input_ids, raw_scores.clone())
-
-    print(f"--- STANDARD PROCESSOR (penalty=1.2) ---")
-    print(f"Word Token Score: {standard_penalized_scores[0, word_token_id]:.4f} (Penalized!)")
-    print(f"EOS Token Score:  {standard_penalized_scores[0, eos_token_id]:.4f} (Penalized! Model avoids stopping.)\n")
-
-    # --- TEST 2: SAFE PROCESSOR ---
-    safe_processor = SafeRepetitionPenaltyLogitsProcessor(penalty=1.2, skip_token_ids=[eos_token_id])
-    safe_penalized_scores = safe_processor(input_ids, raw_scores.clone())
-
-    print(f"--- SAFE PROCESSOR (penalty=1.2, skip=[{eos_token_id}]) ---")
-    print(f"Word Token Score: {safe_penalized_scores[0, word_token_id]:.4f} (Penalized! Stops looping words.)")
-    print(f"EOS Token Score:  {safe_penalized_scores[0, eos_token_id]:.4f} (PROTECTED! Model can stop safely.)\n")
-
-
-if __name__ == "__main__":
-    main()

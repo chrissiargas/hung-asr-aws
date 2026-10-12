@@ -2,7 +2,6 @@ import json
 import os
 import glob
 
-from jmespath.ast import subexpression
 from tqdm import tqdm
 from config.parser import Parser
 from pathlib import Path
