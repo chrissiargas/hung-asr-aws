@@ -1,12 +1,10 @@
 import os
-from platform import machine
 
 import safetensors.torch
 import torch
 from os.path import dirname, abspath
 import sys
 
-from plotly.graph_objs.layout.slider import currentvalue
 
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
 

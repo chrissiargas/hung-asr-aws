@@ -1,12 +1,10 @@
 import os
-from platform import machine
 
 import safetensors.torch
 import torch
 from os.path import dirname, abspath
 import sys
 
-from plotly.graph_objs.layout.slider import currentvalue
 
 from evaluations.utils import extract_word_level_attention, calculate_attention_metrics
 

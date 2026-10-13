@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Optional, Dict, Sequence
 import torch
-from diffusers.pipelines.audioldm2.modeling_audioldm2 import add_special_tokens
 from transformers import WhisperProcessor, AutoTokenizer, WhisperTokenizer
 
 HU_CHARS = "aábcdeéfghiíjklmnoóöőpqrstuúüűvwxyz"

@@ -1,7 +1,6 @@
 from typing import Dict, List
 from datetime import datetime
 
-from numpy.f2py.auxfuncs import throw_error
 from torch.utils.tensorboard import SummaryWriter
 from os.path import exists, join, isdir
 import os

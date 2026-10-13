@@ -5,7 +5,7 @@ This directory is the engine room of the project. It contains the implementation
 ## 1. Model Architecture
 
 ### `dual_fusion_model.py`
-The heart of the project. It defines the `DualFusionModel`, which fuses a **Whisper** acoustic encoder with a **KriKri (Llama-based)** LLM.
+The heart of the project. It defines the `DualFusionModel`, which fuses a **Whisper** acoustic encoder with a language-specialized LLM (**Racka-4B** for Hungarian, **Llama-KriKri-8B** for Greek).
 - **Input Injection:** Uses a projection adapter to treat downsampled audio features as "audio tokens" in the LLM's prompt.
 - **Deep Injection:** Wraps intermediate LLM layers with cross-attention to allow the model to attend to acoustic details during generation.
 - **Auxiliary Heads:** Implements predictors for CTC loss, duration prediction, and future audio forecasting.
@@ -38,7 +38,7 @@ Defines the **`MultiLossTrainer`**, a subclass of Hugging Face's `Seq2SeqTrainer
 ### `data_collator.py`
 A complex collator that prepares multi-modal batches:
 - Processes raw audio into Whisper features.
-- Tokenizes Greek text and prepares LLM labels.
+- Tokenizes the transcripts and prepares LLM labels.
 - Generates targets for auxiliary tasks (CTC character sequences, duration bins).
 
 ### `checkpoint.py` & `model.py`
@@ -50,14 +50,13 @@ A complex collator that prepares multi-modal batches:
 - **`metrics.py`**: Orchestrates validation-time evaluation, calculating WER/CER and logging audio-transcript samples to WandB.
 - **`utils.py`**: Handles GPU initialization, experiment tagging, and the bridge between CLI arguments and internal configuration.
 - **`environment.py`**: Sets up the local environment, including Hugging Face cache and temp directories.
-- **`training_info.py`**: Contains default configuration templates for different model variants.
 
 ---
 
 ## The Dual Fusion Mechanism
 
 The architecture follows a dual-path injection strategy:
-1. **Prompt Path:** Audio is downsampled by factor $ and projected into the LLM's embedding space.
-2. **Cross-Attention Path:** Audio is downsampled by factor $ and injected into specific LLM layers (e.g., 8, 16, 24) via cross-attention.
+1. **Prompt Path:** Audio is downsampled by factor `downsample_K` (5 in the paper) and projected into the LLM's embedding space.
+2. **Cross-Attention Path:** Audio is downsampled by factor `downsample_L` (3 in the paper) and injected into specific LLM layers (e.g., 15, 25, 35 for Racka-4B) via gated cross-attention.
 
 This allows the model to have both a high-level "understanding" of the audio as part of the instructions and a low-level "listening" capability during the decoding process.

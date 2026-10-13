@@ -1,4 +1,3 @@
-from tensorstore import downsample
 from torch import nn
 import torch
 

@@ -31,9 +31,11 @@ def get_bad_folder_path(conf, dataset: str, split: str):
     return bad_folder_path
 
 def evaluate_assemblyai(args, dataset: str, split: str = 'test'):
-    # 1. Initialize AssemblyAI Client
-    # You get a free API key when signing up on their site
-    aai.settings.api_key = "3d958aca54974245aba2a3cbd2878428"
+    # 1. Initialize AssemblyAI Client (key from the environment, never from the code)
+    api_key = os.environ.get("ASSEMBLYAI_API_KEY")
+    if not api_key:
+        raise RuntimeError("Set the ASSEMBLYAI_API_KEY environment variable to run the AssemblyAI baseline.")
+    aai.settings.api_key = api_key
     transcriber = aai.Transcriber()
 
     # Configure for Hungarian ASR

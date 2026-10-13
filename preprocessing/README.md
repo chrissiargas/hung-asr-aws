@@ -1,6 +1,6 @@
 # Preprocessing & Data Quality Pipeline
 
-This directory contains the tools for cleaning, normalizing, and preparing Greek ASR datasets. The pipeline is designed to identify and filter out "bad" samples (noise, misalignments, foreign speech) before training.
+This directory contains the tools for cleaning, normalizing, and preparing the ASR datasets. The pipeline is designed to identify and filter out "bad" samples (noise, misalignments, foreign speech) before training.
 
 ## Core Components
 
@@ -13,7 +13,7 @@ The foundation for text consistency in the project.
 ### 2. `irregularities.py`
 A comprehensive suite of "Bad Data" detectors.
 *   **Acoustic Checks:** Calculates Signal-to-Noise Ratio (SNR) and uses Silero-VAD to detect excessive silence or lack of speech.
-*   **Linguistic Checks:** Uses Whisper-tiny for Language Identification (ensuring speech is Greek) and confidence-based filtering.
+*   **Linguistic Checks:** Uses Whisper-tiny for Language Identification (ensuring speech is in the target language) and confidence-based filtering.
 *   **Structural Checks:** Flags samples with extreme duration/text-length ratios or suspiciously short/long transcripts.
 *   **Advanced Detection:** Uses `Cleanlab` on Whisper embeddings to identify outliers and near-duplicates.
 
@@ -23,9 +23,8 @@ The primary data loader and filterer.
 *   **Interleaving:** Supports mixing multiple datasets (e.g., CV + Fleurs) using a "temperature" parameter to balance sampling.
 *   **HF Integration:** Converts manifests into Hugging Face `DatasetDict` objects with on-the-fly normalization.
 
-### 4. `clean.py` & `split.py`
+### 4. `split.py`
 *   **`split.py`**: Manages the directory structure and paths for `train`, `validation`, and `test` splits across different datasets.
-*   **`clean.py`**: A utility to permanently label manifests with a `suspect` flag based on previous quality checks, allowing for faster loading without re-filtering.
 
 ### 5. `parallel.py`
 *   Provides the `parallelize_process` wrapper to run intensive quality checks (like VAD or Embedding extraction) across multiple GPUs simultaneously.

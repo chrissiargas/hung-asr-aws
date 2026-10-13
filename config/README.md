@@ -1,6 +1,6 @@
 # Configuration Guide
 
-This directory contains the configuration files for the Greek ASR system. The primary configuration file is `my_config.yaml`.
+This directory contains the configuration files for the ASR system. The primary configuration file is `my_config.yaml`.
 
 ## Configuration Sections
 
@@ -12,7 +12,7 @@ Configuration related to data paths and basic audio properties.
 *   `tmpdir`: Temporary directory for intermediate files.
 *   `hf_cache`: Path to the Hugging Face cache directory.
 *   `dataset_path`: Local directory for caching processed datasets.
-*   `language`: Target language (default: 'greek').
+*   `language`: Target language (`'hungarian'` or `'greek'`).
 *   `sampling_rate`: Audio sampling rate (standardized to 16000Hz).
 *   `other_to_train`: Boolean flag indicating if other data should be included in training.
 
@@ -25,7 +25,7 @@ High-level training and workspace settings.
 *   `checkpoint_path`: Root directory for saving model checkpoints.
 
 ### 3. `dual_fuse_args`
-Core configuration for the **Dual Fusion Model** (Whisper + KriKri LLM).
+Core configuration for the **Dual Fusion Model** (Whisper + a language-specialized LLM).
 
 #### Data Configurations
 *   `interleave_temperature`: Sampling temperature for mixing multiple datasets.

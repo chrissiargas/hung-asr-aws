@@ -1,6 +1,5 @@
 import warnings
 import wandb
-from lightning.fabric.utilities.distributed import group
 
 warnings.filterwarnings("ignore")
 import os
